@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>People I Talk To</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #EDD9C0;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    .container { max-width: 480px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+
+    header h1 { font-size: 22px; font-weight: 700; color: #4A5228; }
+    header .date { font-size: 13px; color: #7A8C3C; }
+
+    /* ── Crowd ────────────────────────────────────────── */
+    #crowd-section {
+      background: linear-gradient(160deg, #f5ede0 0%, #e0ceaf 100%);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(74,82,40,0.10);
+      overflow: hidden;
+    }
+
+    #crowd-canvas {
+      position: relative;
+      height: 260px;
+      overflow: hidden;
+    }
+
+    .central-figure {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .central-label {
+      position: absolute;
+      left: 50%;
+      bottom: 36px;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 700;
+      color: #a89880;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .crowd-avatar {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      cursor: default;
+    }
+
+    .crowd-avatar:hover { z-index: 10; }
+
+    .avatar-tip {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(74,82,40,0.85);
+      color: #EDD9C0;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .crowd-avatar:hover .avatar-tip { opacity: 1; }
+
+    #crowd-stats {
+      text-align: center;
+      padding: 5px 16px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #7A8C3C;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    /* ── Color swatch ──────────────────────────────────── */
+    .color-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+      flex-shrink: 0;
+      position: relative;
+      transition: transform 0.12s;
+    }
+
+    .color-swatch:hover { transform: scale(1.15); }
+
+    .color-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: none;
+    }
+
+    /* ── Crowd animation ───────────────────────────────── */
+    @keyframes crowdPulse {
+      0%   { transform: translate(-50%, -50%) scale(1); }
+      45%  { transform: translate(-50%, -50%) scale(1.38); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .crowd-avatar.pulse {
+      animation: crowdPulse 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ── Groups ───────────────────────────────────────── */
+    .groups-container { display: flex; flex-direction: column; gap: 14px; }
+
+    .group-section {
+      background: #FAF5EE;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(74,82,40,0.08);
+      overflow: hidden;
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px 11px;
+      border-bottom: 1px solid #e5d8c4;
+      gap: 8px;
+    }
+
+    .group-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .group-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #7A8C3C;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      outline: none;
+      border-radius: 4px;
+      padding: 2px 5px;
+      cursor: text;
+      min-width: 40px;
+      max-width: 220px;
+    }
+
+    .group-name:focus {
+      background: #f0e8d8;
+      color: #4A5228;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 14px;
+    }
+
+    .group-name:empty::before { content: 'Group name…'; color: #c5b49a; }
+
+    .group-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .group-total { font-size: 12px; color: #b0a090; }
+    .group-total b { color: #D4882A; font-weight: 700; }
+
+    .group-delete-btn {
+      background: none;
+      border: none;
+      color: #c5b49a;
+      font-size: 17px;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: color 0.12s;
+      line-height: 1;
+    }
+
+    .group-delete-btn:hover { color: #A85C7A; }
+
+    .group-body {
+      padding: 6px 12px 2px;
+      min-height: 54px;
+      transition: background 0.12s;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .group-body.drag-over {
+      background: #f5e8d0;
+      outline: 2px dashed #D4882A;
+      outline-offset: -4px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* ── Person cards ─────────────────────────────────── */
+    .person-card {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 4px;
+      border-bottom: 1px solid #ede0d0;
+      border-radius: 8px;
+      transition: background 0.1s;
+    }
+
+    .person-card:last-of-type { border-bottom: none; }
+    .person-card:hover { background: #f5ede0; }
+    .person-card.dragging { opacity: 0.3; }
+
+    .drag-handle {
+      color: #c5b49a;
+      font-size: 15px;
+      cursor: grab;
+      padding: 0 2px;
+      user-select: none;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .drag-handle:hover { color: #7A8C3C; }
+    .drag-handle:active { cursor: grabbing; }
+
+    .person-name {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: #4A5228;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      word-break: break-word;
+    }
+
+    .person-count {
+      font-size: 20px;
+      font-weight: 700;
+      color: #D4882A;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .tap-btn {
+      padding: 8px 13px;
+      background: #f5e8d0;
+      color: #D4882A;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.1s;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .tap-btn:hover { background: #edd8b0; }
+    .tap-btn:active { transform: scale(0.92); }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #c5b49a;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 4px 5px;
+      border-radius: 6px;
+      transition: color 0.12s;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover { color: #A85C7A; }
+
+    .streak-badge {
+      font-size: 11px;
+      background: #f0e0eb;
+      color: #A85C7A;
+      padding: 2px 6px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ── Add person row ───────────────────────────────── */
+    .add-person-row { padding: 6px 4px 10px; }
+
+    .add-person-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: #a89880;
+      background: transparent;
+      padding: 4px 0;
+    }
+
+    .add-person-input::placeholder { color: #c5b49a; }
+    .add-person-input:focus { color: #4A5228; }
+
+    /* ── Add Group button ─────────────────────────────── */
+    .add-group-btn {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      background: transparent;
+      border: 2px dashed #c5b49a;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #a89880;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .add-group-btn:hover { border-color: #7A8C3C; color: #7A8C3C; }
+
+    /* ── Footer ───────────────────────────────────────── */
+    .footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total { font-size: 14px; color: #7A8C3C; }
+    .total span { font-weight: 700; color: #4A5228; }
+
+    .reset-btn {
+      padding: 9px 16px;
+      background: #FAF5EE;
+      color: #A85C7A;
+      border: 1.5px solid #A85C7A;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .reset-btn:hover { background: #A85C7A; color: #fff; }
+
+    /* ── History ──────────────────────────────────────── */
+    .history-section { margin-top: 36px; }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .history-header h2 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #7A8C3C;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .history-toggle { font-size: 12px; color: #7A8C3C; transition: transform 0.2s; }
+    .history-toggle.open { transform: rotate(180deg); }
+
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .history-day {
+      background: #FAF5EE;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(74,82,40,0.06);
+      overflow: hidden;
+    }
+
+    .history-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .history-day-header:hover { background: #f5ede0; }
+    .history-day-date { font-size: 14px; font-weight: 600; color: #4A5228; }
+    .history-day-right { display: flex; align-items: center; gap: 12px; }
+    .history-day-total { font-size: 13px; color: #a89880; }
+    .history-day-total span { font-weight: 700; color: #D4882A; }
+    .history-chevron { font-size: 11px; color: #a89880; transition: transform 0.2s; }
+    .history-chevron.open { transform: rotate(180deg); }
+
+    .history-day-detail {
+      display: none;
+      padding: 0 16px 12px;
+      border-top: 1px solid #e5d8c4;
+    }
+
+    .history-day-detail.open { display: block; }
+
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #ede0d0;
+    }
+
+    .history-row:last-child { border-bottom: none; }
+    .history-row .h-name { color: #4A5228; }
+    .history-row .h-count { font-weight: 600; color: #D4882A; }
+
+    .history-empty { text-align: center; color: #c5b49a; font-size: 13px; padding: 16px 0; }
+
+    .bump { animation: bump 0.2s ease; }
+
+    @keyframes bump {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Token / Candle ──────────────────────────────── */
+    .candle-widget {
+      background: linear-gradient(160deg, #f5ede0 0%, #ead0a8 100%);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(74,82,40,0.10);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .candle-svg-wrap {
+      flex-shrink: 0;
+      width: 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .candle-info { flex: 1; min-width: 0; }
+
+    .candle-tokens {
+      font-size: 26px;
+      font-weight: 800;
+      color: #4A5228;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .candle-tokens span { font-size: 13px; font-weight: 500; color: #a89880; }
+
+    .candle-phase {
+      font-size: 11px;
+      color: #7A8C3C;
+      font-weight: 600;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .token-bar-wrap {
+      background: rgba(74,82,40,0.10);
+      border-radius: 20px;
+      height: 7px;
+      overflow: hidden;
+    }
+
+    .token-bar-fill {
+      height: 100%;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #D4882A, #f7c14f);
+      transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .candle-burnout {
+      font-size: 12px;
+      color: #A85C7A;
+      font-weight: 600;
+      margin-top: 6px;
+      display: none;
+    }
+
+    @keyframes flicker {
+      0%   { transform: scaleX(1)    scaleY(1)    rotate(-1deg);  }
+      20%  { transform: scaleX(0.88) scaleY(1.06) rotate(1.5deg); }
+      40%  { transform: scaleX(1.1)  scaleY(0.93) rotate(-2deg);  }
+      60%  { transform: scaleX(0.94) scaleY(1.1)  rotate(1deg);   }
+      80%  { transform: scaleX(1.06) scaleY(0.96) rotate(-1.5deg);}
+      100% { transform: scaleX(1)    scaleY(1)    rotate(-1deg);  }
+    }
+
+    @keyframes flamePulseBurn {
+      0%   { transform: scale(1); opacity: 1; }
+      30%  { transform: scale(1.9) rotate(6deg); opacity: 0.65; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes flamePulseGrow {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.6); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes candleGlow {
+      0%   { filter: drop-shadow(0 0 0px #D4882A); }
+      40%  { filter: drop-shadow(0 0 10px #f7c14f); }
+      100% { filter: drop-shadow(0 0 0px #D4882A); }
+    }
+
+    .flame-group {
+      transform-origin: 24px 28px;
+      animation: flicker 2.4s ease-in-out infinite;
+    }
+
+    .flame-group.pulse-burn { animation: flamePulseBurn 0.45s ease-out; }
+    .flame-group.pulse-grow { animation: flamePulseGrow 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+    .candle-svg-wrap.glow    { animation: candleGlow 0.9s ease-out; }
+
+    /* ── Modals ──────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(74,82,40,0.35);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.hidden { display: none; }
+
+    .modal-box {
+      background: #FAF5EE;
+      border-radius: 20px;
+      padding: 28px 24px 22px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(74,82,40,0.20);
+    }
+
+    .modal-box h2 { font-size: 18px; font-weight: 800; color: #4A5228; margin-bottom: 6px; }
+
+    .modal-box p { font-size: 13px; color: #7A8C3C; margin-bottom: 18px; line-height: 1.55; }
+
+    .modal-field { margin-bottom: 14px; }
+
+    .modal-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #7A8C3C;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 5px;
+    }
+
+    .modal-field input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e5d8c4;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #4A5228;
+      background: #fff;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .modal-field input:focus { border-color: #D4882A; }
+
+    .modal-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #D4882A;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      font-family: inherit;
+      transition: background 0.15s;
+      text-align: center;
+    }
+
+    .modal-btn:hover { background: #b87320; }
+
+    .modal-btn.secondary {
+      background: transparent;
+      color: #a89880;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 4px;
+      padding: 8px;
+    }
+
+    .modal-btn.secondary:hover { color: #7A8C3C; background: transparent; }
+
+    .suggestion-moon { font-size: 36px; text-align: center; margin-bottom: 4px; }
+
+    .suggestion-label {
+      text-align: center;
+      font-size: 13px;
+      color: #7A8C3C;
+      font-weight: 600;
+      margin-bottom: 18px;
+      line-height: 1.45;
+    }
+
+    .token-nudge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .nudge-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #e5d8c4;
+      background: #FAF5EE;
+      color: #4A5228;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.12s, color 0.12s;
+      font-family: inherit;
+      line-height: 1;
+    }
+
+    .nudge-btn:hover { border-color: #D4882A; color: #D4882A; }
+
+    .nudge-value { font-size: 38px; font-weight: 800; color: #4A5228; min-width: 64px; text-align: center; }
+
+    /* ── Group type badge ────────────────────────────── */
+    .group-type-btn {
+      background: none;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: background 0.12s;
+      flex-shrink: 0;
+    }
+
+    .group-type-btn:hover { background: #f0e8d8; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>People I Talk To</h1>
+    <div class="date" id="today-date"></div>
+  </header>
+
+  <div class="candle-widget" id="candle-widget">
+    <div class="candle-svg-wrap" id="candle-svg-wrap">
+      <svg id="candle-svg" viewBox="0 0 48 150" xmlns="http://www.w3.org/2000/svg" width="48" height="150">
+        <defs>
+          <clipPath id="candle-clip">
+            <rect x="10" y="40" width="28" height="106" rx="6"/>
+          </clipPath>
+        </defs>
+        <rect id="candle-wick" x="23" y="28" width="2" height="12" rx="1" fill="#4A5228"/>
+        <rect x="10" y="40" width="28" height="106" rx="6" fill="#e8d5b0" stroke="#c5a878" stroke-width="1.2"/>
+        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="#EDD9C0" clip-path="url(#candle-clip)"/>
+        <rect id="candle-shine" x="14" y="43" width="5" height="36" rx="2.5" fill="rgba(255,255,255,0.22)" clip-path="url(#candle-clip)"/>
+        <g id="candle-flame" class="flame-group">
+          <ellipse cx="24" cy="16" rx="8" ry="12" fill="#D4882A" opacity="0.88"/>
+          <ellipse cx="24" cy="18" rx="5"   ry="7.5" fill="#f7c14f"/>
+          <ellipse cx="24" cy="21" rx="2"   ry="3"   fill="#fff" opacity="0.55"/>
+        </g>
+        <g id="candle-puddle" style="display:none">
+          <ellipse cx="24" cy="146" rx="18" ry="4" fill="#c5a878" opacity="0.35"/>
+        </g>
+      </svg>
+    </div>
+    <div class="candle-info">
+      <div class="candle-tokens" id="candle-tokens">— <span>tokens</span></div>
+      <div class="candle-phase" id="candle-phase"></div>
+      <div class="token-bar-wrap">
+        <div class="token-bar-fill" id="token-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="candle-burnout" id="candle-burnout">recharge tomorrow 🌙</div>
+    </div>
+  </div>
+
+  <div id="crowd-section">
+    <div id="crowd-canvas">
+      <!-- Central figure + avatars injected by JS -->
+    </div>
+    <div id="crowd-stats">No conversations yet today</div>
+  </div>
+
+  <div id="groups-container" class="groups-container"></div>
+
+  <button class="add-group-btn" onclick="addGroup()">+ Add Group</button>
+
+  <div class="footer">
+    <div class="total">Total today: <span id="total-count">0</span></div>
+    <button class="reset-btn" onclick="resetCounts()">Reset Today</button>
+  </div>
+
+  <div class="history-section">
+    <div class="history-header" onclick="toggleHistory()">
+      <h2>Past Days</h2>
+      <span class="history-toggle" id="history-toggle">▼</span>
+    </div>
+    <div class="history-list" id="history-list" style="display:none"></div>
+  </div>
+
+</div>
+
+<!-- Setup modal -->
+<div class="modal-overlay hidden" id="setup-modal">
+  <div class="modal-box">
+    <h2>Track your energy 🕯️</h2>
+    <p>The candle syncs with your cycle and the moon to suggest your starting energy each morning. Your data stays on this device.</p>
+    <div class="modal-field">
+      <label>Last period start date</label>
+      <input type="date" id="setup-period-date"/>
+    </div>
+    <div class="modal-field">
+      <label>Average cycle length (days)</label>
+      <input type="number" id="setup-cycle-length" value="28" min="21" max="45"/>
+    </div>
+    <button class="modal-btn" onclick="saveSetupAndSuggest()">Continue →</button>
+    <button class="modal-btn secondary" onclick="skipSetup()">Skip for now</button>
+  </div>
+</div>
+
+<!-- Daily suggestion modal -->
+<div class="modal-overlay hidden" id="suggest-modal">
+  <div class="modal-box">
+    <div class="suggestion-moon" id="suggest-moon">🕯️</div>
+    <div class="suggestion-label" id="suggest-label">Calculating your energy…</div>
+    <div class="token-nudge">
+      <button class="nudge-btn" onclick="nudgeTokens(-5)">−</button>
+      <div class="nudge-value" id="nudge-value">80</div>
+      <button class="nudge-btn" onclick="nudgeTokens(+5)">+</button>
+    </div>
+    <button class="modal-btn" onclick="confirmTokens()">Start with these tokens</button>
+    <button class="modal-btn secondary" onclick="dismissSuggest()">Not today</button>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'conv_tracker_v2';
+  const GROUP_COLORS = ['#D4882A','#7A8C3C','#A85C7A','#4A5228','#8B5E3C','#B87333','#5A7A4A','#C4734A'];
+
+  let dragState = null;
+  let _pendingSuggestedTokens = 80;
+
+  const GROUP_TYPES      = { work: '💼', friend: '🌸', family: '🏡', neutral: '◎' };
+  const GROUP_TYPE_ORDER = ['work', 'friend', 'family', 'neutral'];
+
+  // ── Moon phase (pure JS, no API needed) ───────────────
+  function getMoonPhaseInfo(date) {
+    const JD    = date.getTime() / 86400000 + 2440587.5;
+    const phase = ((JD - 2451550.1) % 29.530588853 + 29.530588853) % 29.530588853;
+    if (phase < 1.85)  return { name: 'New Moon',        emoji: '🌑', modifier: -15 };
+    if (phase < 7.38)  return { name: 'Waxing Crescent', emoji: '🌒', modifier:  +5 };
+    if (phase < 9.22)  return { name: 'First Quarter',   emoji: '🌓', modifier: +10 };
+    if (phase < 14.77) return { name: 'Waxing Gibbous',  emoji: '🌔', modifier: +15 };
+    if (phase < 16.61) return { name: 'Full Moon',       emoji: '🌕', modifier: +20 };
+    if (phase < 22.15) return { name: 'Waning Gibbous',  emoji: '🌖', modifier:  +5 };
+    if (phase < 24.0)  return { name: 'Last Quarter',    emoji: '🌗', modifier:  -5 };
+    return                    { name: 'Waning Crescent', emoji: '🌘', modifier: -10 };
+  }
+
+  // ── Menstrual cycle phase ─────────────────────────────
+  function getCyclePhaseInfo(lastPeriodStart, cycleLength) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const last  = new Date(lastPeriodStart + 'T00:00:00');
+    const cycleDay = (Math.floor((today - last) / 86400000) % cycleLength) + 1;
+    if (cycleDay <= 5)  return { name: 'Menstrual phase',  modifier: -20, day: cycleDay };
+    if (cycleDay <= 13) return { name: 'Follicular phase', modifier: +15, day: cycleDay };
+    if (cycleDay <= 17) return { name: 'Ovulation phase',  modifier: +20, day: cycleDay };
+    return                     { name: 'Luteal phase',     modifier: -10, day: cycleDay };
+  }
+
+  // ── Token helpers ─────────────────────────────────────
+  function getTodayTokens(data) {
+    return (data.tokenDays && data.tokenDays[todayStr()]) || null;
+  }
+
+  function setTodayTokens(data, current, dailyMax) {
+    if (!data.tokenDays) data.tokenDays = {};
+    data.tokenDays[todayStr()] = { current, dailyMax };
+  }
+
+  function getGroupType(group) { return group.type || 'neutral'; }
+
+  // ── Candle visual ─────────────────────────────────────
+  function updateCandleVisual(data) {
+    const td       = getTodayTokens(data);
+    const current  = td ? td.current  : null;
+    const dailyMax = td ? td.dailyMax : null;
+    const pct = (current !== null && dailyMax > 0) ? Math.max(0, Math.min(1, current / dailyMax)) : 0;
+
+    const bodyY = 40, bodyH = 106;
+    const fillH = Math.max(0, bodyH * pct);
+    const fillY = bodyY + bodyH - fillH;
+
+    const fillEl   = document.getElementById('candle-fill');
+    const shineEl  = document.getElementById('candle-shine');
+    const flameEl  = document.getElementById('candle-flame');
+    const puddleEl = document.getElementById('candle-puddle');
+    const wickEl   = document.getElementById('candle-wick');
+
+    if (fillEl)  { fillEl.setAttribute('y', fillY);  fillEl.setAttribute('height', fillH); }
+    if (shineEl) {
+      shineEl.setAttribute('y', fillY + 3);
+      shineEl.setAttribute('height', Math.max(0, Math.min(fillH - 6, 36)));
+      shineEl.style.display = fillH > 9 ? '' : 'none';
+    }
+
+    const burned = current !== null && current <= 0;
+    if (flameEl)  flameEl.style.display  = burned ? 'none' : '';
+    if (puddleEl) puddleEl.style.display = burned ? ''     : 'none';
+    if (wickEl)   wickEl.setAttribute('opacity', burned ? '0.3' : '1');
+
+    const tokenEl = document.getElementById('candle-tokens');
+    if (tokenEl) tokenEl.innerHTML = current !== null
+      ? `${current} <span>/ ${dailyMax}</span>`
+      : `— <span>tokens</span>`;
+
+    const barEl = document.getElementById('token-bar-fill');
+    if (barEl) barEl.style.width = current !== null ? (pct * 100) + '%' : '0%';
+
+    const burnoutEl = document.getElementById('candle-burnout');
+    if (burnoutEl) burnoutEl.style.display = burned ? 'block' : 'none';
+  }
+
+  function updateCandlePhase(data) {
+    const phaseEl = document.getElementById('candle-phase');
+    if (!phaseEl) return;
+    const moon = getMoonPhaseInfo(new Date());
+    if (!data.cycleData || !data.cycleData.lastPeriodStart) {
+      phaseEl.textContent = `${moon.emoji} ${moon.name}`;
+      return;
+    }
+    const cycle = getCyclePhaseInfo(data.cycleData.lastPeriodStart, data.cycleData.cycleLength || 28);
+    phaseEl.textContent = `${moon.emoji} ${moon.name} · ${cycle.name}`;
+  }
+
+  function triggerFlameAnimation(type) {
+    const flameEl = document.getElementById('candle-flame');
+    const wrapEl  = document.getElementById('candle-svg-wrap');
+    if (!flameEl) return;
+    const cleanup = () => flameEl.classList.remove('pulse-burn', 'pulse-grow');
+    if (type === 'work') {
+      flameEl.classList.remove('pulse-burn', 'pulse-grow');
+      void flameEl.offsetWidth;
+      flameEl.classList.add('pulse-burn');
+      flameEl.addEventListener('animationend', cleanup, { once: true });
+    } else if (type === 'friend') {
+      flameEl.classList.remove('pulse-burn', 'pulse-grow');
+      void flameEl.offsetWidth;
+      flameEl.classList.add('pulse-grow');
+      flameEl.addEventListener('animationend', cleanup, { once: true });
+      if (wrapEl) {
+        wrapEl.classList.remove('glow');
+        void wrapEl.offsetWidth;
+        wrapEl.classList.add('glow');
+        wrapEl.addEventListener('animationend', () => wrapEl.classList.remove('glow'), { once: true });
+      }
+    }
+  }
+
+  // ── Daily suggestion ──────────────────────────────────
+  function checkDailySuggestion(data) {
+    if (getTodayTokens(data)) return; // already set today
+    if (!data.cycleData || !data.cycleData.lastPeriodStart) {
+      document.getElementById('setup-modal').classList.remove('hidden');
+      return;
+    }
+    openSuggestModal(data);
+  }
+
+  function openSuggestModal(data) {
+    const moon   = getMoonPhaseInfo(new Date());
+    const base   = 80;
+    let tokens   = base + moon.modifier;
+    let cyclePart = '';
+    if (data.cycleData && data.cycleData.lastPeriodStart) {
+      const cycle = getCyclePhaseInfo(data.cycleData.lastPeriodStart, data.cycleData.cycleLength || 28);
+      tokens += cycle.modifier;
+      cyclePart = ` + ${cycle.name.toLowerCase()}`;
+    }
+    tokens = Math.max(40, Math.min(120, tokens));
+    _pendingSuggestedTokens = tokens;
+
+    const power = tokens >= 100 ? 'full power' : tokens >= 80 ? 'good energy' : tokens >= 60 ? 'moderate energy' : 'low energy';
+    document.getElementById('suggest-moon').textContent  = moon.emoji;
+    document.getElementById('suggest-label').textContent = `${moon.name}${cyclePart} — you're probably at ${power} today. Suggested: ${tokens}`;
+    document.getElementById('nudge-value').textContent   = tokens;
+    document.getElementById('suggest-modal').classList.remove('hidden');
+  }
+
+  function nudgeTokens(delta) {
+    _pendingSuggestedTokens = Math.max(40, Math.min(120, _pendingSuggestedTokens + delta));
+    document.getElementById('nudge-value').textContent = _pendingSuggestedTokens;
+  }
+
+  function confirmTokens() {
+    const data = loadData();
+    setTodayTokens(data, _pendingSuggestedTokens, _pendingSuggestedTokens);
+    saveData(data);
+    document.getElementById('suggest-modal').classList.add('hidden');
+    updateCandleVisual(data);
+    updateCandlePhase(data);
+  }
+
+  function dismissSuggest() {
+    const data = loadData();
+    if (!getTodayTokens(data)) { setTodayTokens(data, 80, 80); saveData(data); }
+    document.getElementById('suggest-modal').classList.add('hidden');
+    updateCandleVisual(data);
+    updateCandlePhase(data);
+  }
+
+  function saveSetupAndSuggest() {
+    const dateInput   = document.getElementById('setup-period-date');
+    const lengthInput = document.getElementById('setup-cycle-length');
+    if (!dateInput.value) {
+      dateInput.style.borderColor = '#A85C7A';
+      setTimeout(() => dateInput.style.borderColor = '', 1000);
+      return;
+    }
+    const data = loadData();
+    data.cycleData = { lastPeriodStart: dateInput.value, cycleLength: parseInt(lengthInput.value) || 28 };
+    saveData(data);
+    document.getElementById('setup-modal').classList.add('hidden');
+    openSuggestModal(data);
+  }
+
+  function skipSetup() {
+    document.getElementById('setup-modal').classList.add('hidden');
+    const data = loadData();
+    if (!getTodayTokens(data)) {
+      const moon   = getMoonPhaseInfo(new Date());
+      const tokens = Math.max(40, Math.min(120, 80 + moon.modifier));
+      setTodayTokens(data, tokens, tokens);
+      saveData(data);
+    }
+    updateCandleVisual(data);
+    updateCandlePhase(data);
+  }
+
+  // ── Group type cycling ────────────────────────────────
+  function cycleGroupType(groupId) {
+    const data  = loadData();
+    const group = data.groups.find(g => g.id === groupId);
+    if (!group) return;
+    const idx   = GROUP_TYPE_ORDER.indexOf(group.type || 'neutral');
+    group.type  = GROUP_TYPE_ORDER[(idx + 1) % GROUP_TYPE_ORDER.length];
+    saveData(data);
+    render();
+  }
+
+  // ── Color utils ───────────────────────────────────────
+  function hexToHsl(hex) {
+    let r = parseInt(hex.slice(1,3),16)/255;
+    let g = parseInt(hex.slice(3,5),16)/255;
+    let b = parseInt(hex.slice(5,7),16)/255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
+    let h=0, s=0, l=(max+min)/2;
+    if (d) {
+      s = d / (1 - Math.abs(2*l-1));
+      switch(max) {
+        case r: h=((g-b)/d+6)%6; break;
+        case g: h=(b-r)/d+2;     break;
+        case b: h=(r-g)/d+4;     break;
+      }
+      h /= 6;
+    }
+    return [h*360, s*100, l*100];
+  }
+
+  function hslToHex(h, s, l) {
+    h/=360; s/=100; l/=100;
+    const a = s*Math.min(l,1-l);
+    const f = n => {
+      const k=(n+h*12)%12;
+      return l - a*Math.max(-1,Math.min(k-3,9-k,1));
+    };
+    return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');
+  }
+
+  function lighten(hex, amt=30) {
+    if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+    const [h,s,l] = hexToHsl(hex);
+    return hslToHex(h, Math.max(0,s-10), Math.min(94,l+amt));
+  }
+
+  function darken(hex, amt=22) {
+    if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+    const [h,s,l] = hexToHsl(hex);
+    return hslToHex(h, Math.min(100,s+5), Math.max(5,l-amt));
+  }
+
+  // ── Utils ─────────────────────────────────────────────
+  function todayStr() { return new Date().toLocaleDateString('en-CA'); }
+
+  function uid() { return 'g' + Date.now() + Math.random().toString(36).slice(2,5); }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getPriorDays(n, beforeDate) {
+    const result = [];
+    const d = new Date(beforeDate + 'T00:00:00');
+    for (let i=1; i<=n; i++) {
+      const p = new Date(d);
+      p.setDate(d.getDate()-i);
+      result.push(p.toLocaleDateString('en-CA'));
+    }
+    return result;
+  }
+
+  function getAllPeople(data) { return data.groups.flatMap(g => g.people); }
+
+  // ── Avatar utils ──────────────────────────────────────
+  // 8 hair styles: functions receive (hair_color) → SVG path strings
+  const AVATAR_HAIR = [
+    ()  => ``,                                                                                            // 0 bald
+    (h) => `<ellipse cx="18" cy="4" rx="9" ry="5" fill="${h}"/>`,                                        // 1 round top
+    (h) => `<ellipse cx="18" cy="4" rx="9" ry="5" fill="${h}"/><rect x="8" y="3" width="4" height="13" rx="2" fill="${h}"/><rect x="24" y="3" width="4" height="13" rx="2" fill="${h}"/>`, // 2 long sides
+    (h) => `<circle cx="11" cy="5" r="4" fill="${h}"/><circle cx="18" cy="2" r="4" fill="${h}"/><circle cx="25" cy="5" r="4" fill="${h}"/>`, // 3 curly
+    (h) => `<rect x="12" y="-1" width="12" height="10" rx="3" fill="${h}"/>`,                            // 4 tall block
+    (h) => `<ellipse cx="15" cy="4" rx="11" ry="5" fill="${h}"/>`,                                       // 5 side part
+    (h) => `<ellipse cx="18" cy="5" rx="8" ry="4" fill="${h}"/><circle cx="18" cy="1" r="4" fill="${h}"/>`, // 6 bun
+    (h) => `<rect x="9" y="2" width="18" height="7" rx="4" fill="${h}"/>`,                               // 7 flat cap
+  ];
+
+  function nameHash(name) {
+    return name.split('').reduce((h,c) => Math.imul(h,31) + c.charCodeAt(0) | 0, 0);
+  }
+
+  function buildAvatarSVG(name, color, size) {
+    const type  = Math.abs(nameHash(name)) % 8;
+    const skin  = lighten(color, 32);
+    const hair  = darken(color, 22);
+    const h     = Math.round(size * 44 / 36);
+    return `<svg viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${h}">
+      ${AVATAR_HAIR[type](hair)}
+      <circle cx="18" cy="14" r="10" fill="${skin}"/>
+      <path d="M6 44 Q6 23 18 23 Q30 23 30 44 Z" fill="${color}"/>
+    </svg>`;
+  }
+
+  function buildCentralSVG(size=52) {
+    const h = Math.round(size * 44 / 36);
+    return `<svg viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${h}">
+      <circle cx="18" cy="14" r="10" fill="#c8d2e0"/>
+      <path d="M18 4 L19.4 8.5 L24 8.5 L20.3 11.2 L21.7 15.5 L18 12.8 L14.3 15.5 L15.7 11.2 L12 8.5 L16.6 8.5 Z" fill="#D4882A" opacity="0.95"/>
+      <path d="M6 44 Q6 23 18 23 Q30 23 30 44 Z" fill="#4A5228"/>
+    </svg>`;
+  }
+
+  function crowdPosition(index) {
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    const r = 55 + 22 * Math.sqrt(index);
+    const a = index * goldenAngle;
+    return { dx: r * Math.cos(a), dy: r * Math.sin(a) };
+  }
+
+  function avatarSize(count) {
+    return Math.round(34 + Math.min(count-1, 5) * 3.6);
+  }
+
+  // ── Day transition ────────────────────────────────────
+  function handleDayTransition(data, today) {
+    const last3 = getPriorDays(3, today);
+    if (!data.regulars) data.regulars = [];
+
+    const hasHistory = Object.keys(data.days).some(k => k <= last3[2]);
+    if (!hasHistory) return data;
+
+    data.groups.forEach(group => {
+      group.people = group.people.filter(name => {
+        const counts = last3.map(d => (data.days[d] && data.days[d][name]) || 0);
+        if (counts.every(c => c === 0)) {
+          data.regulars = data.regulars.filter(r => r !== name);
+          return false;
+        }
+        return true;
+      });
+    });
+
+    getAllPeople(data).forEach(name => {
+      const counts = last3.map(d => (data.days[d] && data.days[d][name]) || 0);
+      const allActive = counts.every(c => c > 0);
+      if (allActive && !data.regulars.includes(name)) {
+        data.regulars.push(name);
+      } else if (!allActive) {
+        data.regulars = data.regulars.filter(r => r !== name);
+      }
+    });
+
+    return data;
+  }
+
+  // ── Data ──────────────────────────────────────────────
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    let data;
+
+    if (!raw) {
+      data = {
+        groups: [
+          { id: uid(), name: 'Work',     people: [], color: GROUP_COLORS[0] },
+          { id: uid(), name: 'Personal', people: [], color: GROUP_COLORS[1] }
+        ],
+        days: {}, regulars: [], lastDate: todayStr()
+      };
+      saveData(data);
+      return data;
+    }
+
+    data = JSON.parse(raw);
+
+    // Migrate v1 (people as objects with .count)
+    if (data.date !== undefined && !data.days) {
+      const old = data.people || [];
+      const hist = {};
+      if (old.some(p => p.count > 0)) {
+        hist[data.date] = {};
+        old.forEach(p => { hist[data.date][p.name] = p.count; });
+      }
+      data = { people: old.map(p => p.name), days: hist, regulars: [], lastDate: data.date };
+    }
+
+    // Migrate v2 (flat data.people → groups)
+    if (!data.groups && Array.isArray(data.people)) {
+      data.groups = [{ id: uid(), name: 'General', people: data.people, color: GROUP_COLORS[0] }];
+      delete data.people;
+    }
+
+    if (!data.regulars) data.regulars = [];
+    if (!data.groups)   data.groups   = [];
+
+    // Ensure every group has a color and a type
+    data.groups.forEach((g, i) => {
+      if (!g.color) g.color = GROUP_COLORS[i % GROUP_COLORS.length];
+      if (!g.type) {
+        const n = (g.name || '').toLowerCase();
+        if (n.includes('work') || n.includes('office') || n.includes('professional') || n.includes('colleague')) g.type = 'work';
+        else if (n.includes('family') || n.includes('fam') || n.includes('parent') || n.includes('sibling'))     g.type = 'family';
+        else g.type = 'friend';
+      }
+    });
+
+    if (!data.tokenDays) data.tokenDays = {};
+    if (data.cycleData === undefined) data.cycleData = null;
+
+    const today = todayStr();
+    if (data.lastDate && data.lastDate !== today) {
+      data = handleDayTransition(data, today);
+    }
+    data.lastDate = today;
+    saveData(data);
+    return data;
+  }
+
+  function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+  // ── Crowd rendering ───────────────────────────────────
+  function renderCrowd(data) {
+    const canvas = document.getElementById('crowd-canvas');
+
+    // Build / refresh central figure
+    if (!canvas.querySelector('.central-figure')) {
+      const fig = document.createElement('div');
+      fig.className = 'central-figure';
+      fig.innerHTML = buildCentralSVG(52);
+      canvas.appendChild(fig);
+      const lbl = document.createElement('div');
+      lbl.className = 'central-label';
+      lbl.textContent = 'you';
+      canvas.appendChild(lbl);
+    }
+
+    // Remove all existing crowd avatars
+    canvas.querySelectorAll('.crowd-avatar').forEach(el => el.remove());
+
+    const today = todayStr();
+    const todayCounts = data.days[today] || {};
+    const W = canvas.offsetWidth  || 480;
+    const H = canvas.offsetHeight || 260;
+
+    let idx = 0;
+    data.groups.forEach(group => {
+      group.people.forEach(name => {
+        const count = todayCounts[name] || 0;
+        if (count > 0) {
+          addAvatarToCanvas(name, idx, count, group.color, false, W, H);
+          idx++;
+        }
+      });
+    });
+
+    const total = Object.values(todayCounts).reduce((s,v) => s+v, 0);
+    updateCrowdLabel(total);
+  }
+
+  function addAvatarToCanvas(name, index, count, color, animate, W, H) {
+    const canvas = document.getElementById('crowd-canvas');
+    const cx = W / 2;
+    const cy = H / 2;
+    const pos  = crowdPosition(index);
+    const size = avatarSize(count);
+
+    const div = document.createElement('div');
+    div.className = 'crowd-avatar';
+    div.dataset.name = name;
+    div.innerHTML = buildAvatarSVG(name, color, size) +
+      `<div class="avatar-tip">${escapeHtml(name)} · ${count}</div>`;
+
+    const finalLeft = cx + pos.dx;
+    const finalTop  = cy + pos.dy;
+
+    if (animate) {
+      const scale = Math.max(3, 180 / Math.max(1, Math.hypot(pos.dx, pos.dy)));
+      div.style.left      = (cx + pos.dx * scale) + 'px';
+      div.style.top       = (cy + pos.dy * scale) + 'px';
+      div.style.transform = 'translate(-50%, -50%) scale(0.1)';
+      div.style.opacity   = '0';
+      canvas.appendChild(div);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        div.style.transition = [
+          'left 0.7s cubic-bezier(0.34,1.56,0.64,1)',
+          'top 0.7s cubic-bezier(0.34,1.56,0.64,1)',
+          'transform 0.7s cubic-bezier(0.34,1.56,0.64,1)',
+          'opacity 0.4s ease'
+        ].join(', ');
+        div.style.left      = finalLeft + 'px';
+        div.style.top       = finalTop  + 'px';
+        div.style.transform = 'translate(-50%, -50%) scale(1)';
+        div.style.opacity   = '1';
+      }));
+    } else {
+      div.style.left      = finalLeft + 'px';
+      div.style.top       = finalTop  + 'px';
+      div.style.transform = 'translate(-50%, -50%)';
+      div.style.opacity   = '1';
+      canvas.appendChild(div);
+    }
+  }
+
+  function pulseAvatar(name, count) {
+    const canvas = document.getElementById('crowd-canvas');
+    const div = Array.from(canvas.querySelectorAll('.crowd-avatar'))
+      .find(el => el.dataset.name === name);
+    if (!div) return;
+
+    const size = avatarSize(count);
+    const h    = Math.round(size * 44 / 36);
+    const svg  = div.querySelector('svg');
+    if (svg) { svg.setAttribute('width', size); svg.setAttribute('height', h); }
+    const tip = div.querySelector('.avatar-tip');
+    if (tip) tip.textContent = `${name} · ${count}`;
+
+    div.classList.remove('pulse');
+    void div.offsetWidth;
+    div.classList.add('pulse');
+  }
+
+  function updateCrowdLabel(total) {
+    const el = document.getElementById('crowd-stats');
+    if (!el) return;
+    el.textContent = total === 0
+      ? 'No conversations yet today'
+      : `${total} conversation${total === 1 ? '' : 's'} today`;
+  }
+
+  // ── Main render ───────────────────────────────────────
+  function render() {
+    const data = loadData();
+    const todayCounts = data.days[todayStr()] || {};
+    const container = document.getElementById('groups-container');
+    container.innerHTML = '';
+
+    let grandTotal = 0;
+
+    data.groups.forEach(group => {
+      const groupTotal = group.people.reduce((s,n) => s + (todayCounts[n] || 0), 0);
+      grandTotal += groupTotal;
+
+      const section = document.createElement('div');
+      section.className = 'group-section';
+      section.dataset.groupId = group.id;
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'group-header';
+
+      // Left side: color swatch + editable name
+      const left = document.createElement('div');
+      left.className = 'group-header-left';
+
+      const swatch = document.createElement('label');
+      swatch.className = 'color-swatch';
+      swatch.style.background = group.color;
+      swatch.title = 'Change group color';
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'color-input';
+      colorInput.value = group.color;
+      colorInput.addEventListener('input', e => {
+        const newColor = e.target.value;
+        swatch.style.background = newColor;
+        const d = loadData();
+        const g = d.groups.find(x => x.id === group.id);
+        if (g) { g.color = newColor; saveData(d); renderCrowd(d); }
+      });
+      swatch.appendChild(colorInput);
+      left.appendChild(swatch);
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'group-name';
+      nameEl.contentEditable = 'true';
+      nameEl.spellcheck = false;
+      nameEl.textContent = group.name;
+      nameEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); nameEl.blur(); }
+      });
+      nameEl.addEventListener('blur', () => {
+        const newName = nameEl.textContent.trim() || 'Group';
+        const d = loadData();
+        const g = d.groups.find(x => x.id === group.id);
+        if (g) { g.name = newName; saveData(d); }
+        nameEl.textContent = newName;
+      });
+      left.appendChild(nameEl);
+      header.appendChild(left);
+
+      // Right side: group total + type + delete
+      const right = document.createElement('div');
+      right.className = 'group-header-right';
+      right.innerHTML = `<span class="group-total"><b>${groupTotal}</b> today</span>`;
+      const typeBtn = document.createElement('button');
+      typeBtn.className = 'group-type-btn';
+      const gType = getGroupType(group);
+      typeBtn.title = `Type: ${gType} — click to change`;
+      typeBtn.textContent = GROUP_TYPES[gType];
+      typeBtn.addEventListener('click', () => cycleGroupType(group.id));
+      right.appendChild(typeBtn);
+      const delBtn = document.createElement('button');
+      delBtn.className = 'group-delete-btn';
+      delBtn.title = 'Delete group';
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', () => deleteGroup(group.id));
+      right.appendChild(delBtn);
+      header.appendChild(right);
+
+      section.appendChild(header);
+
+      // Body (drop zone)
+      const body = document.createElement('div');
+      body.className = 'group-body';
+      body.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+      body.addEventListener('dragenter', e => { if (!body.contains(e.relatedTarget)) body.classList.add('drag-over'); });
+      body.addEventListener('dragleave', e => { if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over'); });
+      body.addEventListener('drop',      e => onDrop(e, group.id));
+
+      group.people.forEach(name => {
+        const count = todayCounts[name] || 0;
+        const isRegular = data.regulars.includes(name);
+        const card = document.createElement('div');
+        card.className = 'person-card';
+        card.draggable = true;
+        card.dataset.name = name;
+        card.innerHTML = `
+          <span class="drag-handle" title="Drag to move">⠿</span>
+          <div class="person-name">
+            ${escapeHtml(name)}
+            ${isRegular ? '<span class="streak-badge">🔥 regular</span>' : ''}
+          </div>
+          <div class="person-count" id="cnt-${CSS.escape(name)}">${count}</div>
+          <button class="tap-btn" title="Log conversation">+1</button>
+          <button class="delete-btn" title="Remove">✕</button>
+        `;
+        card.querySelector('.tap-btn').addEventListener('click',    () => increment(name));
+        card.querySelector('.delete-btn').addEventListener('click', () => removePerson(name, group.id));
+        card.addEventListener('dragstart', e => {
+          dragState = { name, fromGroupId: group.id };
+          e.dataTransfer.effectAllowed = 'move';
+          requestAnimationFrame(() => card.classList.add('dragging'));
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+        body.appendChild(card);
+      });
+
+      const addRow = document.createElement('div');
+      addRow.className = 'add-person-row';
+      const input = document.createElement('input');
+      input.className = 'add-person-input';
+      input.type = 'text';
+      input.maxLength = 40;
+      input.placeholder = '+ Add person...';
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') { addPerson(group.id, input); e.preventDefault(); } });
+      input.addEventListener('blur',    () => { if (input.value.trim()) addPerson(group.id, input); });
+      addRow.appendChild(input);
+      body.appendChild(addRow);
+
+      section.appendChild(body);
+      container.appendChild(section);
+    });
+
+    document.getElementById('total-count').textContent = grandTotal;
+    renderCrowd(data);
+    renderHistory(data);
+    updateCandleVisual(data);
+    updateCandlePhase(data);
+  }
+
+  // ── Drag & Drop ───────────────────────────────────────
+  function onDrop(e, toGroupId) {
+    e.preventDefault();
+    document.querySelectorAll('.group-body').forEach(b => b.classList.remove('drag-over'));
+    if (!dragState || dragState.fromGroupId === toGroupId) { dragState = null; return; }
+
+    const data = loadData();
+    const from = data.groups.find(g => g.id === dragState.fromGroupId);
+    const to   = data.groups.find(g => g.id === toGroupId);
+    if (from && to) {
+      from.people = from.people.filter(p => p !== dragState.name);
+      to.people.push(dragState.name);
+      saveData(data);
+    }
+    dragState = null;
+    render();
+  }
+
+  // ── Actions ───────────────────────────────────────────
+  function addPerson(groupId, inputEl) {
+    const name = inputEl.value.trim();
+    if (!name) return;
+    const data = loadData();
+    if (getAllPeople(data).some(p => p.toLowerCase() === name.toLowerCase())) {
+      inputEl.style.color = '#e55';
+      inputEl.value = '';
+      setTimeout(() => inputEl.style.color = '', 800);
+      return;
+    }
+    const group = data.groups.find(g => g.id === groupId);
+    if (group) { group.people.push(name); saveData(data); inputEl.value = ''; render(); }
+  }
+
+  function increment(name) {
+    const data = loadData();
+    const today = todayStr();
+    if (!data.days[today]) data.days[today] = {};
+    const wasZero = (data.days[today][name] || 0) === 0;
+    data.days[today][name] = (data.days[today][name] || 0) + 1;
+    saveData(data);
+
+    const count = data.days[today][name];
+
+    // Update count display in list
+    const countEl = document.getElementById('cnt-' + CSS.escape(name));
+    if (countEl) {
+      countEl.textContent = count;
+      countEl.classList.remove('bump');
+      void countEl.offsetWidth;
+      countEl.classList.add('bump');
+    }
+
+    // Update group total label
+    const group = data.groups.find(g => g.people.includes(name));
+    if (group) {
+      const gTotal = group.people.reduce((s,n) => s + (data.days[today][n] || 0), 0);
+      const sec = document.querySelector(`.group-section[data-group-id="${group.id}"]`);
+      if (sec) { const b = sec.querySelector('.group-total b'); if (b) b.textContent = gTotal; }
+    }
+
+    // Update grand total
+    const grandTotal = getAllPeople(data).reduce((s,n) => s + (data.days[today][n] || 0), 0);
+    document.getElementById('total-count').textContent = grandTotal;
+
+    // Update crowd
+    if (wasZero) {
+      // New person walks in
+      const canvas = document.getElementById('crowd-canvas');
+      const W = canvas.offsetWidth  || 480;
+      const H = canvas.offsetHeight || 260;
+      const idx = canvas.querySelectorAll('.crowd-avatar').length;
+      const color = (group && group.color) || GROUP_COLORS[0];
+      addAvatarToCanvas(name, idx, 1, color, true, W, H);
+    } else {
+      // Existing person pulses and grows
+      pulseAvatar(name, count);
+    }
+
+    updateCrowdLabel(grandTotal);
+
+    // Token update based on group type
+    const groupType = group ? getGroupType(group) : 'neutral';
+    const todayTd = data.tokenDays && data.tokenDays[today];
+    if (todayTd && (groupType === 'work' || groupType === 'friend')) {
+      if (groupType === 'work')   todayTd.current = Math.max(0, todayTd.current - 1);
+      if (groupType === 'friend') todayTd.current = Math.min(todayTd.dailyMax, todayTd.current + 1);
+      saveData(data);
+      updateCandleVisual(data);
+      triggerFlameAnimation(groupType);
+    }
+  }
+
+  function removePerson(name, groupId) {
+    const data = loadData();
+    const group = data.groups.find(g => g.id === groupId);
+    if (group) {
+      group.people = group.people.filter(p => p !== name);
+      data.regulars = data.regulars.filter(r => r !== name);
+      saveData(data);
+      render();
+    }
+  }
+
+  function addGroup() {
+    const data = loadData();
+    const color = GROUP_COLORS[data.groups.length % GROUP_COLORS.length];
+    data.groups.push({ id: uid(), name: 'New Group', people: [], color, type: 'neutral' });
+    saveData(data);
+    render();
+    const nameEls = document.querySelectorAll('.group-name[contenteditable]');
+    const last = nameEls[nameEls.length - 1];
+    if (last) {
+      last.focus();
+      const range = document.createRange();
+      range.selectNodeContents(last);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+
+  function deleteGroup(groupId) {
+    const data = loadData();
+    const group = data.groups.find(g => g.id === groupId);
+    if (!group) return;
+    if (group.people.length > 0 &&
+        !confirm(`Delete "${group.name}" and remove its ${group.people.length} ${group.people.length===1?'person':'people'}?`)) return;
+    data.groups = data.groups.filter(g => g.id !== groupId);
+    saveData(data);
+    render();
+  }
+
+  function resetCounts() {
+    if (!confirm("Reset today's conversation counts to 0?")) return;
+    const data = loadData();
+    const today = todayStr();
+    if (data.days[today]) Object.keys(data.days[today]).forEach(k => data.days[today][k] = 0);
+    saveData(data);
+    render();
+  }
+
+  // ── History ───────────────────────────────────────────
+  function renderHistory(data) {
+    const el = document.getElementById('history-list');
+    const today = todayStr();
+    const pastDays = Object.keys(data.days).filter(d => d !== today).sort((a,b) => b.localeCompare(a));
+
+    if (pastDays.length === 0) {
+      el.innerHTML = '<div class="history-empty">No history yet.</div>';
+      return;
+    }
+
+    el.innerHTML = '';
+    pastDays.forEach(dateStr => {
+      const counts = data.days[dateStr];
+      const total = Object.values(counts).reduce((s,v) => s+v, 0);
+      const rows = Object.entries(counts)
+        .filter(([,c]) => c > 0)
+        .sort((a,b) => b[1]-a[1])
+        .map(([name,count]) =>
+          `<div class="history-row"><span class="h-name">${escapeHtml(name)}</span><span class="h-count">${count}</span></div>`
+        ).join('');
+
+      const dayEl = document.createElement('div');
+      dayEl.className = 'history-day';
+      dayEl.innerHTML = `
+        <div class="history-day-header" onclick="toggleDay(this)">
+          <div class="history-day-date">${formatDate(dateStr)}</div>
+          <div class="history-day-right">
+            <div class="history-day-total"><span>${total}</span> conversations</div>
+            <span class="history-chevron">▼</span>
+          </div>
+        </div>
+        <div class="history-day-detail">
+          ${rows || '<div style="color:#ccc;font-size:13px;padding:4px 0">No conversations logged.</div>'}
+        </div>
+      `;
+      el.appendChild(dayEl);
+    });
+  }
+
+  function toggleDay(header) {
+    header.nextElementSibling.classList.toggle('open');
+    header.querySelector('.history-chevron').classList.toggle('open');
+  }
+
+  function toggleHistory() {
+    const list   = document.getElementById('history-list');
+    const toggle = document.getElementById('history-toggle');
+    const isOpen = list.style.display !== 'none';
+    list.style.display = isOpen ? 'none' : 'flex';
+    toggle.classList.toggle('open', !isOpen);
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (dateStr === yesterday.toLocaleDateString('en-CA')) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  // ── Init ──────────────────────────────────────────────
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric'
+  });
+
+  render();
+
+  // Daily token suggestion on first open
+  const _initData = loadData();
+  checkDailySuggestion(_initData);
+</script>
+</body>
+</html>

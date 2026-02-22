@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Powder Post</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(160deg,#0a1628 0%,#0f2040 50%,#0a1628 100%);
+  color:#d8eaf8;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:28px 16px 40px;
+  gap:0;
+}
+h1{
+  font-family:'Playfair Display',serif;
+  font-size:2.4rem;
+  color:#f0f8ff;
+  letter-spacing:-0.5px;
+  margin-bottom:4px;
+}
+.subtitle{color:#6a90b0;font-size:.88rem;margin-bottom:22px}
+.panel{
+  width:100%;max-width:820px;
+  background:rgba(15,30,55,.7);
+  border:1px solid rgba(80,140,200,.18);
+  border-radius:14px;
+  padding:16px 18px;
+  display:flex;flex-direction:column;gap:12px;
+  margin-bottom:14px;
+}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.grow{flex:1;min-width:180px}
+label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#5a8ab0}
+select,input[type=text]{
+  background:#0d2038;border:1px solid #1e4060;color:#d8eaf8;
+  padding:9px 12px;border-radius:8px;
+  font-family:'Inter',sans-serif;font-size:.88rem;
+  outline:none;transition:border-color .2s;
+  width:100%;
+}
+select:focus,input[type=text]:focus{border-color:#3a8cd0}
+input[type=text].mono{font-family:monospace;font-size:.8rem;letter-spacing:.04em}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  padding:10px 22px;border:none;border-radius:8px;
+  font-family:'Inter',sans-serif;font-weight:600;font-size:.9rem;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.btn-go{background:#1a6ec0;color:#fff}
+.btn-go:hover{background:#2280dc}
+.btn-go:disabled{background:#12304a;color:#2a5070;cursor:default}
+.btn-export{background:#0d3020;color:#4dcc80;border:1px solid #1a6035}
+.btn-export:hover{background:#155030}
+.btn-export:disabled{opacity:.35;cursor:default}
+.hint{font-size:.72rem;color:#3a6080;align-self:center}
+.canvas-wrap{
+  position:relative;border-radius:12px;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(80,140,200,.15);
+}
+canvas{display:block}
+.weather-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border-radius:20px;padding:4px 13px;
+  font-size:.78rem;color:#fff;display:none;
+  border:1px solid rgba(255,255,255,.12);
+}
+.progress-wrap{width:100%;max-width:820px;height:3px;background:#0d2038;border-radius:2px;margin-top:10px;overflow:hidden}
+.progress-fill{height:100%;background:#2a8cd0;border-radius:2px;width:0%;transition:width .12s}
+.status{font-size:.78rem;color:#4a7090;margin-top:7px;min-height:18px;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>⛷ Powder Post</h1>
+<p class="subtitle">Pick a resort · fetch the weather · carve your message into the snow</p>
+
+<div class="panel">
+  <div class="row">
+    <div class="fg grow">
+      <label>OpenWeatherMap API Key</label>
+      <input type="text" id="apiKey" class="mono" placeholder="Paste your free key — openweathermap.org/api" autocomplete="off">
+    </div>
+    <span class="hint">No key? Clear sky is used as fallback.</span>
+  </div>
+  <div class="row">
+    <div class="fg" style="min-width:210px">
+      <label>Resort</label>
+      <select id="resort">
+        <optgroup label="Alps">
+          <option value="46.0956,7.2272">Verbier</option>
+          <option value="46.0207,7.7491">Zermatt</option>
+          <option value="45.9237,6.8694">Chamonix</option>
+          <option value="46.4985,9.8355">St. Moritz</option>
+          <option value="45.4148,6.6340">Courchevel</option>
+          <option value="45.4036,6.5619">Méribel</option>
+          <option value="45.4483,6.9794">Val d'Isère</option>
+          <option value="45.5688,6.8152">Les Arcs</option>
+          <option value="45.5048,6.6779">La Plagne</option>
+          <option value="45.4693,6.9020">Tignes</option>
+          <option value="45.8570,6.6160">Megève</option>
+          <option value="46.0009,6.6822">Flaine</option>
+          <option value="46.1783,6.7097">Morzine</option>
+          <option value="46.1925,6.7759">Avoriaz</option>
+          <option value="46.1575,6.6683">Les Gets</option>
+          <option value="46.1091,7.9285">Saas-Fee</option>
+          <option value="46.6244,8.0411">Grindelwald</option>
+          <option value="46.6081,7.9218">Wengen</option>
+          <option value="46.8028,9.8374">Davos</option>
+          <option value="46.8735,9.8787">Klosters</option>
+          <option value="46.5404,12.1357">Cortina d'Ampezzo</option>
+          <option value="45.7996,6.9691">Courmayeur</option>
+          <option value="45.9389,7.7316">Cervinia</option>
+          <option value="46.2305,10.8279">Madonna di Campiglio</option>
+          <option value="47.4464,12.3927">Kitzbühel</option>
+          <option value="47.1281,10.2689">St. Anton</option>
+          <option value="47.2082,10.1416">Lech</option>
+          <option value="46.9994,10.2891">Ischgl</option>
+          <option value="46.9610,10.9394">Sölden</option>
+          <option value="47.1666,11.8672">Mayrhofen</option>
+          <option value="47.1080,13.1346">Bad Gastein</option>
+          <option value="47.3878,12.6379">Saalbach</option>
+          <option value="47.3924,13.6893">Schladming</option>
+          <option value="46.5378,10.1366">Livigno</option>
+          <option value="42.5463,1.7101">Andorra Grandvalira</option>
+        </optgroup>
+        <optgroup label="Northeast USA">
+          <option value="44.5290,-72.7823">Stowe</option>
+          <option value="43.6775,-72.7812">Killington</option>
+          <option value="44.1372,-72.8951">Sugarbush</option>
+          <option value="44.1892,-72.8615">Mad River Glen</option>
+          <option value="43.4036,-72.5237">Okemo</option>
+          <option value="43.1125,-72.9076">Stratton</option>
+          <option value="42.9593,-72.9223">Mount Snow</option>
+          <option value="43.2094,-72.9618">Bromley</option>
+          <option value="44.4133,-72.8704">Bolton Valley</option>
+          <option value="44.5617,-72.7901">Smugglers' Notch</option>
+          <option value="44.4711,-70.8556">Sunday River</option>
+          <option value="45.0317,-70.3131">Sugarloaf</option>
+          <option value="44.8887,-70.5167">Saddleback</option>
+          <option value="44.0356,-71.6246">Loon</option>
+          <option value="44.1578,-71.6999">Cannon</option>
+          <option value="43.9738,-71.5148">Waterville Valley</option>
+          <option value="44.2619,-71.4428">Bretton Woods</option>
+          <option value="44.2597,-71.2388">Wildcat</option>
+          <option value="42.2020,-74.2285">Hunter</option>
+          <option value="42.2994,-74.2566">Windham</option>
+          <option value="42.1556,-74.5079">Belleayre</option>
+          <option value="44.3658,-73.9027">Whiteface</option>
+          <option value="43.6778,-74.0009">Gore</option>
+          <option value="42.5095,-73.3165">Jiminy Peak</option>
+          <option value="42.4986,-71.8881">Wachusett</option>
+          <option value="42.0959,-73.3685">Ski Butternut</option>
+        </optgroup>
+        <optgroup label="North America (West)">
+          <option value="50.1163,-122.9574">Whistler</option>
+          <option value="39.1911,-106.8175">Aspen</option>
+          <option value="43.5875,-110.8278">Jackson Hole</option>
+          <option value="40.6514,-111.5080">Park City</option>
+          <option value="37.6308,-119.0326">Mammoth</option>
+          <option value="39.6433,-106.3781">Vail</option>
+          <option value="51.1784,-115.5708">Banff</option>
+          <option value="51.0160,-118.1960">Revelstoke</option>
+        </optgroup>
+        <optgroup label="Japan">
+          <option value="42.8042,140.6872">Niseko</option>
+          <option value="36.6986,137.8614">Hakuba</option>
+        </optgroup>
+        <optgroup label="Southern Hemisphere">
+          <option value="-45.0312,168.6626">Queenstown</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="fg grow">
+      <label>Message (max 20 chars)</label>
+      <input type="text" id="message" value="SEND POWDER!" maxlength="20" placeholder="Your message...">
+    </div>
+    <div class="btns">
+      <button class="btn-go" id="btnGo">Go ▶</button>
+      <button class="btn-export" id="btnExport" disabled>Export GIF ↓</button>
+    </div>
+  </div>
+</div>
+
+<div class="canvas-wrap">
+  <canvas id="canvas" width="800" height="450"></canvas>
+  <div class="weather-badge" id="weatherBadge"></div>
+</div>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<p class="status" id="status">Pick a resort, type your message, and hit Go.</p>
+
+<script>
+// ─── polyfill roundRect ───────────────────────────────────────────────────────
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    this.beginPath();
+    this.moveTo(x+r,y);
+    this.arcTo(x+w,y,x+w,y+h,r);
+    this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r);
+    this.arcTo(x,y,x+w,y,r);
+    this.closePath();
+  };
+}
+
+// ─── canvas / constants ───────────────────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const W = 800, H = 450;
+
+// ─── mountain geometry (fixed, drawn every frame) ─────────────────────────────
+const FAR_PEAKS  = [{x:0,y:200},{x:90,y:128},{x:180,y:178},{x:290,y:98},
+                    {x:400,y:152},{x:500,y:108},{x:600,y:162},{x:700,y:118},{x:800,y:175}];
+const NEAR_PEAKS = [{x:-10,y:252},{x:100,y:188},{x:220,y:228},{x:340,y:158},
+                    {x:460,y:208},{x:580,y:170},{x:700,y:218},{x:810,y:185}];
+
+// ─── tree positions ───────────────────────────────────────────────────────────
+const TREES = [
+  {x:55, y:300,h:52},{x:88,y:290,h:62},{x:118,y:305,h:44},
+  {x:660,y:295,h:58},{x:698,y:285,h:68},{x:732,y:300,h:48},
+];
+
+// ─── wind-line seeds (pre-seeded, no random per frame) ────────────────────────
+const WIND_SEEDS = Array.from({length:25},()=>({
+  xr: Math.random(), yo: Math.random()*H,
+  len: 38+Math.random()*90, spd: 0.25+Math.random()*0.6,
+  op: 0.04+Math.random()*0.05
+}));
+
+// ─── state ────────────────────────────────────────────────────────────────────
+let condition   = 'sunny';
+let weatherInfo = null;
+let particles   = [];
+let sparkles    = [];
+let skiTracks   = [];
+let letterLayouts = [];
+let animFrame   = null;
+let animStart   = null;
+let animDur     = 6000;
+let animDone    = false;
+let skierX = -80, skierY = H*0.63;
+
+// ─── api key persistence ──────────────────────────────────────────────────────
+const apiInput = document.getElementById('apiKey');
+apiInput.value = localStorage.getItem('owm_key')||'';
+apiInput.addEventListener('input',()=>localStorage.setItem('owm_key',apiInput.value.trim()));
+
+// ─── weather ──────────────────────────────────────────────────────────────────
+async function fetchWeather(lat,lon){
+  const key = apiInput.value.trim();
+  if(!key){ setStatus('No API key — using clear sky'); return {condition:'sunny',temp:'-8',desc:'Clear sky'}; }
+  try{
+    setStatus('Fetching live weather…');
+    const r = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
+    if(!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    return {condition: mapCode(d.weather[0].id), temp: Math.round(d.main.temp), desc: d.weather[0].description};
+  }catch(e){
+    setStatus('Weather fetch failed — using clear sky');
+    return {condition:'sunny',temp:'-8',desc:'Clear sky'};
+  }
+}
+function mapCode(id){
+  if(id===800) return 'sunny';
+  if(id>=801&&id<=804) return 'overcast';
+  if(id>=600&&id<=622) return 'snowing';
+  if((id>=200&&id<=232)||id>=900) return 'storm';
+  return 'overcast';
+}
+
+// ─── particles ────────────────────────────────────────────────────────────────
+function initParticles(cond){
+  const n = cond==='storm'?280:cond==='snowing'?140:0;
+  particles = Array.from({length:n},()=>makeParticle(cond,true));
+}
+function makeParticle(cond,randomY){
+  const storm = cond==='storm';
+  return {
+    x: Math.random()*W+(storm?-60:0),
+    y: randomY?Math.random()*H:-8,
+    sz: Math.random()*(storm?2.5:2)+0.5,
+    spd: Math.random()*(storm?4.5:2)+0.8,
+    dr: (Math.random()-.5)*(storm?7:0.8),
+    op: Math.random()*.5+.3
+  };
+}
+function updateParticles(cond){
+  const wd = cond==='storm'?3.5:0;
+  for(const p of particles){
+    p.y+=p.spd; p.x+=p.dr+wd;
+    if(p.y>H+10||p.x<-30||p.x>W+30){
+      p.y=-8; p.x=Math.random()*W+(cond==='storm'?-60:0);
+      p.spd=Math.random()*(cond==='storm'?4.5:2)+0.8;
+      p.dr=(Math.random()-.5)*(cond==='storm'?7:0.8);
+    }
+  }
+}
+
+// ─── sparkles ────────────────────────────────────────────────────────────────
+function initSparkles(){
+  const gY = H*.56;
+  sparkles = Array.from({length:110},()=>({
+    x: Math.random()*W,
+    y: gY+30+Math.random()*(H-gY-30),
+    sz: Math.random()*1.4+.3,
+    ph: Math.random()*Math.PI*2
+  }));
+}
+
+// ─── sky ──────────────────────────────────────────────────────────────────────
+const SKY_COLORS = {
+  sunny:   ['#5ec8f8','#1d80d0','#0d4f90'],
+  snowing: ['#c0ccd8','#8c9dae','#6c7d8e'],
+  overcast:['#9aaab8','#7a8d9e','#5e7080'],
+  storm:   ['#3a4958','#222f3e','#131c27'],
+};
+function drawSky(cond){
+  const [c0,c1,c2]=SKY_COLORS[cond]||SKY_COLORS.sunny;
+  const g=ctx.createLinearGradient(0,0,0,H*.65);
+  g.addColorStop(0,c0);g.addColorStop(.5,c1);g.addColorStop(1,c2);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+
+// ─── sun ──────────────────────────────────────────────────────────────────────
+function drawSun(cond){
+  if(cond!=='sunny') return;
+  const sx=W*.84,sy=H*.17;
+  const g=ctx.createRadialGradient(sx,sy,8,sx,sy,75);
+  g.addColorStop(0,'rgba(255,238,80,.45)');g.addColorStop(1,'rgba(255,238,80,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,75,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffe84a';ctx.beginPath();ctx.arc(sx,sy,22,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(sx,sy,17,0,Math.PI*2);ctx.fill();
+}
+
+// ─── mountains ────────────────────────────────────────────────────────────────
+const MTN_COLORS={
+  sunny:  {far:'#7aa0c0',near:'#4a6a8a',snow:'#ffffff'},
+  snowing:{far:'#8898a8',near:'#5a6878',snow:'#ddeeff'},
+  overcast:{far:'#6a808c',near:'#4a606a',snow:'#d5e5ee'},
+  storm:  {far:'#2e3e4e',near:'#1c2a38',snow:'#b8c8d8'},
+};
+function drawMountains(cond){
+  const {far,near,snow}=MTN_COLORS[cond]||MTN_COLORS.sunny;
+  const farBaseY=H*.62, nearBaseY=H*.66;
+  drawMtnRange(FAR_PEAKS, far, snow, farBaseY, .32);
+  drawMtnRange(NEAR_PEAKS, near, snow, nearBaseY, .44);
+}
+function drawMtnRange(peaks,col,snow,baseY,capRatio){
+  ctx.beginPath();
+  ctx.moveTo(-10,baseY);
+  for(const p of peaks) ctx.lineTo(p.x,p.y);
+  ctx.lineTo(W+10,baseY);ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();
+  // snow caps
+  for(const p of peaks){
+    const h=baseY-p.y, cw=28+(h*.25), ch=h*capRatio;
+    if(ch<6) continue;
+    ctx.beginPath();
+    ctx.moveTo(p.x-cw,p.y+ch);ctx.lineTo(p.x,p.y-4);ctx.lineTo(p.x+cw,p.y+ch);
+    ctx.closePath();ctx.fillStyle=snow;ctx.fill();
+  }
+}
+
+// ─── ground ───────────────────────────────────────────────────────────────────
+const GROUND_COLORS={
+  sunny:  ['#e2f2ff','#eef8ff','#d0e8f8'],
+  snowing:['#d5e5f2','#deeaf5','#c0d5e8'],
+  overcast:['#ccdae8','#d5e0ea','#b8cad8'],
+  storm:  ['#aabac8','#b5c2cc','#98aabc'],
+};
+function drawGround(cond){
+  const gY=H*.56;
+  const [c0,c1,c2]=GROUND_COLORS[cond]||GROUND_COLORS.sunny;
+  const g=ctx.createLinearGradient(0,gY,0,H);
+  g.addColorStop(0,c0);g.addColorStop(.4,c1);g.addColorStop(1,c2);
+  // curved slope
+  ctx.beginPath();
+  ctx.moveTo(0,gY+28);
+  ctx.bezierCurveTo(W*.22,gY-8,W*.78,gY+18,W,gY+6);
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fillStyle=g;ctx.fill();
+  // rim highlight
+  ctx.beginPath();
+  ctx.moveTo(0,gY+28);
+  ctx.bezierCurveTo(W*.22,gY-8,W*.78,gY+18,W,gY+6);
+  ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=2;ctx.stroke();
+}
+
+// ─── sparkles ────────────────────────────────────────────────────────────────
+function drawSparkles(t,cond){
+  if(cond!=='sunny') return;
+  for(const s of sparkles){
+    const tw=.5+.5*Math.sin(t*.003+s.ph);
+    ctx.fillStyle=`rgba(255,255,255,${(.25+.4*tw).toFixed(2)})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.sz,0,Math.PI*2);ctx.fill();
+  }
+}
+
+// ─── trees ───────────────────────────────────────────────────────────────────
+function drawTrees(cond){
+  const snowCol=cond==='sunny'?'#fff':'#ddeef8';
+  for(const t of TREES){
+    // trunk
+    ctx.fillStyle='#2a1808';
+    ctx.fillRect(t.x-2,t.y-t.h*.15,4,t.h*.18);
+    // 3 triangle layers
+    for(let l=0;l<3;l++){
+      const ly=t.y-t.h*(.16+l*.29);
+      const lw=t.h*.48*(1-l*.22);
+      const lh=t.h*.26;
+      ctx.fillStyle='#1a3d1c';
+      ctx.beginPath();ctx.moveTo(t.x-lw,ly+lh);ctx.lineTo(t.x,ly-lh*.85);ctx.lineTo(t.x+lw,ly+lh);ctx.closePath();ctx.fill();
+      ctx.fillStyle=snowCol;
+      ctx.beginPath();ctx.moveTo(t.x-lw*.55,ly+lh*.1);ctx.lineTo(t.x,ly-lh*.85);ctx.lineTo(t.x+lw*.55,ly+lh*.1);ctx.closePath();ctx.fill();
+    }
+  }
+}
+
+// ─── ski tracks ───────────────────────────────────────────────────────────────
+function drawSkiTracks(tracks){
+  if(tracks.length<2) return;
+  ctx.save();
+  ctx.strokeStyle='rgba(155,195,225,.45)';ctx.lineWidth=1.5;ctx.lineCap='round';
+  for(const off of [-4,4]){
+    ctx.beginPath();
+    ctx.moveTo(tracks[0].x,tracks[0].y+off);
+    for(let i=1;i<tracks.length;i++) ctx.lineTo(tracks[i].x,tracks[i].y+off);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ─── particles draw ───────────────────────────────────────────────────────────
+function drawParticles(cond){
+  if(!particles.length) return;
+  const storm=cond==='storm';
+  ctx.save();
+  for(const p of particles){
+    ctx.globalAlpha=p.op;
+    ctx.fillStyle=storm?'#b0c4d4':'#ffffff';
+    ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ─── wind lines ───────────────────────────────────────────────────────────────
+function drawWind(t){
+  ctx.save();
+  for(const s of WIND_SEEDS){
+    const y=(s.yo+t*s.spd*.2)%H;
+    ctx.globalAlpha=s.op;ctx.strokeStyle='#a0bcd0';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(s.xr*W,y);ctx.lineTo(s.xr*W+s.len,y+4);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ─── vignette ────────────────────────────────────────────────────────────────
+function drawVignette(){
+  const g=ctx.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,H*.85);
+  g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.28)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+
+// ─── label (resort + date) ────────────────────────────────────────────────────
+function drawLabel(){
+  const sel=document.getElementById('resort');
+  const name=sel.options[sel.selectedIndex]?.text||'';
+  const date=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  ctx.save();
+  ctx.font="11px 'Inter',sans-serif";
+  ctx.fillStyle='rgba(255,255,255,.55)';
+  ctx.textAlign='right';
+  ctx.fillText(`${name}  ·  ${date}`,W-14,H-12);
+  ctx.restore();
+}
+
+// ─── skier ────────────────────────────────────────────────────────────────────
+function drawSkier(x,y,t){
+  ctx.save();ctx.translate(x,y);
+  const bob=Math.sin(t*.009)*2.2;
+  ctx.translate(0,bob);
+
+  // shadow (sunny)
+  if(condition==='sunny'){
+    ctx.save();ctx.globalAlpha=.14;ctx.fillStyle='#1a3a5a';
+    ctx.scale(1.6,.35);ctx.translate(-4,46);
+    ctx.beginPath();ctx.ellipse(0,0,22,7,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  // --- skis ---
+  ctx.save();ctx.rotate(-.06);
+  // left ski
+  ctx.fillStyle='#180800';
+  ctx.roundRect(-23,9,44,3.5,1.5);ctx.fill();
+  ctx.fillStyle='#3a1808';ctx.fillRect(-22,9.5,42,1);
+  // right ski
+  ctx.fillStyle='#180800';
+  ctx.roundRect(-19,14,44,3.5,1.5);ctx.fill();
+  ctx.restore();
+
+  // --- boots ---
+  ctx.fillStyle='#10102a';
+  ctx.roundRect(-9,4,9,7,2);ctx.fill();
+  ctx.roundRect(-4,9,9,7,2);ctx.fill();
+
+  // --- pants ---
+  ctx.fillStyle='#1a3870';
+  ctx.roundRect(-9,-5,9,11,2);ctx.fill();
+  ctx.roundRect(-3,-1,9,12,2);ctx.fill();
+
+  // --- jacket ---
+  ctx.fillStyle='#cc2020';
+  ctx.roundRect(-11,-21,20,18,3);ctx.fill();
+  ctx.fillStyle='#fff';ctx.fillRect(-11,-13,20,2);
+
+  // --- arms ---
+  // left
+  ctx.save();ctx.rotate(-.28);
+  ctx.fillStyle='#cc2020';ctx.roundRect(-18,-18,10,5,2);ctx.fill();ctx.restore();
+  // right
+  ctx.save();ctx.rotate(.22);
+  ctx.fillStyle='#cc2020';ctx.roundRect(8,-18,10,5,2);ctx.fill();ctx.restore();
+
+  // --- poles ---
+  ctx.strokeStyle='#999';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-18,-14);ctx.lineTo(-23,10);ctx.stroke();
+  ctx.beginPath();ctx.arc(-23,10,2.5,0,Math.PI*2);ctx.strokeStyle='#777';ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle='#999';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(17,-14);ctx.lineTo(22,10);ctx.stroke();
+  ctx.beginPath();ctx.arc(22,10,2.5,0,Math.PI*2);ctx.strokeStyle='#777';ctx.lineWidth=1;ctx.stroke();
+
+  // --- neck + head ---
+  ctx.fillStyle='#f5c0a8';ctx.fillRect(-3,-27,6,8);
+  ctx.fillStyle='#f5c0a8';ctx.beginPath();ctx.arc(0,-32,9,0,Math.PI*2);ctx.fill();
+
+  // helmet
+  ctx.fillStyle='#cc2020';ctx.beginPath();ctx.arc(0,-34,9,Math.PI,0);ctx.fill();
+  ctx.fillRect(-9,-34,18,5);
+
+  // goggles
+  ctx.fillStyle='#e8c020';ctx.roundRect(-8,-34,16,8,2.5);ctx.fill();
+  ctx.fillStyle='#1a3a5a';ctx.roundRect(-7,-33,6,6,2);ctx.fill();
+  ctx.roundRect(1,-33,6,6,2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.roundRect(-6,-32,2,2,1);ctx.fill();ctx.roundRect(2,-32,2,2,1);ctx.fill();
+
+  ctx.restore();
+}
+
+// ─── text carving ─────────────────────────────────────────────────────────────
+async function layoutText(text){
+  await document.fonts.ready;
+  letterLayouts=[];
+  if(!text) return;
+  let fontSize=78;
+  const maxW=W-60;
+  ctx.save();
+  while(fontSize>18){
+    ctx.font=`${fontSize}px 'Bebas Neue',Impact,'Arial Black',sans-serif`;
+    if(ctx.measureText(text).width<=maxW) break;
+    fontSize-=2;
+  }
+  ctx.font=`${fontSize}px 'Bebas Neue',Impact,'Arial Black',sans-serif`;
+  const totalW=ctx.measureText(text).width;
+  const sx=(W-totalW)/2;
+  const ty=H*.80;
+  let cx=sx;
+  for(const ch of text){
+    const cw=ctx.measureText(ch).width;
+    letterLayouts.push({ch,x:cx,y:ty,w:cw,cx:cx+cw/2,fs:fontSize,prog:0});
+    cx+=cw;
+  }
+  ctx.restore();
+}
+
+function drawCarvedText(sx){
+  for(const L of letterLayouts){
+    // advance carve progress once skier passes
+    if(sx>=L.cx+20) L.prog=Math.min(1,L.prog+.07);
+    if(L.prog<=0) continue;
+    ctx.save();
+    ctx.globalAlpha=L.prog;
+    ctx.font=`${L.fs}px 'Bebas Neue',Impact,'Arial Black',sans-serif`;
+    // deep shadow (groove depth)
+    ctx.fillStyle='#2a5a7a';ctx.fillText(L.ch,L.x+3,L.y+4);
+    // mid shadow
+    ctx.fillStyle='#4a7a9a';ctx.fillText(L.ch,L.x+1.5,L.y+2);
+    // main carved surface (ice blue)
+    ctx.fillStyle='#c8e0f0';ctx.fillText(L.ch,L.x,L.y);
+    // highlight lip
+    ctx.fillStyle='rgba(255,255,255,.88)';ctx.fillText(L.ch,L.x-.8,L.y-1.5);
+    ctx.restore();
+  }
+}
+
+// ─── skier position along path ───────────────────────────────────────────────
+function skierPos(t){
+  const raw=Math.min(t/animDur,1);
+  // ease-in at start, cruise through, ease-out at end
+  const p = raw<.08 ? raw/.08*.08/2 : raw>.92 ? 1-((1-raw)/.08*.08/2) : 0.04+(raw-.08)*.96/.84;
+  const x=-90+p*(W+180);
+  const y=H*.628+Math.sin(p*Math.PI*5)*7;
+  return {x,y,raw};
+}
+
+// ─── full scene draw ──────────────────────────────────────────────────────────
+function drawScene(t,cond,sx,sy){
+  drawSky(cond);
+  drawSun(cond);
+  drawMountains(cond);
+  drawGround(cond);
+  drawSparkles(t,cond);
+  drawTrees(cond);
+  drawSkiTracks(skiTracks);
+  drawCarvedText(sx);
+  if(sx<W+100) drawSkier(sx,sy,t);
+  drawParticles(cond);
+  if(cond==='storm') drawWind(t);
+  drawVignette();
+  drawLabel();
+}
+
+// ─── animation loop ───────────────────────────────────────────────────────────
+function animate(ts){
+  if(!animStart) animStart=ts;
+  const t=ts-animStart;
+
+  if(condition==='snowing'||condition==='storm') updateParticles(condition);
+
+  const pos=skierPos(t);
+  skierX=pos.x; skierY=pos.y;
+
+  if(skiTracks.length===0||skiTracks[skiTracks.length-1].x<skierX-6)
+    skiTracks.push({x:skierX,y:skierY+10});
+
+  drawScene(t,condition,skierX,skierY);
+
+  document.getElementById('progressFill').style.width=(pos.raw*100)+'%';
+
+  if(pos.raw>=1){
+    animDone=true;
+    document.getElementById('btnExport').disabled=false;
+    document.getElementById('btnGo').disabled=false;
+    setStatus('Done! Hit Export GIF to download.');
+    // keep ticking for sparkles/snow
+    animFrame=requestAnimationFrame(idleTick);
+    return;
+  }
+  animFrame=requestAnimationFrame(animate);
+}
+
+let idleStart=null;
+function idleTick(ts){
+  if(!idleStart) idleStart=ts;
+  const t=ts-idleStart+animDur;
+  if(condition==='snowing'||condition==='storm') updateParticles(condition);
+  drawScene(t,condition,skierX,skierY);
+  animFrame=requestAnimationFrame(idleTick);
+}
+
+// ─── start ────────────────────────────────────────────────────────────────────
+async function start(){
+  const msg=document.getElementById('message').value.trim().toUpperCase();
+  if(!msg){setStatus('Please enter a message!');return;}
+
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+
+  document.getElementById('btnGo').disabled=true;
+  document.getElementById('btnExport').disabled=true;
+  document.getElementById('progressFill').style.width='0%';
+  animStart=null;animDone=false;skiTracks=[];idleStart=null;
+
+  const sel=document.getElementById('resort');
+  const [lat,lon]=sel.value.split(',').map(Number);
+  const resortName=sel.options[sel.selectedIndex].text;
+
+  const w=await fetchWeather(lat,lon);
+  condition=w.condition;weatherInfo=w;
+
+  const badge=document.getElementById('weatherBadge');
+  const emo={sunny:'☀️',snowing:'❄️',overcast:'☁️',storm:'🌨️'};
+  badge.textContent=`${emo[w.condition]} ${w.desc} · ${w.temp}°C`;
+  badge.style.display='block';
+  setStatus(`${resortName}: ${w.desc}, ${w.temp}°C`);
+
+  initParticles(condition);
+  initSparkles();
+  await layoutText(msg);
+
+  // duration: 2.5s base + 200ms per character
+  animDur=2500+msg.length*220;
+
+  animFrame=requestAnimationFrame(animate);
+}
+
+// ─── GIF export ───────────────────────────────────────────────────────────────
+async function exportGif(){
+  setStatus('Preparing GIF… fetching encoder worker…');
+  document.getElementById('btnExport').disabled=true;
+
+  try{
+    // fetch worker and create blob URL to avoid CORS issues
+    const wres=await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
+    const wtxt=await wres.text();
+    const wurl=URL.createObjectURL(new Blob([wtxt],{type:'application/javascript'}));
+
+    const gif=new GIF({workers:2,quality:8,width:W,height:H,workerScript:wurl});
+
+    // capture frames by re-running animation offline
+    const FPS=12, fDelay=Math.round(1000/FPS);
+    const steps=Math.ceil(animDur/(1000/FPS));
+
+    // save/reset letter progress
+    const savedProg=letterLayouts.map(l=>l.prog);
+    for(const l of letterLayouts) l.prog=0;
+    const savedTracks=[...skiTracks];
+
+    const exportTracks=[];
+    setStatus('Rendering frames…');
+
+    // Re-init particles at a stable state for the export
+    initParticles(condition);
+
+    for(let i=0;i<=steps;i++){
+      const t=(i/steps)*animDur;
+      const pos=skierPos(t);
+      if(condition==='snowing'||condition==='storm') updateParticles(condition);
+      if(exportTracks.length===0||exportTracks[exportTracks.length-1].x<pos.x-6)
+        exportTracks.push({x:pos.x,y:pos.y+10});
+
+      const savedGlobal=skiTracks;
+      skiTracks=exportTracks;
+      drawScene(t,condition,pos.x,pos.y);
+      skiTracks=savedGlobal;
+
+      gif.addFrame(canvas,{copy:true,delay:fDelay});
+      if(i%10===0) setStatus(`Rendering frame ${i}/${steps}…`);
+    }
+
+    // restore
+    for(let i=0;i<letterLayouts.length;i++) letterLayouts[i].prog=savedProg[i]||1;
+    skiTracks=savedTracks;
+
+    gif.on('progress',p=>setStatus(`Encoding GIF: ${Math.round(p*100)}%`));
+    gif.on('finished',blob=>{
+      URL.revokeObjectURL(wurl);
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download='powder-post.gif';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      setStatus('GIF downloaded! ');
+      document.getElementById('btnExport').disabled=false;
+    });
+
+    gif.render();
+
+  }catch(e){
+    console.error(e);
+    setStatus('Export failed: '+e.message);
+    document.getElementById('btnExport').disabled=false;
+  }
+}
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+function setStatus(msg){document.getElementById('status').textContent=msg;}
+
+// ─── event listeners ──────────────────────────────────────────────────────────
+document.getElementById('btnGo').addEventListener('click',start);
+document.getElementById('btnExport').addEventListener('click',exportGif);
+
+// also trigger on Enter in message field
+document.getElementById('message').addEventListener('keydown',e=>{if(e.key==='Enter')start();});
+
+// ─── initial render ───────────────────────────────────────────────────────────
+(async function init(){
+  await document.fonts.ready;
+  initSparkles();
+  drawScene(0,'sunny',-200,H*.628);
+})();
+</script>
+</body>
+</html>
