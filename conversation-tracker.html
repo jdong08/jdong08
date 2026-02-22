@@ -1073,26 +1073,10 @@
   function getAllPeople(data) { return data.groups.flatMap(g => g.people); }
 
   // ── Avatar utils ──────────────────────────────────────
-<<<<<<< HEAD
-=======
-  // 8 hair styles: functions receive (hair_color) → SVG path strings
-  const AVATAR_HAIR = [
-    ()  => ``,                                                                                            // 0 bald
-    (h) => `<ellipse cx="18" cy="4" rx="9" ry="5" fill="${h}"/>`,                                        // 1 round top
-    (h) => `<ellipse cx="18" cy="4" rx="9" ry="5" fill="${h}"/><rect x="8" y="3" width="4" height="13" rx="2" fill="${h}"/><rect x="24" y="3" width="4" height="13" rx="2" fill="${h}"/>`, // 2 long sides
-    (h) => `<circle cx="11" cy="5" r="4" fill="${h}"/><circle cx="18" cy="2" r="4" fill="${h}"/><circle cx="25" cy="5" r="4" fill="${h}"/>`, // 3 curly
-    (h) => `<rect x="12" y="-1" width="12" height="10" rx="3" fill="${h}"/>`,                            // 4 tall block
-    (h) => `<ellipse cx="15" cy="4" rx="11" ry="5" fill="${h}"/>`,                                       // 5 side part
-    (h) => `<ellipse cx="18" cy="5" rx="8" ry="4" fill="${h}"/><circle cx="18" cy="1" r="4" fill="${h}"/>`, // 6 bun
-    (h) => `<rect x="9" y="2" width="18" height="7" rx="4" fill="${h}"/>`,                               // 7 flat cap
-  ];
-
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
   function nameHash(name) {
     return name.split('').reduce((h,c) => Math.imul(h,31) + c.charCodeAt(0) | 0, 0);
   }
 
-<<<<<<< HEAD
   // Draw one standing person's SVG elements at center-x=cx, feet at baseY=52
   function _p(cx, type) {
     const P = {
@@ -1224,26 +1208,6 @@
         <line x1="20" y1="31" x2="24" y2="49" stroke-width="4"/>
       </g>
       <path d="M20 3 L21.3 7 L25 7 L22.1 9.1 L23.2 13 L20 10.8 L16.8 13 L17.9 9.1 L15 7 L18.7 7 Z" fill="#D4882A" stroke="none"/>
-=======
-  function buildAvatarSVG(name, color, size) {
-    const type  = Math.abs(nameHash(name)) % 8;
-    const skin  = lighten(color, 32);
-    const hair  = darken(color, 22);
-    const h     = Math.round(size * 44 / 36);
-    return `<svg viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${h}">
-      ${AVATAR_HAIR[type](hair)}
-      <circle cx="18" cy="14" r="10" fill="${skin}"/>
-      <path d="M6 44 Q6 23 18 23 Q30 23 30 44 Z" fill="${color}"/>
-    </svg>`;
-  }
-
-  function buildCentralSVG(size=52) {
-    const h = Math.round(size * 44 / 36);
-    return `<svg viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${h}">
-      <circle cx="18" cy="14" r="10" fill="#c8d2e0"/>
-      <path d="M18 4 L19.4 8.5 L24 8.5 L20.3 11.2 L21.7 15.5 L18 12.8 L14.3 15.5 L15.7 11.2 L12 8.5 L16.6 8.5 Z" fill="#D4882A" opacity="0.95"/>
-      <path d="M6 44 Q6 23 18 23 Q30 23 30 44 Z" fill="#4A5228"/>
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
     </svg>`;
   }
 
@@ -1383,11 +1347,7 @@
       group.people.forEach(name => {
         const count = todayCounts[name] || 0;
         if (count > 0) {
-<<<<<<< HEAD
           addAvatarToCanvas(name, idx, count, group.color, false, W, H, getGroupType(group));
-=======
-          addAvatarToCanvas(name, idx, count, group.color, false, W, H);
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
           idx++;
         }
       });
@@ -1397,11 +1357,7 @@
     updateCrowdLabel(total);
   }
 
-<<<<<<< HEAD
   function addAvatarToCanvas(name, index, count, color, animate, W, H, groupType) {
-=======
-  function addAvatarToCanvas(name, index, count, color, animate, W, H) {
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
     const canvas = document.getElementById('crowd-canvas');
     const cx = W / 2;
     const cy = H / 2;
@@ -1411,12 +1367,8 @@
     const div = document.createElement('div');
     div.className = 'crowd-avatar';
     div.dataset.name = name;
-<<<<<<< HEAD
     div.dataset.groupType = groupType || 'neutral';
     div.innerHTML = buildAvatarSVG(name, color, size, groupType || 'neutral') +
-=======
-    div.innerHTML = buildAvatarSVG(name, color, size) +
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
       `<div class="avatar-tip">${escapeHtml(name)} · ${count}</div>`;
 
     const finalLeft = cx + pos.dx;
@@ -1458,7 +1410,6 @@
     if (!div) return;
 
     const size = avatarSize(count);
-<<<<<<< HEAD
     const svg  = div.querySelector('svg');
     if (svg) {
       const vb = (svg.getAttribute('viewBox') || '0 0 40 52').split(' ');
@@ -1466,11 +1417,6 @@
       svg.setAttribute('height', size);
       svg.setAttribute('width', Math.round(size * vw / vh));
     }
-=======
-    const h    = Math.round(size * 44 / 36);
-    const svg  = div.querySelector('svg');
-    if (svg) { svg.setAttribute('width', size); svg.setAttribute('height', h); }
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
     const tip = div.querySelector('.avatar-tip');
     if (tip) tip.textContent = `${name} · ${count}`;
 
@@ -1700,11 +1646,7 @@
       const H = canvas.offsetHeight || 260;
       const idx = canvas.querySelectorAll('.crowd-avatar').length;
       const color = (group && group.color) || GROUP_COLORS[0];
-<<<<<<< HEAD
       addAvatarToCanvas(name, idx, 1, color, true, W, H, group ? getGroupType(group) : 'neutral');
-=======
-      addAvatarToCanvas(name, idx, 1, color, true, W, H);
->>>>>>> fdc7507bcd3bb6d7b27c88aeeda70f1419b044f4
     } else {
       // Existing person pulses and grows
       pulseAvatar(name, count);
