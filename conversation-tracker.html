@@ -693,6 +693,94 @@
     }
 
     .group-type-btn:hover { background: #f0e8d8; }
+
+    /* ── Settings button ─────────────────────────────── */
+    .settings-btn {
+      background: none;
+      border: none;
+      font-size: 15px;
+      color: #7A8C3C;
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.12s, background 0.12s;
+      flex-shrink: 0;
+    }
+
+    .settings-btn:hover { color: #4A5228; background: #f0e8d8; }
+
+    /* ── Token adjust ────────────────────────────────── */
+    .candle-tokens-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 3px;
+    }
+
+    .token-adj-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid #c5b49a;
+      background: rgba(255,255,255,0.5);
+      color: #7A8C3C;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: border-color 0.12s, color 0.12s;
+      font-family: inherit;
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    .token-adj-btn:hover { border-color: #D4882A; color: #D4882A; }
+    .token-adj-btn:active { transform: scale(0.9); }
+
+    /* ── Settings modal specifics ────────────────────── */
+    .settings-forecast {
+      background: #f0e8d8;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+    }
+
+    .forecast-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      padding: 3px 0;
+    }
+
+    .forecast-row-label { flex: 1; color: #4A5228; font-weight: 500; }
+
+    .forecast-mod {
+      font-size: 12px;
+      font-weight: 700;
+      color: #D4882A;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .forecast-mod.negative { color: #A85C7A; }
+
+    .forecast-divider {
+      border-top: 1px solid #e0ceaf;
+      margin: 8px 0;
+    }
+
+    .forecast-suggested {
+      font-size: 13px;
+      color: #7A8C3C;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .forecast-suggested strong { color: #4A5228; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -700,7 +788,10 @@
 
   <header>
     <h1>People I Talk To</h1>
-    <div class="date" id="today-date"></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="date" id="today-date"></div>
+      <button class="settings-btn" onclick="openSettings()" title="Energy settings">⚙</button>
+    </div>
   </header>
 
   <div class="candle-widget" id="candle-widget">
@@ -726,7 +817,11 @@
       </svg>
     </div>
     <div class="candle-info">
-      <div class="candle-tokens" id="candle-tokens">— <span>tokens</span></div>
+      <div class="candle-tokens-row">
+        <button class="token-adj-btn" onclick="adjustTokens(-5)" title="−5 tokens">−</button>
+        <div class="candle-tokens" id="candle-tokens">— <span>tokens</span></div>
+        <button class="token-adj-btn" onclick="adjustTokens(+5)" title="+5 tokens">+</button>
+      </div>
       <div class="candle-phase" id="candle-phase"></div>
       <div class="token-bar-wrap">
         <div class="token-bar-fill" id="token-bar-fill" style="width:0%"></div>
@@ -759,6 +854,37 @@
     <div class="history-list" id="history-list" style="display:none"></div>
   </div>
 
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal-box">
+    <h2>Energy Settings ⚙️</h2>
+    <div class="settings-forecast">
+      <div class="forecast-row">
+        <span id="settings-moon-emoji">🌕</span>
+        <span class="forecast-row-label" id="settings-moon-name">Moon phase</span>
+        <span class="forecast-mod" id="settings-moon-mod">—</span>
+      </div>
+      <div class="forecast-row">
+        <span>🌸</span>
+        <span class="forecast-row-label" id="settings-cycle-name">Cycle phase</span>
+        <span class="forecast-mod" id="settings-cycle-mod">—</span>
+      </div>
+      <div class="forecast-divider"></div>
+      <div class="forecast-suggested">Suggested today: <strong id="settings-suggested">—</strong> tokens</div>
+    </div>
+    <div class="modal-field">
+      <label>Last period start date</label>
+      <input type="date" id="settings-period-date"/>
+    </div>
+    <div class="modal-field">
+      <label>Average cycle length (days)</label>
+      <input type="number" id="settings-cycle-length" min="21" max="45" value="28"/>
+    </div>
+    <button class="modal-btn" onclick="saveSettings()">Save changes</button>
+    <button class="modal-btn secondary" onclick="closeSettings()">Close</button>
+  </div>
 </div>
 
 <!-- Setup modal -->
@@ -996,6 +1122,69 @@
     }
     updateCandleVisual(data);
     updateCandlePhase(data);
+  }
+
+  // ── Settings panel ────────────────────────────────────
+  function openSettings() {
+    const data = loadData();
+    const moon = getMoonPhaseInfo(new Date());
+
+    document.getElementById('settings-moon-emoji').textContent = moon.emoji;
+    document.getElementById('settings-moon-name').textContent  = moon.name;
+    const moonModEl = document.getElementById('settings-moon-mod');
+    moonModEl.textContent = (moon.modifier >= 0 ? '+' : '') + moon.modifier;
+    moonModEl.className = 'forecast-mod' + (moon.modifier < 0 ? ' negative' : '');
+
+    const cycleNameEl = document.getElementById('settings-cycle-name');
+    const cycleModEl  = document.getElementById('settings-cycle-mod');
+
+    let suggested;
+    if (data.cycleData && data.cycleData.lastPeriodStart) {
+      const cycle = getCyclePhaseInfo(data.cycleData.lastPeriodStart, data.cycleData.cycleLength || 28);
+      cycleNameEl.textContent = cycle.name;
+      cycleModEl.textContent  = (cycle.modifier >= 0 ? '+' : '') + cycle.modifier;
+      cycleModEl.className    = 'forecast-mod' + (cycle.modifier < 0 ? ' negative' : '');
+      suggested = Math.max(40, Math.min(120, 80 + moon.modifier + cycle.modifier));
+      document.getElementById('settings-period-date').value   = data.cycleData.lastPeriodStart;
+      document.getElementById('settings-cycle-length').value  = data.cycleData.cycleLength || 28;
+    } else {
+      cycleNameEl.textContent = 'Not set yet';
+      cycleModEl.textContent  = '—';
+      cycleModEl.className    = 'forecast-mod';
+      suggested = Math.max(40, Math.min(120, 80 + moon.modifier));
+    }
+
+    document.getElementById('settings-suggested').textContent = suggested;
+    document.getElementById('settings-modal').classList.remove('hidden');
+  }
+
+  function closeSettings() {
+    document.getElementById('settings-modal').classList.add('hidden');
+  }
+
+  function saveSettings() {
+    const dateEl   = document.getElementById('settings-period-date');
+    const lengthEl = document.getElementById('settings-cycle-length');
+    if (!dateEl.value) {
+      dateEl.style.borderColor = '#A85C7A';
+      setTimeout(() => dateEl.style.borderColor = '', 1000);
+      return;
+    }
+    const data = loadData();
+    data.cycleData = { lastPeriodStart: dateEl.value, cycleLength: parseInt(lengthEl.value) || 28 };
+    saveData(data);
+    updateCandlePhase(data);
+    closeSettings();
+  }
+
+  // ── Manual token adjust ───────────────────────────────
+  function adjustTokens(delta) {
+    const data = loadData();
+    const td   = getTodayTokens(data);
+    if (!td) return;
+    td.current = Math.max(0, Math.min(td.dailyMax, td.current + delta));
+    saveData(data);
+    updateCandleVisual(data);
   }
 
   // ── Group type cycling ────────────────────────────────
