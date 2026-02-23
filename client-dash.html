@@ -75,6 +75,7 @@
       font-size: 0.85rem;
       font-family: inherit;
       cursor: pointer;
+      min-width: 0;
     }
 
     select:focus, input[type="date"]:focus {
@@ -130,7 +131,65 @@
 
     @media (max-width: 700px) {
       .app-body { grid-template-columns: 1fr; }
-      .sidebar { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        position: static;
+        height: auto;
+        padding: 12px 0;
+      }
+      /* Collapse sidebar into a horizontal scrollable row of view buttons */
+      .sidebar-section-label { display: none; }
+      .sidebar-divider { display: none; }
+      #client-jump-label { display: none !important; }
+      #client-jump-divider { display: none !important; }
+      #client-jumps { display: none; }
+      .view-btn {
+        display: inline-flex;
+        width: auto;
+        padding: 8px 14px;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        font-size: 0.8rem;
+      }
+      .view-btn.active {
+        border-left-color: transparent;
+        border-bottom-color: #E0C58F;
+      }
+      aside.sidebar {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0;
+        padding: 8px 12px;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Header: stack controls on mobile */
+      .app-header {
+        padding: 10px 14px;
+        gap: 10px;
+      }
+      .header-controls {
+        width: 100%;
+        gap: 6px;
+      }
+      .header-controls select { flex: 1; min-width: 0; }
+      #fetch-btn { flex: 1; }
+      .custom-range { flex-wrap: wrap; }
+      /* Main content padding */
+      .main-content { padding: 14px 12px; }
+      /* Article cards */
+      .article-card { padding: 12px 14px; }
+      /* Client section header — wrap buttons gracefully */
+      .client-section-header { flex-wrap: wrap; gap: 6px; }
+      .client-name-title { font-size: 1rem; }
+      .reorder-btns { margin-left: 0; order: 3; }
+      .client-section-header .btn { font-size: 0.7rem; padding: 3px 8px; order: 4; }
+      /* Themes grid: single column */
+      .themes-grid { grid-template-columns: 1fr; }
+      /* Modal full-screen on mobile */
+      .modal { max-width: 100%; border-radius: 12px; margin: 0 8px; }
+      .modal-overlay { padding: 12px; align-items: flex-start; padding-top: 60px; }
     }
 
     /* ── Sidebar ──────────────────────────────────────── */
