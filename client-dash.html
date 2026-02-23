@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Dash</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #EDD9C0;
+      min-height: 100vh;
+      color: #4A5228;
+    }
+
+    /* ── Header ───────────────────────────────────────── */
+    .app-header {
+      background: #f5ede0;
+      border-bottom: 1px solid #c9b89e;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #4A5228;
+      letter-spacing: 0.04em;
+      margin-right: auto;
+    }
+
+    .app-title span {
+      color: #D4882A;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="date"] {
+      padding: 7px 12px;
+      border: 1px solid #c9b89e;
+      border-radius: 8px;
+      background: white;
+      color: #4A5228;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="date"]:focus {
+      outline: 2px solid #D4882A;
+      outline-offset: 1px;
+    }
+
+    .custom-range {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #4A5228;
+    }
+
+    .custom-range input[type="date"] {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+    }
+
+    .btn {
+      padding: 7px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: #D4882A;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #4A5228;
+      border: 1px solid #c9b89e;
+    }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .app-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 57px);
+      gap: 0;
+    }
+
+    @media (max-width: 700px) {
+      .app-body { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid #c9b89e; }
+    }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      background: #f5ede0;
+      border-right: 1px solid #c9b89e;
+      padding: 20px 0;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+    }
+
+    .sidebar-section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #A85C7A;
+      padding: 0 18px 8px;
+      font-weight: 600;
+    }
+
+    .view-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 18px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: #4A5228;
+      cursor: pointer;
+      text-align: left;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .view-btn:hover { background: rgba(212,136,42,0.08); }
+
+    .view-btn.active {
+      border-left-color: #D4882A;
+      background: rgba(212,136,42,0.12);
+      font-weight: 600;
+      color: #D4882A;
+    }
+
+    .badge {
+      background: #A85C7A;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .view-btn.active .badge { background: #D4882A; }
+
+    .sidebar-divider {
+      border: none;
+      border-top: 1px solid #c9b89e;
+      margin: 12px 18px;
+    }
+
+    .client-jump {
+      display: block;
+      padding: 6px 18px 6px 22px;
+      font-size: 0.8rem;
+      color: #4A5228;
+      text-decoration: none;
+      transition: color 0.12s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .client-jump:hover { color: #D4882A; }
+
+    /* ── Main ─────────────────────────────────────────── */
+    .main-content {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: #a89880;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .empty-state .icon { font-size: 2.5rem; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; color: #7A8C3C; }
+    .empty-state p { font-size: 0.85rem; max-width: 320px; line-height: 1.5; }
+
+    /* ── Client Section ───────────────────────────────── */
+    .client-section {
+      margin-bottom: 36px;
+    }
+
+    .client-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .client-section-header:hover .client-name-title { color: #D4882A; }
+
+    .collapse-chevron {
+      font-size: 0.7rem;
+      color: #a89880;
+      transition: transform 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    .client-section.collapsed .collapse-chevron { transform: rotate(-90deg); }
+    .client-section.collapsed .collapse-body { display: none; }
+
+    .client-name-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #4A5228;
+    }
+
+    .client-count {
+      font-size: 0.8rem;
+      color: #A85C7A;
+      font-weight: 600;
+    }
+
+    .client-summary {
+      font-size: 0.82rem;
+      color: #7A8C3C;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    /* ── Article Card ─────────────────────────────────── */
+    .article-card {
+      background: #f5ede0;
+      border: 1px solid #c9b89e;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: box-shadow 0.15s;
+    }
+
+    .article-card:hover {
+      box-shadow: 0 4px 14px rgba(74,82,40,0.1);
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-source {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #A85C7A;
+    }
+
+    .card-dot {
+      color: #c9b89e;
+      font-size: 0.7rem;
+    }
+
+    .card-date {
+      font-size: 0.75rem;
+      color: #a89880;
+    }
+
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #4A5228;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+
+    .card-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card-title a:hover { color: #D4882A; text-decoration: underline; }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: #6a7840;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      background: rgba(168,92,122,0.12);
+      color: #A85C7A;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Theme View ───────────────────────────────────── */
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .theme-card {
+      background: #f5ede0;
+      border: 1px solid #c9b89e;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .theme-card-header {
+      background: linear-gradient(135deg, rgba(212,136,42,0.15), rgba(168,92,122,0.08));
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #c9b89e;
+    }
+
+    .theme-label {
+      display: inline-block;
+      background: #D4882A;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .theme-count {
+      font-size: 0.8rem;
+      color: #A85C7A;
+      font-weight: 600;
+    }
+
+    .theme-summary {
+      font-size: 0.78rem;
+      color: #7A8C3C;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    .theme-articles {
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theme-article-item {
+      font-size: 0.8rem;
+    }
+
+    .theme-article-source {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #A85C7A;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .theme-article-title a {
+      color: #4A5228;
+      text-decoration: none;
+      line-height: 1.35;
+    }
+
+    .theme-article-title a:hover { color: #D4882A; text-decoration: underline; }
+
+    /* ── Loading / Error ──────────────────────────────── */
+    .loading-bar {
+      display: none;
+      text-align: center;
+      padding: 48px;
+      color: #a89880;
+      font-size: 0.9rem;
+    }
+
+    .loading-bar.visible { display: block; }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #c9b89e;
+      border-top-color: #D4882A;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(212,136,42,0.1);
+      border: 1px solid #D4882A;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: #4A5228;
+      line-height: 1.6;
+    }
+
+    .error-box strong { color: #D4882A; }
+
+    /* ── Settings Modal ───────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(74,82,40,0.35);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #f5ede0;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(74,82,40,0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #c9b89e;
+      position: sticky;
+      top: 0;
+      background: #f5ede0;
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #4A5228;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: #a89880;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .modal-close:hover { background: rgba(74,82,40,0.08); }
+
+    .modal-body { padding: 20px 24px; }
+
+    .settings-section {
+      margin-bottom: 28px;
+    }
+
+    .settings-section-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #A85C7A;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .api-instructions {
+      font-size: 0.82rem;
+      color: #6a7840;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .api-instructions a {
+      color: #D4882A;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .api-instructions a:hover { text-decoration: underline; }
+
+    .api-note {
+      font-size: 0.75rem;
+      color: #a89880;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #c9b89e;
+      border-radius: 8px;
+      background: white;
+      color: #4A5228;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+
+    .text-input:focus {
+      outline: 2px solid #D4882A;
+      outline-offset: 1px;
+    }
+
+    .tag-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tag-input-row .text-input { flex: 1; }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .removable-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(168,92,122,0.12);
+      border: 1px solid rgba(168,92,122,0.25);
+      color: #A85C7A;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 4px 10px 4px 12px;
+    }
+
+    .removable-tag button {
+      background: none;
+      border: none;
+      color: #A85C7A;
+      cursor: pointer;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.6;
+    }
+
+    .removable-tag button:hover { opacity: 1; }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #c9b89e;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      background: #f5ede0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header class="app-header">
+    <div class="app-title">Client <span>Dash</span></div>
+    <div class="header-controls">
+      <select id="date-range-select" title="Date range">
+        <option value="1">Today</option>
+        <option value="7" selected>Past 7 days</option>
+        <option value="14">Past 14 days</option>
+        <option value="30">Past 30 days</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <div class="custom-range" id="custom-range-inputs" style="display:none">
+        <input type="date" id="date-from" title="From">
+        <span>→</span>
+        <input type="date" id="date-to" title="To">
+      </div>
+      <button class="btn btn-primary" id="fetch-btn">Fetch News</button>
+      <button class="btn btn-secondary" id="settings-btn">⚙ Settings</button>
+    </div>
+  </header>
+
+  <!-- ── App Body ── -->
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section-label">View</div>
+      <button class="view-btn active" data-view="by-client">
+        By Client <span class="badge" id="badge-client">—</span>
+      </button>
+      <button class="view-btn" data-view="by-theme">
+        By Theme <span class="badge" id="badge-theme">—</span>
+      </button>
+      <button class="view-btn" data-view="all-news">
+        All News <span class="badge" id="badge-all">—</span>
+      </button>
+
+      <hr class="sidebar-divider" id="client-jump-divider" style="display:none">
+      <div class="sidebar-section-label" id="client-jump-label" style="display:none">Jump to</div>
+      <div id="client-jumps"></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content" id="main-content">
+      <div class="empty-state" id="empty-state">
+        <div class="icon">📰</div>
+        <h3>No articles loaded yet</h3>
+        <p>Add your clients in Settings, then click <strong>Fetch News</strong> to pull the latest coverage.</p>
+      </div>
+      <div class="loading-bar" id="loading-bar">
+        <div><div class="spinner"></div></div>
+        Fetching articles from GNews…
+      </div>
+      <div id="error-container"></div>
+      <div id="content-area" style="display:none"></div>
+    </main>
+  </div>
+
+  <!-- ── Settings Modal ── -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title-text">Settings</div>
+        <button class="modal-close" id="modal-close-btn" title="Close">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- API Setup -->
+        <div class="settings-section">
+          <div class="settings-section-title">API Setup</div>
+          <p class="api-instructions">
+            Get a free API key at <a href="https://gnews.io/register" target="_blank" rel="noopener">gnews.io/register</a>.
+            Paste it below — it's stored only in your browser.
+          </p>
+          <input type="password" class="text-input" id="api-key-input" placeholder="Paste GNews API key…">
+          <p class="api-note">Free tier: 100 requests/day · Up to 10 articles/request · No commercial use</p>
+        </div>
+
+        <!-- Clients -->
+        <div class="settings-section">
+          <div class="settings-section-title">Clients</div>
+          <div class="tag-input-row">
+            <input type="text" class="text-input" id="client-input" placeholder="Add client name…">
+            <button class="btn btn-primary" id="add-client-btn">Add</button>
+          </div>
+          <div class="tags-container" id="clients-tags"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="modal-save-btn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Constants ─────────────────────────────────────────────────────────────
+
+    const STOP_WORDS = new Set([
+      'the','and','for','are','but','not','you','all','can','had','her','was',
+      'one','our','out','day','get','has','him','his','how','its','may','new',
+      'now','old','see','two','way','who','been','from','have','here','more',
+      'over','said','than','that','them','they','this','were','with','will',
+      'also','back','each','into','just','like','long','make','many','most',
+      'much','only','open','same','some','such','time','very','well','when',
+      'your','after','about','could','first','other','their','these','those',
+      'under','using','which','would','should','being','there','since','while',
+      // generic business terms
+      'company','companies','market','markets','business','report','quarter',
+      'year','years','month','months','week','weeks','says','said','people',
+      'percent','million','billion','share','shares','stock','stocks','data',
+      'news','media','global','world','international','government','group',
+      'president','chief','executive','officer','director','official',
+      'according','sources','told','reuters','bloomberg','associated','press',
+    ]);
+
+    // ── State ─────────────────────────────────────────────────────────────────
+
+    let state = {
+      clients: [],
+      apiKey: '',
+      articles: [],    // raw GNews articles
+      clientGoogleNews: {},  // client name → articles from Google News RSS
+      clientCollapsed: {},   // client name → boolean
+      currentView: 'by-client',
+    };
+
+    // ── Storage ───────────────────────────────────────────────────────────────
+
+    function loadStorage() {
+      try {
+        const c = localStorage.getItem('cd_clients');
+        if (c) state.clients = JSON.parse(c);
+        state.apiKey = localStorage.getItem('cd_apikey') || '';
+      } catch(e) {}
+    }
+
+    function saveStorage() {
+      localStorage.setItem('cd_clients', JSON.stringify(state.clients));
+      localStorage.setItem('cd_apikey', state.apiKey);
+    }
+
+    // ── Date Helpers ──────────────────────────────────────────────────────────
+
+    function getDateRange() {
+      const sel = document.getElementById('date-range-select').value;
+      const to = new Date();
+      to.setHours(23, 59, 59, 999);
+
+      if (sel === 'custom') {
+        const fromVal = document.getElementById('date-from').value;
+        const toVal   = document.getElementById('date-to').value;
+        if (!fromVal || !toVal) return null;
+        return {
+          from: new Date(fromVal + 'T00:00:00'),
+          to:   new Date(toVal   + 'T23:59:59'),
+        };
+      }
+
+      const days = parseInt(sel, 10);
+      const from = new Date();
+      from.setDate(from.getDate() - (days - 1));
+      from.setHours(0, 0, 0, 0);
+      return { from, to };
+    }
+
+    function toISODateTime(d) {
+      // returns full ISO 8601 string required by GNews (e.g. 2024-01-01T00:00:00Z)
+      return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // ── GNews Fetch ───────────────────────────────────────────────────────────
+
+    async function fetchNews() {
+      const range = getDateRange();
+      if (!range) {
+        showError('Please select a valid custom date range.');
+        return;
+      }
+
+      if (!state.apiKey) {
+        openModal();
+        return;
+      }
+
+      if (state.clients.length === 0) {
+        showError('Add at least one client name in <strong>Settings</strong> before fetching.');
+        return;
+      }
+
+      showLoading(true);
+      clearError();
+
+      // Build query: "Client A" OR "Client B" OR ...
+      const q = state.clients.map(c => `"${c}"`).join(' OR ');
+
+      const params = new URLSearchParams({
+        q,
+        from:   toISODateTime(range.from),
+        to:     toISODateTime(range.to),
+        lang:   'en',
+        sortby: 'publishedAt',
+        max:    '10',
+        token:  state.apiKey,
+      });
+
+      try {
+        const gNewsUrl = `https://gnews.io/api/v4/search?${params}`;
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(gNewsUrl)}`);
+        const data = await res.json();
+
+        if (!res.ok || data.errors) {
+          const msg = (data.errors && data.errors[0]) || `HTTP ${res.status}`;
+          if (res.status === 403 || msg.toLowerCase().includes('token') || msg.toLowerCase().includes('apikey')) {
+            showError(`<strong>Invalid API key.</strong> Check your GNews token in Settings and try again.`);
+          } else if (res.status === 429) {
+            showError(`<strong>Rate limit reached.</strong> GNews free tier allows 100 requests/day. Try again tomorrow.`);
+          } else {
+            showError(`<strong>GNews error:</strong> ${escHtml(msg)}`);
+          }
+          showLoading(false);
+          return;
+        }
+
+        state.articles = (data.articles || []).filter(a => a.url && a.title);
+        renderContent();
+        showLoading(false);
+      } catch(e) {
+        showError(`<strong>Network error.</strong> Could not reach GNews — check your internet connection.<br><small>${escHtml(e.message)}</small>`);
+        showLoading(false);
+      }
+    }
+
+    // ── Article Assignment ────────────────────────────────────────────────────
+
+    function getArticleClients(article) {
+      const text = [article.title || '', article.description || '', (article.content || '').slice(0, 300)].join(' ').toLowerCase();
+      return state.clients.filter(c => text.includes(c.toLowerCase()));
+    }
+
+    // ── Theme Detection ───────────────────────────────────────────────────────
+
+    function detectThemes(articles) {
+      if (!articles.length) return [];
+
+      // Collect all words from titles + descriptions
+      const wordMap = {};  // word → array of article indices
+      articles.forEach((art, idx) => {
+        const text = (art.title + ' ' + (art.description || '')).toLowerCase();
+        const words = text.match(/[a-z]{5,}/g) || [];
+        const seen = new Set();
+        words.forEach(w => {
+          if (!STOP_WORDS.has(w) && !seen.has(w)) {
+            seen.add(w);
+            wordMap[w] = wordMap[w] || [];
+            wordMap[w].push(idx);
+          }
+        });
+      });
+
+      // Sort by frequency descending
+      const ranked = Object.entries(wordMap)
+        .filter(([, idxs]) => idxs.length >= 2)
+        .sort((a, b) => b[1].length - a[1].length);
+
+      // Pick top 6 non-overlapping themes (greedy cover)
+      const themes = [];
+      const usedArticles = new Set();
+
+      for (const [word, idxs] of ranked) {
+        if (themes.length >= 6) break;
+        const novel = idxs.filter(i => !usedArticles.has(i));
+        if (novel.length < 2) continue;
+        novel.forEach(i => usedArticles.add(i));
+        themes.push({ word, articleIdxs: idxs });
+      }
+
+      return themes;
+    }
+
+    function themeSummary(articleIdxs, articles) {
+      const sources = [...new Set(articleIdxs.map(i => articles[i]?.source?.name).filter(Boolean))].slice(0, 4);
+      const count = articleIdxs.length;
+      return `${count} ${count === 1 ? 'story' : 'stories'} from ${sources.join(', ')}`;
+    }
+
+    // ── Client Summary ────────────────────────────────────────────────────────
+
+    function clientSummary(articles) {
+      const sources = [...new Set(articles.map(a => a.source?.name).filter(Boolean))].slice(0, 4);
+      const count = articles.length;
+      return `${count} ${count === 1 ? 'story' : 'stories'} from ${sources.join(', ')}`;
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+
+    function renderContent() {
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('content-area').style.display = 'block';
+
+      // Update badges
+      const total = state.articles.length;
+      document.getElementById('badge-all').textContent = total || '—';
+
+      const themes = detectThemes(state.articles);
+      document.getElementById('badge-theme').textContent = themes.length || '—';
+
+      // Client counts
+      let totalCliented = 0;
+      state.clients.forEach(c => {
+        const arts = state.articles.filter(a => getArticleClients(a).includes(c));
+        totalCliented = Math.max(totalCliented, arts.length);
+      });
+      document.getElementById('badge-client').textContent = state.articles.length || '—';
+
+      // Sidebar jump links
+      updateSidebarJumps();
+
+      renderView();
+    }
+
+    function renderView() {
+      const area = document.getElementById('content-area');
+      area.innerHTML = '';
+
+      if (state.currentView === 'by-client') renderByClient(area);
+      else if (state.currentView === 'by-theme') renderByTheme(area);
+      else renderAllNews(area);
+    }
+
+    function buildClientSection(client) {
+      const gnArts = state.clientGoogleNews[client];
+      const arts = gnArts || state.articles.filter(a => getArticleClients(a).includes(client));
+      const isGoogle = !!gnArts;
+
+      const collapsed = !!state.clientCollapsed[client];
+
+      const section = document.createElement('div');
+      section.className = 'client-section' + (collapsed ? ' collapsed' : '');
+      section.id = `client-${slugify(client)}`;
+
+      // Header row (clicking anywhere toggles collapse)
+      const header = document.createElement('div');
+      header.className = 'client-section-header';
+      header.innerHTML = `
+        <span class="collapse-chevron">▼</span>
+        <div class="client-name-title">${escHtml(client)}</div>
+        <div class="client-count">${arts.length} ${arts.length === 1 ? 'article' : 'articles'}</div>
+      `;
+      const gnBtn = document.createElement('button');
+      gnBtn.className = 'btn btn-secondary';
+      gnBtn.style.cssText = 'font-size:0.73rem;padding:4px 10px;margin-left:auto;';
+      gnBtn.textContent = isGoogle ? '✓ Google News' : '↻ Google News';
+      if (isGoogle) gnBtn.style.color = '#7A8C3C';
+      gnBtn.addEventListener('click', e => { e.stopPropagation(); fetchClientGoogleNews(client, gnBtn); });
+      header.appendChild(gnBtn);
+      header.addEventListener('click', () => {
+        state.clientCollapsed[client] = !state.clientCollapsed[client];
+        section.classList.toggle('collapsed', state.clientCollapsed[client]);
+      });
+      section.appendChild(header);
+
+      // Collapsible body
+      const body = document.createElement('div');
+      body.className = 'collapse-body';
+
+      const summary = document.createElement('div');
+      summary.className = 'client-summary';
+      summary.innerHTML = arts.length
+        ? escHtml(clientSummary(arts)) + (isGoogle ? ' <span style="color:#7A8C3C;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
+        : 'No articles found — try <strong>↻ Google News</strong> for broader results.';
+      body.appendChild(summary);
+
+      arts.forEach(art => {
+        body.appendChild(buildArticleCard(art, isGoogle ? [client] : getArticleClients(art)));
+      });
+
+      section.appendChild(body);
+      return section;
+    }
+
+    function renderByClient(container) {
+      if (state.clients.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">👤</div><h3>No clients added</h3><p>Add client names in Settings, then fetch news.</p></div>`;
+        return;
+      }
+      state.clients.forEach(client => container.appendChild(buildClientSection(client)));
+    }
+
+    async function fetchClientGoogleNews(client, btn) {
+      btn.disabled = true;
+      btn.textContent = '↻ Loading…';
+
+      // Properly encode the quoted search phrase
+      const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + client + '"')}&hl=en-US&gl=US&ceid=US:en`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+
+      try {
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Invalid RSS response');
+
+        const items = [...xml.getElementsByTagName('item')];
+
+        state.clientGoogleNews[client] = items.map(item => {
+          const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+          // Google News titles end with " - Source Name"
+          const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
+          const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
+          const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim()
+            || (srcMatch && srcMatch[1].trim()) || '';
+
+          // <link> in RSS XML is a text node sibling, not a child — use nextSibling
+          const linkEl = item.getElementsByTagName('link')[0];
+          const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
+
+          const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+          const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+
+          return {
+            title,
+            url,
+            description: desc,
+            publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
+            source: { name: sourceName },
+          };
+        });
+
+        const existing = document.getElementById(`client-${slugify(client)}`);
+        if (existing) existing.replaceWith(buildClientSection(client));
+
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '↻ Google News';
+        btn.title = `Error: ${e.message}`;
+      }
+    }
+
+    function renderByTheme(container) {
+      const themes = detectThemes(state.articles);
+
+      if (!themes.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">🏷️</div><h3>No themes detected yet</h3><p>Fetch news first — themes are auto-detected across articles.</p></div>`;
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'themes-grid';
+
+      themes.forEach(({ word, articleIdxs }) => {
+        const arts = articleIdxs.map(i => state.articles[i]).filter(Boolean);
+        const card = document.createElement('div');
+        card.className = 'theme-card';
+
+        const summary = themeSummary(articleIdxs, state.articles);
+        card.innerHTML = `
+          <div class="theme-card-header">
+            <span class="theme-label">${escHtml(word)}</span>
+            <div class="theme-count">${arts.length} ${arts.length === 1 ? 'article' : 'articles'}</div>
+            <div class="theme-summary">${escHtml(summary)}</div>
+          </div>
+          <div class="theme-articles">
+            ${arts.slice(0, 5).map(a => `
+              <div class="theme-article-item">
+                <div class="theme-article-source">${escHtml(a.source?.name || '')}</div>
+                <div class="theme-article-title"><a href="${escAttr(a.url)}" target="_blank" rel="noopener">${escHtml(a.title)}</a></div>
+              </div>
+            `).join('')}
+            ${arts.length > 5 ? `<div style="font-size:0.75rem;color:#a89880;font-style:italic">+${arts.length - 5} more</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      container.appendChild(grid);
+    }
+
+    function renderAllNews(container) {
+      if (!state.articles.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📰</div><h3>No articles loaded</h3><p>Click Fetch News to pull articles.</p></div>`;
+        return;
+      }
+
+      // Sort newest first
+      const sorted = [...state.articles].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      sorted.forEach(art => {
+        const tags = getArticleClients(art);
+        container.appendChild(buildArticleCard(art, tags));
+      });
+    }
+
+    function buildArticleCard(art, clientTags) {
+      const card = document.createElement('div');
+      card.className = 'article-card';
+
+      const source = art.source?.name || '';
+      const date = formatDate(art.publishedAt);
+      const title = art.title || '';
+      const desc = art.description || '';
+
+      card.innerHTML = `
+        <div class="card-meta">
+          <span class="card-source">${escHtml(source)}</span>
+          ${date ? `<span class="card-dot">•</span><span class="card-date">${escHtml(date)}</span>` : ''}
+        </div>
+        <div class="card-title">
+          <a href="${escAttr(art.url)}" target="_blank" rel="noopener">${escHtml(title)}</a>
+        </div>
+        ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
+        ${clientTags.length ? `<div class="card-tags">${clientTags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      `;
+      return card;
+    }
+
+    // ── Sidebar ───────────────────────────────────────────────────────────────
+
+    function updateSidebarJumps() {
+      const divider = document.getElementById('client-jump-divider');
+      const label = document.getElementById('client-jump-label');
+      const jumps = document.getElementById('client-jumps');
+
+      if (state.currentView !== 'by-client' || !state.clients.length) {
+        divider.style.display = 'none';
+        label.style.display = 'none';
+        jumps.innerHTML = '';
+        return;
+      }
+
+      divider.style.display = 'block';
+      label.style.display = 'block';
+      jumps.innerHTML = state.clients.map(c => `
+        <button class="client-jump" onclick="scrollToClient('${slugify(c)}')">${escHtml(c)}</button>
+      `).join('');
+    }
+
+    function scrollToClient(slug) {
+      const el = document.getElementById(`client-${slug}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── View Switching ────────────────────────────────────────────────────────
+
+    function setView(view) {
+      state.currentView = view;
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+      updateSidebarJumps();
+      if (state.articles.length) renderView();
+    }
+
+    // ── Settings Modal ────────────────────────────────────────────────────────
+
+    // Temporary state while modal is open
+    let modalClients = [];
+
+    function openModal() {
+      modalClients = [...state.clients];
+
+      document.getElementById('api-key-input').value = state.apiKey;
+      renderRemovableTags('clients-tags', modalClients);
+
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('api-key-input').focus();
+    }
+
+    function renderRemovableTags(containerId, arr) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = arr.map((item, i) => `
+        <span class="removable-tag">
+          ${escHtml(item)}
+          <button onclick="removeTagAt('${containerId}',${i})" title="Remove">✕</button>
+        </span>
+      `).join('');
+    }
+
+    // Global remove helper (called from inline onclick)
+    window.removeTagAt = function(containerId, idx) {
+      modalClients.splice(idx, 1);
+      renderRemovableTags('clients-tags', modalClients);
+    };
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+
+    function saveModal() {
+      state.apiKey = document.getElementById('api-key-input').value.trim();
+      state.clients = [...modalClients];
+      saveStorage();
+      closeModal();
+      updateSidebarJumps();
+    }
+
+    function addClientFromInput() {
+      const input = document.getElementById('client-input');
+      const val = input.value.trim();
+      if (val && !modalClients.includes(val)) {
+        modalClients.push(val);
+        renderRemovableTags('clients-tags', modalClients);
+      }
+      input.value = '';
+      input.focus();
+    }
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escAttr(s) {
+      // Only allow http/https URLs; strip otherwise
+      if (!s || !/^https?:\/\//i.test(s)) return '#';
+      return escHtml(s);
+    }
+
+    function slugify(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    function showLoading(on) {
+      document.getElementById('loading-bar').classList.toggle('visible', on);
+      document.getElementById('content-area').style.display = on ? 'none' : (state.articles.length ? 'block' : 'none');
+      document.getElementById('empty-state').style.display = (!on && !state.articles.length) ? 'flex' : 'none';
+      document.getElementById('fetch-btn').disabled = on;
+      document.getElementById('fetch-btn').textContent = on ? 'Fetching…' : 'Fetch News';
+    }
+
+    function showError(html) {
+      document.getElementById('error-container').innerHTML = `<div class="error-box">${html}</div>`;
+    }
+
+    function clearError() {
+      document.getElementById('error-container').innerHTML = '';
+    }
+
+    // ── Event Wiring ──────────────────────────────────────────────────────────
+
+    document.getElementById('fetch-btn').addEventListener('click', fetchNews);
+    document.getElementById('settings-btn').addEventListener('click', openModal);
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-save-btn').addEventListener('click', saveModal);
+    document.getElementById('add-client-btn').addEventListener('click', addClientFromInput);
+
+    document.getElementById('client-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addClientFromInput();
+    });
+
+    document.getElementById('date-range-select').addEventListener('change', function() {
+      document.getElementById('custom-range-inputs').style.display = this.value === 'custom' ? 'flex' : 'none';
+    });
+
+    // Close modal on overlay click
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // View buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    });
+
+    // Sidebar jump global helper
+    window.scrollToClient = scrollToClient;
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+
+    function init() {
+      loadStorage();
+      // Set default custom range dates
+      const today = new Date();
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 6);
+      document.getElementById('date-to').value = toISODate(today);
+      document.getElementById('date-from').value = toISODate(weekAgo);
+
+      // Open settings modal automatically if no API key
+      if (!state.apiKey) {
+        openModal();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
