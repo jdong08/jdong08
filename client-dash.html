@@ -629,6 +629,48 @@
 
     .removable-tag button:hover { opacity: 1; }
 
+    .suggest-btn {
+      background: none;
+      border: 1px solid rgba(224,197,143,0.35);
+      color: #E0C58F;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      padding: 3px 9px;
+      cursor: pointer;
+      font-family: inherit;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .suggest-btn:hover { opacity: 1; }
+    .suggest-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .suggestions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .suggestion-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(224,197,143,0.08);
+      border: 1px dashed rgba(224,197,143,0.35);
+      color: #E0C58F;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .suggestion-chip:hover { background: rgba(224,197,143,0.18); }
+    .suggestion-chip.added {
+      border-style: solid;
+      opacity: 0.5;
+      cursor: default;
+    }
+
     .modal-footer {
       padding: 16px 24px;
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -1581,6 +1623,94 @@
       });
     }
 
+    const COMP_STOP = new Set([
+      'The','This','That','These','Those','Their','With','From','About','Into','Over',
+      'After','Before','More','Also','Will','When','What','Then','Than','Have','Been',
+      'Were','Said','Says','Like','Just','Some','Such','Both','They','Even','While',
+      'Here','Because','However','Which','There','Among','Other','And','For','But',
+      'New','Inc','Corp','Ltd','Group','Holdings','Company','Companies','Global',
+      'International','Financial','Services','Management','Capital','Markets',
+      'Report','Quarter','Earnings','Revenue','Profit','Share','Stock','Market',
+      'News','Business','Industry','Sector','Data','Year','Month','Week',
+      'First','Second','Third','Fourth','Annual','Monthly','Daily',
+      'Chief','Executive','Officer','President','Chairman',
+      'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
+      'January','February','March','April','May','June',
+      'July','August','September','October','November','December',
+    ]);
+
+    async function suggestCompetitors(client, suggestBtn, suggestionsRow) {
+      suggestBtn.disabled = true;
+      suggestBtn.textContent = 'Searching…';
+      suggestionsRow.innerHTML = '';
+
+      try {
+        const query = `"${client}" competitor OR rival OR versus`;
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Bad RSS');
+
+        const items = [...xml.getElementsByTagName('item')];
+
+        // Collect all title + description text
+        const corpus = items.map(item => {
+          const t = item.getElementsByTagName('title')[0]?.textContent || '';
+          const d = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          return t + ' ' + d;
+        }).join(' ');
+
+        // Extract 1–4 word capitalized phrases (likely proper nouns / company names)
+        const phraseRe = /\b([A-Z][a-zA-Z&'.]{1,20}(?:\s+[A-Z][a-zA-Z&'.]{1,20}){0,3})\b/g;
+        const counts = {};
+        let m;
+        while ((m = phraseRe.exec(corpus)) !== null) {
+          const phrase = m[1].trim();
+          const words = phrase.split(/\s+/);
+          // Skip if any word is a stop word, or phrase is/contains the client name
+          if (words.some(w => COMP_STOP.has(w))) continue;
+          if (phrase.toLowerCase().includes(client.toLowerCase())) continue;
+          if (phrase.length < 3) continue;
+          counts[phrase] = (counts[phrase] || 0) + 1;
+        }
+
+        const suggestions = Object.entries(counts)
+          .filter(([, n]) => n >= 2)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([k]) => k);
+
+        if (!suggestions.length) {
+          suggestionsRow.innerHTML = '<span style="color:#D9CBC2;font-size:0.75rem;opacity:0.7">No suggestions found — try adding manually.</span>';
+        } else {
+          suggestions.forEach(name => {
+            const chip = document.createElement('button');
+            chip.className = 'suggestion-chip';
+            chip.textContent = '+ ' + name;
+            chip.title = 'Click to add as competitor';
+            chip.addEventListener('click', () => {
+              if (!modalCompetitors[client]) modalCompetitors[client] = [];
+              if (!modalCompetitors[client].includes(name)) {
+                modalCompetitors[client].push(name);
+                renderCompetitorInputs();
+              }
+            });
+            suggestionsRow.appendChild(chip);
+          });
+        }
+      } catch(e) {
+        suggestionsRow.innerHTML = `<span style="color:#D9CBC2;font-size:0.75rem;opacity:0.7">Error: ${escHtml(e.message)}</span>`;
+      }
+
+      suggestBtn.disabled = false;
+      suggestBtn.textContent = '✦ Suggest';
+    }
+
     function renderCompetitorInputs() {
       const el = document.getElementById('competitors-inputs');
       el.innerHTML = '';
@@ -1615,9 +1745,22 @@
           input.value = '';
         });
         input.addEventListener('keydown', e => { if (e.key === 'Enter') { addBtn.click(); e.preventDefault(); } });
+
+        const suggestBtn = document.createElement('button');
+        suggestBtn.className = 'suggest-btn';
+        suggestBtn.textContent = '✦ Suggest';
+        suggestBtn.title = 'Auto-detect competitors from news';
+
+        const suggestionsRow = document.createElement('div');
+        suggestionsRow.className = 'suggestions-row';
+
+        suggestBtn.addEventListener('click', () => suggestCompetitors(client, suggestBtn, suggestionsRow));
+
         row.appendChild(input);
         row.appendChild(addBtn);
+        row.appendChild(suggestBtn);
         div.appendChild(row);
+        div.appendChild(suggestionsRow);
 
         const tagsDiv = document.createElement('div');
         tagsDiv.className = 'tags-container';
