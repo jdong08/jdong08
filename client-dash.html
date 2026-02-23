@@ -613,7 +613,26 @@
       border-radius: 20px;
       font-size: 0.78rem;
       font-weight: 500;
-      padding: 4px 10px 4px 12px;
+      padding: 4px 10px 4px 8px;
+      cursor: grab;
+      user-select: none;
+      transition: opacity 0.15s, box-shadow 0.15s;
+    }
+
+    .removable-tag.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+
+    .removable-tag.drag-over {
+      box-shadow: -3px 0 0 #E0C58F;
+    }
+
+    .drag-handle {
+      color: rgba(245,240,233,0.25);
+      font-size: 0.8rem;
+      cursor: grab;
+      margin-right: 2px;
     }
 
     .removable-tag button {
@@ -769,6 +788,22 @@
     }
 
     .show-read-toggle:hover { color: rgba(245,240,233,0.6); }
+
+    .mark-all-read-btn {
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem;
+      color: rgba(245,240,233,0.3);
+      cursor: pointer;
+      padding: 6px 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .mark-all-read-btn:hover { color: rgba(245,240,233,0.6); }
 
     /* ── Per-client Settings Rows ─────────────────────── */
     .per-client-row { margin-bottom: 14px; }
@@ -1210,35 +1245,39 @@
       btn.disabled = true;
       btn.textContent = '↻ Loading…';
 
-      const allArticles = [];
-      for (const comp of competitors) {
-        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + comp + '"')}&hl=en-US&gl=US&ceid=US:en`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-        try {
-          const res = await fetch(proxyUrl);
-          if (!res.ok) continue;
-          const text = await res.text();
-          const xml = new DOMParser().parseFromString(text, 'text/xml');
-          if (xml.querySelector('parsererror')) continue;
-          [...xml.getElementsByTagName('item')].forEach(item => {
-            const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
-            const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
-            const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
-            const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim() || (srcMatch && srcMatch[1].trim()) || '';
-            const linkEl = item.getElementsByTagName('link')[0];
-            const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
-            const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
-            const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
-            allArticles.push({
-              title, url, description: desc,
-              publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
-              source: { name: sourceName },
-              _competitor: comp,
-            });
+      function parseCompetitorItems(xml, comp) {
+        const articles = [];
+        [...xml.getElementsByTagName('item')].forEach(item => {
+          const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+          const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
+          const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
+          const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim() || (srcMatch && srcMatch[1].trim()) || '';
+          const linkEl = item.getElementsByTagName('link')[0];
+          const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
+          const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+          const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          articles.push({
+            title, url, description: desc,
+            publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
+            source: { name: sourceName },
+            _competitor: comp,
           });
-        } catch(e) {}
+        });
+        return articles;
       }
 
+      const results = await Promise.allSettled(competitors.map(async comp => {
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + comp + '"')}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) return [];
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) return [];
+        return parseCompetitorItems(xml, comp);
+      }));
+
+      const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
       state.competitorNews[client] = allArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
       const existing = document.getElementById(`client-${slugify(client)}`);
       if (existing) existing.replaceWith(buildClientSection(client));
@@ -1358,6 +1397,7 @@
             body.appendChild(buildArticleCard(art, tags, state.readUrls.has(art.url)));
           });
           appendShowReadToggle(body, client, read.length, showRead);
+          appendMarkAllReadBtn(body, client, unread);
         }
       } else {
         const unread = baseArts.filter(a => !state.readUrls.has(a.url));
@@ -1366,6 +1406,7 @@
           body.appendChild(buildArticleCard(art, isGoogle ? [client] : getArticleClients(art), state.readUrls.has(art.url)));
         });
         appendShowReadToggle(body, client, read.length, showRead);
+        appendMarkAllReadBtn(body, client, unread);
       }
 
       section.appendChild(body);
@@ -1381,6 +1422,20 @@
         : `Show ${readCount} read ${readCount === 1 ? 'article' : 'articles'}`;
       btn.addEventListener('click', () => {
         state.showRead[client] = !showRead;
+        const el = document.getElementById(`client-${slugify(client)}`);
+        if (el) el.replaceWith(buildClientSection(client));
+      });
+      container.appendChild(btn);
+    }
+
+    function appendMarkAllReadBtn(container, client, unreadArts) {
+      if (unreadArts.length === 0) return;
+      const btn = document.createElement('button');
+      btn.className = 'mark-all-read-btn';
+      btn.textContent = `Mark all ${unreadArts.length} as read`;
+      btn.addEventListener('click', () => {
+        unreadArts.forEach(a => state.readUrls.add(a.url));
+        localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
         const el = document.getElementById(`client-${slugify(client)}`);
         if (el) el.replaceWith(buildClientSection(client));
       });
@@ -1787,19 +1842,66 @@
 
     function renderRemovableTags(containerId, arr) {
       const el = document.getElementById(containerId);
-      el.innerHTML = arr.map((item, i) => `
-        <span class="removable-tag">
-          ${escHtml(item)}
-          <button onclick="removeTagAt('${containerId}',${i})" title="Remove">✕</button>
-        </span>
-      `).join('');
-    }
+      el.innerHTML = '';
 
-    // Global remove helper (called from inline onclick)
-    window.removeTagAt = function(containerId, idx) {
-      modalClients.splice(idx, 1);
-      renderRemovableTags('clients-tags', modalClients);
-    };
+      let dragSrcIdx = null;
+
+      arr.forEach((item, i) => {
+        const span = document.createElement('span');
+        span.className = 'removable-tag';
+        span.draggable = true;
+        span.dataset.idx = i;
+
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '⠿';
+        handle.title = 'Drag to reorder';
+
+        const nameNode = document.createTextNode(item + ' ');
+
+        const removeBtn = document.createElement('button');
+        removeBtn.title = 'Remove';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          modalClients.splice(i, 1);
+          renderRemovableTags(containerId, modalClients);
+          renderEarningsInputs();
+          renderCompetitorInputs();
+        });
+
+        span.appendChild(handle);
+        span.appendChild(nameNode);
+        span.appendChild(removeBtn);
+
+        span.addEventListener('dragstart', e => {
+          dragSrcIdx = i;
+          span.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        span.addEventListener('dragend', () => {
+          span.classList.remove('dragging');
+          el.querySelectorAll('.removable-tag').forEach(t => t.classList.remove('drag-over'));
+        });
+        span.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          el.querySelectorAll('.removable-tag').forEach(t => t.classList.remove('drag-over'));
+          if (i !== dragSrcIdx) span.classList.add('drag-over');
+        });
+        span.addEventListener('dragleave', () => span.classList.remove('drag-over'));
+        span.addEventListener('drop', e => {
+          e.preventDefault();
+          if (dragSrcIdx === null || dragSrcIdx === i) return;
+          const moved = modalClients.splice(dragSrcIdx, 1)[0];
+          modalClients.splice(i, 0, moved);
+          renderRemovableTags(containerId, modalClients);
+          renderEarningsInputs();
+          renderCompetitorInputs();
+        });
+
+        el.appendChild(span);
+      });
+    }
 
     function closeModal() {
       document.getElementById('modal-overlay').classList.remove('open');
@@ -1903,6 +2005,10 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
 
+    function toISODate(d) {
+      return d.toISOString().slice(0, 10);
+    }
+
     function init() {
       loadStorage();
       // Fallback to hardcoded key so settings modal doesn't auto-open on new devices
@@ -1916,6 +2022,11 @@
       weekAgo.setDate(weekAgo.getDate() - 6);
       document.getElementById('date-to').value = toISODate(today);
       document.getElementById('date-from').value = toISODate(weekAgo);
+
+      // Auto-fetch if we already have an API key and clients configured
+      if (state.apiKey && state.clients.length > 0) {
+        fetchNews();
+      }
     }
 
     init();
