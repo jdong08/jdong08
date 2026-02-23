@@ -149,6 +149,7 @@ if(!CanvasRenderingContext2D.prototype.roundRect){
 const canvas=document.getElementById('canvas');
 const ctx=canvas.getContext('2d');
 const W=800,H=450;
+const HORIZON=Math.round(H*.32); // ~144px — sky/slope split
 const OWM_KEY='9551a6d3ee093363bf75dcafc0d3de77';
 
 // Sun is from upper-right → shadows point lower-left
@@ -179,187 +180,237 @@ function getBg(cond){
   return bgCanvas;
 }
 
-// ─── flat top-down snow background ───────────────────────────────────────────
+// ─── isometric ski slope background ──────────────────────────────────────────
 function paintBg(bx,cond){
-  const pal=SNOW_PAL[cond]||SNOW_PAL.sunny;
   const rng=mkRng(0xdeadbeef);
 
-  // 1. base fill
-  bx.fillStyle=pal.base; bx.fillRect(0,0,W,H);
+  // ── 1. Sky gradient ──────────────────────────────────────────────────────────
+  const SKY={
+    sunny:  ['#1a3a70','#2c5eaa','#78aacc','#bcd6f0'],
+    snowing:['#28304a','#38486c','#5e6e9e','#8ea0c0'],
+    overcast:['#222e3e','#304458','#546880','#7e96ae'],
+    storm:  ['#141820','#1e2636','#2c3a4e','#445a6a'],
+  };
+  const sc=SKY[cond]||SKY.sunny;
+  const skyG=bx.createLinearGradient(0,0,0,HORIZON);
+  skyG.addColorStop(0,sc[0]);skyG.addColorStop(.42,sc[1]);
+  skyG.addColorStop(.76,sc[2]);skyG.addColorStop(1,sc[3]);
+  bx.fillStyle=skyG; bx.fillRect(0,0,W,HORIZON);
 
-  // 2. gentle light gradient — sun from upper-right
-  const lg=bx.createLinearGradient(W,0,0,H);
-  lg.addColorStop(0,'rgba(255,252,245,.07)');
-  lg.addColorStop(1,'rgba(90,100,140,.06)');
-  bx.fillStyle=lg; bx.fillRect(0,0,W,H);
-
-  // 3. subtle wind-blown surface texture (horizontal micro-streaks)
-  for(let i=0;i<220;i++){
-    const x=rng()*W, y=rng()*H;
-    const len=10+rng()*48, ht=0.8+rng()*1.8;
-    const col=rng()<.55?pal.hi:pal.sh;
-    bx.save(); bx.globalAlpha=.04+rng()*.06;
-    bx.fillStyle=col;
-    bx.fillRect(x,y,len,ht);
-    bx.restore();
-  }
-
-  // 4. faint previous ski tracks (diagonal, like a real used slope)
-  //    only show in clear conditions (fresh snow covers old tracks)
-  if(cond!=='snowing'&&cond!=='storm'){
-    const rng2=mkRng(0xbeef1234);
+  // ── 2. Wispy cloud streaks (clear/snowing only) ───────────────────────────────
+  if(cond!=='storm'){
+    const crng=mkRng(0xc10ude);
     bx.save();
-    bx.lineCap='round'; bx.strokeStyle=pal.sh; bx.lineWidth=.9;
-    for(let i=0;i<13;i++){
-      const sx=rng2()*W*1.3-W*.15;
-      const sy=-40+rng2()*80;
-      const ang=Math.PI*.48+(rng2()-.5)*.35; // mostly downward with variation
-      const len=160+rng2()*340;
-      const sep=3.5+rng2()*3;
-      for(const side of[-1,1]){
-        const ox=Math.cos(ang-Math.PI/2)*sep*side;
-        const oy=Math.sin(ang-Math.PI/2)*sep*side;
-        const mx=sx+Math.cos(ang)*len*.5+(rng2()-.5)*35+ox;
-        const my=sy+Math.sin(ang)*len*.5+(rng2()-.5)*15+oy;
-        bx.save(); bx.globalAlpha=.12+rng2()*.16;
+    for(let i=0;i<(cond==='snowing'?3:7);i++){
+      const cy=10+crng()*(HORIZON*.52), cx=50+crng()*(W-100);
+      const cr=20+crng()*44;
+      bx.globalAlpha=(cond==='snowing'?.04:.08)+crng()*.06;
+      bx.fillStyle='#d4ecff';
+      for(let j=0;j<4;j++){
         bx.beginPath();
-        bx.moveTo(sx+ox,sy+oy);
-        bx.quadraticCurveTo(mx,my,sx+Math.cos(ang)*len+ox,sy+Math.sin(ang)*len+oy);
-        bx.stroke(); bx.restore();
+        bx.ellipse(cx+j*cr*.38,cy+crng()*7,cr*.6+crng()*cr*.28,cr*.22+crng()*6,-Math.PI*.04,0,Math.PI*2);
+        bx.fill();
       }
     }
     bx.restore();
   }
 
-  // 5. static scene elements
-  paintGondola(bx,cond);
-  paintTopDownTrees(bx,cond);
+  // ── 3. Slope base gradient (cool/hazy horizon → warm/bright foreground) ───────
+  const SL={
+    sunny:  ['#c4d0e2','#d8e4ea','#ecf3ee','#f6faf6'],
+    snowing:['#888ea8','#a6acbe','#c6cedd','#d8dde8'],
+    overcast:['#7e88a0','#9ea8bc','#bcc4d2','#d0d6e2'],
+    storm:  ['#48505e','#5e6a78','#7a8890','#94a0a8'],
+  };
+  const sl=SL[cond]||SL.sunny;
+  const slopeG=bx.createLinearGradient(0,HORIZON,0,H);
+  slopeG.addColorStop(0,sl[0]);slopeG.addColorStop(.28,sl[1]);
+  slopeG.addColorStop(.62,sl[2]);slopeG.addColorStop(1,sl[3]);
+  bx.fillStyle=slopeG; bx.fillRect(0,HORIZON,W,H-HORIZON);
+
+  // ── 4. Groomed corduroy — convergent lines toward horizon VP ─────────────────
+  const vpX=W/2, slopeH=H-HORIZON;
+  bx.save(); bx.strokeStyle=sl[0];
+  for(let i=0;i<=20;i++){
+    const t=i/20;
+    const xBot=W*(t*1.06-.03);
+    const xTop=vpX+(xBot-vpX)*.05;
+    const yTop=HORIZON+slopeH*.05;
+    bx.globalAlpha=.055+.04*Math.sin(t*Math.PI);
+    bx.lineWidth=.7; bx.beginPath();
+    bx.moveTo(xTop,yTop); bx.lineTo(xBot,H+2); bx.stroke();
+  }
+  // horizontal contour lines
+  for(let yi=0;yi<13;yi++){
+    const yf=yi/12;
+    const y=HORIZON+slopeH*(.06+yf*.91);
+    bx.globalAlpha=.04+yf*.05; bx.lineWidth=.5+yf*.45;
+    bx.beginPath(); bx.moveTo(0,y); bx.lineTo(W,y); bx.stroke();
+  }
+  bx.restore();
+
+  // ── 5. Snow sparkle texture ───────────────────────────────────────────────────
+  bx.save();
+  for(let i=0;i<200;i++){
+    const x=rng()*W, y=HORIZON+rng()*(H-HORIZON);
+    const yf=(y-HORIZON)/slopeH;
+    bx.globalAlpha=(.028+rng()*.04)*(0.3+yf*.9);
+    bx.fillStyle=rng()<.55?sl[3]:sl[0];
+    bx.fillRect(x,y,8+rng()*28,.6+rng()*1.2);
+  }
+  bx.restore();
+
+  // ── 6. Atmospheric haze band at horizon ───────────────────────────────────────
+  const HAZE={
+    sunny:'rgba(188,216,248,.56)',snowing:'rgba(136,160,202,.64)',
+    overcast:'rgba(122,148,190,.60)',storm:'rgba(62,80,106,.70)',
+  };
+  const hazeG=bx.createLinearGradient(0,HORIZON-32,0,HORIZON+54);
+  hazeG.addColorStop(0,'rgba(255,255,255,0)');
+  hazeG.addColorStop(.40,HAZE[cond]||HAZE.sunny);
+  hazeG.addColorStop(1,'rgba(255,255,255,0)');
+  bx.fillStyle=hazeG; bx.fillRect(0,HORIZON-32,W,86);
+
+  // ── 7. Static scene elements ──────────────────────────────────────────────────
+  paintChairliftStatic(bx,cond);
+  paintPineTrees(bx,cond);
 }
 
-// ─── gondola (top-down: thin cable + suspended cars w/ ground shadows) ────────
-function paintGondola(bx,cond){
-  const cableY=H*.19;
-  const cc=cond==='storm'?'#383838':'#1e1e1e';
+// ─── isometric chairlift: static cable + towers painted into bg ───────────────
+const LIFT_T={x:Math.round(W*.65),y:HORIZON+16};
+const LIFT_B={x:Math.round(W*.79),y:H-14};
+function paintChairliftStatic(bx,cond){
+  const cc=cond==='storm'?'#4e505e':'#1c1c2c';
+  const dx=LIFT_B.x-LIFT_T.x, dy=LIFT_B.y-LIFT_T.y;
+  const ang=Math.atan2(dy,dx);
+  const px=-Math.sin(ang), py=Math.cos(ang); // perpendicular unit
 
-  // two haul cables
-  for(const dy of[0,2.5]){
-    bx.save(); bx.globalAlpha=.55;
-    bx.strokeStyle=cc; bx.lineWidth=dy===0?1.5:.7;
-    bx.beginPath(); bx.moveTo(0,cableY+dy); bx.lineTo(W,cableY+dy); bx.stroke();
+  // Support towers at 30%, 60%, 85% along cable
+  for(const f of[.30,.60,.85]){
+    const tx=LIFT_T.x+dx*f, ty=LIFT_T.y+dy*f;
+    bx.save(); bx.globalAlpha=.72; bx.fillStyle=cc;
+    bx.fillRect(tx-1.6,ty,3.2,11);    // mast down to slope
+    bx.fillRect(tx-8,ty-1.5,16,2.5);  // cross arm
+    bx.restore();
+    // tower shadow on slope
+    bx.save(); bx.globalAlpha=.10; bx.fillStyle='#283860';
+    bx.beginPath(); bx.ellipse(tx-5,ty+8,6,2.5,0,0,Math.PI*2); bx.fill();
     bx.restore();
   }
 
-  // support towers (seen from above: small T shapes)
-  for(const tx of[W*.26,W*.74]){
-    bx.save(); bx.globalAlpha=.7;
-    bx.fillStyle=cc;
-    bx.fillRect(tx-1.5,cableY-16,3,18); // mast
-    bx.fillRect(tx-10,cableY-18,20,3);  // cross arm
-    bx.restore();
-  }
-
-}
-
-// ─── animated gondola cars (live render, loop left→right) ────────────────────
-const GONDOLA_SPD=0.018; // px/ms — one crossing ~44 s
-const N_CARS=4;
-const GONDOLA_LOOP=W+52;
-function drawLiftCars(t){
-  const cableY=H*.19,cw=12,ch=8;
-  for(let i=0;i<N_CARS;i++){
-    const cx=((t*GONDOLA_SPD+i*GONDOLA_LOOP/N_CARS)%GONDOLA_LOOP+GONDOLA_LOOP)%GONDOLA_LOOP-26;
-    if(cx<-cw-2||cx>W+cw+2) continue;
-    // shadow on snow
-    ctx.save();ctx.globalAlpha=.10;ctx.fillStyle='#4050a0';
-    ctx.beginPath();ctx.ellipse(cx+SHADOW_DX*18,cableY+SHADOW_DY*18,cw*.75,ch*.6,0,0,Math.PI*2);
-    ctx.fill();ctx.restore();
-    // hanger wire
-    ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle='#1a1a26';ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(cx,cableY);ctx.lineTo(cx,cableY+3);ctx.stroke();ctx.restore();
-    // car body
-    ctx.fillStyle='#181824';ctx.fillRect(cx-cw/2,cableY+3,cw,ch);
-    // window strip
-    ctx.fillStyle='rgba(170,205,230,.35)';ctx.fillRect(cx-cw/2+1.5,cableY+5,cw-3,ch-4);
-  }
-}
-
-// ─── top-down tree canopies ───────────────────────────────────────────────────
-// placed in corners, away from text area (center of canvas)
-const TREE_DEFS=[
-  {x:52,y:52,r:36},{x:736,y:68,r:42},
-  {x:36,y:395,r:32},{x:754,y:400,r:38},
-  {x:22,y:210,r:24},
-];
-function paintTopDownTrees(bx,cond){
-  const rng=mkRng(0xf00dcafe);
-  const storm=cond==='storm', snow=cond==='snowing';
-  const snowCol=storm?'rgba(185,200,210,.6)':snow?'rgba(225,235,245,.7)':'rgba(238,248,252,.72)';
-  const greens=storm?['#0c1810','#121e14','#162018']:['#132016','#1c2e1e','#243424','#1a2818'];
-
-  for(const t of TREE_DEFS){
-    const r=t.r;
-
-    // cast shadow on snow (elongated, lower-left of tree)
-    bx.save(); bx.globalAlpha=storm?.12:.2;
-    bx.fillStyle='#4a5898';
+  // Cable strands (haul + return)
+  for(const off of[0,2.8]){
+    bx.save(); bx.strokeStyle=cc;
+    bx.lineWidth=off===0?1.25:.6;
+    bx.globalAlpha=off===0?.65:.30;
     bx.beginPath();
-    bx.ellipse(t.x+SHADOW_DX*r*.9,t.y+SHADOW_DY*r*.9,r*.55,r*1.05,-0.2,0,Math.PI*2);
-    bx.fill(); bx.restore();
-
-    // outer canopy ring (darkest — deep shadow within canopy)
-    bx.fillStyle=greens[0];
-    bx.beginPath(); bx.arc(t.x,t.y,r,0,Math.PI*2); bx.fill();
-
-    // mid canopy
-    bx.fillStyle=greens[1];
-    bx.beginPath(); bx.arc(t.x,t.y,r*.72,0,Math.PI*2); bx.fill();
-
-    // inner lit area (upper-right catches light)
-    bx.fillStyle=greens[2]||greens[1];
-    bx.beginPath(); bx.arc(t.x,t.y,r*.46,0,Math.PI*2); bx.fill();
-
-    // radial branch lines
-    bx.save(); bx.strokeStyle=greens[0]; bx.lineWidth=1.4; bx.globalAlpha=.7;
-    for(let i=0;i<9;i++){
-      const a=(i/9)*Math.PI*2;
-      bx.beginPath();
-      bx.moveTo(t.x+Math.cos(a)*r*.12,t.y+Math.sin(a)*r*.12);
-      bx.lineTo(t.x+Math.cos(a)*r*.88,t.y+Math.sin(a)*r*.88);
-      bx.stroke();
-    }
-    bx.restore();
-
-    // snow patches on lit (upper-right) side of canopy
-    bx.save(); bx.fillStyle=snowCol;
-    for(const[sdx,sdy,sr,sa] of[[.28,-.32,.2,.68],[.08,-.42,.15,.62],[.42,-.12,.13,.6],[-.02,-.3,.11,.55]]){
-      bx.globalAlpha=sa+rng()*.15;
-      bx.beginPath(); bx.ellipse(t.x+sdx*r,t.y+sdy*r,sr*r,sr*r*.6,0,0,Math.PI*2); bx.fill();
-    }
-    bx.restore();
+    bx.moveTo(LIFT_T.x+px*off,LIFT_T.y+py*off);
+    bx.lineTo(LIFT_B.x+px*off,LIFT_B.y+py*off);
+    bx.stroke(); bx.restore();
   }
 }
 
-// ─── animated background skiers (slide top→bottom continuously) ───────────────
+// ─── animated chairlift chairs (live render, slide top→bottom) ───────────────
+const N_CHAIRS=5;
+function drawChairs(t){
+  const dx=LIFT_B.x-LIFT_T.x, dy=LIFT_B.y-LIFT_T.y;
+  const spd=0.020; // fraction of cable per second
+  for(let i=0;i<N_CHAIRS;i++){
+    const frac=((t*spd/1000+i/N_CHAIRS)%1+1)%1;
+    const cx=LIFT_T.x+dx*frac, cy=LIFT_T.y+dy*frac;
+    if(cy<HORIZON-3) continue;
+    // shadow on slope
+    ctx.save(); ctx.globalAlpha=.08; ctx.fillStyle='#263860';
+    ctx.beginPath(); ctx.ellipse(cx-5,cy+18,9,3.5,0,0,Math.PI*2);
+    ctx.fill(); ctx.restore();
+    // hanger wire
+    ctx.save(); ctx.globalAlpha=.52; ctx.strokeStyle='#18182c'; ctx.lineWidth=.9;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx,cy+10); ctx.stroke();
+    ctx.restore();
+    // chair back
+    ctx.fillStyle='#1e1e2e'; ctx.fillRect(cx-8,cy+10,16,5);
+    // chair seat
+    ctx.fillStyle='#28283c'; ctx.fillRect(cx-8,cy+15,16,3);
+    // footrests
+    ctx.save(); ctx.strokeStyle='#14142a'; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(cx-6,cy+18); ctx.lineTo(cx-6,cy+23);
+    ctx.moveTo(cx+6,cy+18); ctx.lineTo(cx+6,cy+23);
+    ctx.stroke(); ctx.restore();
+  }
+}
+
+// ─── isometric pine trees ─────────────────────────────────────────────────────
+// Each spec: xf=0-1 across canvas, yf=0-1 down slope, s=scale factor
+const TREE_SPECS=[
+  // left side column
+  {xf:.060,yf:.09,s:.42},{xf:.115,yf:.21,s:.50},{xf:.040,yf:.37,s:.58},
+  {xf:.100,yf:.55,s:.67},{xf:.065,yf:.74,s:.77},{xf:.130,yf:.91,s:.88},
+  // right side column (stay left of chairlift)
+  {xf:.940,yf:.08,s:.40},{xf:.880,yf:.20,s:.48},{xf:.960,yf:.35,s:.56},
+  {xf:.900,yf:.53,s:.65},{xf:.855,yf:.71,s:.75},{xf:.920,yf:.89,s:.85},
+];
+function getTreePos(sp){
+  return{x:sp.xf*W, y:HORIZON+sp.yf*(H-HORIZON), h:90*sp.s, r:28*sp.s};
+}
+function paintPineTree(bx,x,y,h,r,cond){
+  const storm=cond==='storm';
+  // Shadow on slope (sun upper-right → shadow lower-left)
+  bx.save(); bx.globalAlpha=storm?.06:.15; bx.fillStyle='#2a3c68';
+  bx.beginPath(); bx.ellipse(x-r*.72,y+r*.42,r*1.72,r*.36,Math.PI*.12,0,Math.PI*2);
+  bx.fill(); bx.restore();
+  // Trunk
+  bx.fillStyle='#3a2418';
+  bx.fillRect(x-r*.08,y-h*.15,r*.16,h*.16);
+  // Three tiers bottom→top
+  const G=storm?['#0c1610','#141e14','#1a2818']:['#0e1c0e','#1a3018','#253a22'];
+  const snowA=storm?.20:.58;
+  const snowC=storm?'rgba(182,198,208,.7)':'rgba(233,246,255,.85)';
+  for(const[yf,rf] of[[.62,1.00],[.38,.68],[.18,.42]]){
+    const ty=y-h*yf, tr=r*rf;
+    // Full triangle (darker right/shadow side)
+    bx.fillStyle=G[0];
+    bx.beginPath(); bx.moveTo(x,ty-tr*.85); bx.lineTo(x+tr,ty+tr*.30); bx.lineTo(x-tr,ty+tr*.30); bx.closePath(); bx.fill();
+    // Left lit face
+    bx.fillStyle=G[2];
+    bx.beginPath(); bx.moveTo(x,ty-tr*.85); bx.lineTo(x,ty+tr*.30); bx.lineTo(x-tr,ty+tr*.30); bx.closePath(); bx.fill();
+    // Snow on upper-left portion
+    bx.save(); bx.globalAlpha=snowA; bx.fillStyle=snowC;
+    bx.beginPath(); bx.moveTo(x,ty-tr*.85); bx.lineTo(x-tr*.04,ty+tr*.30); bx.lineTo(x-tr*.60,ty+tr*.30); bx.closePath(); bx.fill();
+    bx.restore();
+  }
+}
+function paintPineTrees(bx,cond){
+  // Painter's order: back (small yf) first, front (large yf) last
+  const sorted=[...TREE_SPECS].sort((a,b)=>a.yf-b.yf);
+  for(const sp of sorted){
+    const{x,y,h,r}=getTreePos(sp);
+    paintPineTree(bx,x,y,h,r,cond);
+  }
+}
+
+// ─── animated bg skiers — isometric slope (slide horizon→foreground) ─────────
 const SKIER_COLORS=['#cc2020','#c8980e','#1848c0','#c05010','#159838','#b82868','#601ac0'];
 const LIVE_BG_SKIERS=(function(){
   const rng=mkRng(0xabcdef12);
   return Array.from({length:5},()=>({
-    startX: 70+rng()*(W-140),
-    startY: rng()*(H+160),   // staggered entry so they're not all at the top at once
-    speed:  0.055+rng()*.04, // px/ms downhill
-    amp:    18+rng()*38,     // left-right carving amplitude
-    freq:   0.013+rng()*.009,// carving frequency
+    startX: 55+rng()*(W*.52),        // left half of slope, away from chairlift
+    startY: rng()*(H-HORIZON+155),   // staggered so not all at horizon at once
+    speed:  0.050+rng()*.04,         // px/ms downhill
+    amp:    14+rng()*28,             // carving amplitude
+    freq:   0.013+rng()*.009,
     phase:  rng()*Math.PI*2,
     col:    SKIER_COLORS[Math.floor(rng()*SKIER_COLORS.length)],
-    sz:     0.40+rng()*.18,  // smaller than the main skier
-    op:     0.42+rng()*.2,   // semi-transparent so they don't distract
+    sz:     0.40+rng()*.18,
+    op:     0.40+rng()*.20,
   }));
 })();
 
-const WRAP_H=H+170; // total loop distance (canvas + off-screen margins)
+const WRAP_H=H-HORIZON+185; // slope height + off-screen margins
 
 function bgSkierY(sk,t){
-  return((sk.startY+sk.speed*t)%WRAP_H+WRAP_H)%WRAP_H-85;
+  // Y on canvas; starts just above horizon, wraps back to horizon
+  return HORIZON-58+((sk.startY+sk.speed*t)%WRAP_H+WRAP_H)%WRAP_H;
 }
 function bgSkierX(sk,y){
   return sk.startX+sk.amp*Math.sin(y*sk.freq+sk.phase);
@@ -369,15 +420,19 @@ function drawLiveBgSkiers(t){
   for(const sk of LIVE_BG_SKIERS){
     const cy=bgSkierY(sk,t);
     const cx=bgSkierX(sk,cy);
-    if(cy<-85||cy>H+60) continue;
+    if(cy<HORIZON-52||cy>H+60) continue;
+
+    // Perspective scale: 0.38 near horizon → 1.0 at bottom
+    const pf=cy<HORIZON?0.38:0.38+0.62*((cy-HORIZON)/(H-HORIZON));
+    const s=sk.sz*pf;
+
     ctx.save();
 
     // ── ski tracks: reconstruct last ~1.5 s of path ─────────────────────────
     const trackPts=[];
     for(let dt=1500;dt>=0;dt-=40){
       const py=bgSkierY(sk,t-dt);
-      // skip any point from a previous lap (its y would wrap above current cy)
-      if(py<=cy&&py>-85) trackPts.push({x:bgSkierX(sk,py),y:py});
+      if(py<=cy&&py>HORIZON-52) trackPts.push({x:bgSkierX(sk,py),y:py});
     }
     trackPts.push({x:cx,y:cy});
     if(trackPts.length>1){
@@ -387,15 +442,14 @@ function drawLiveBgSkiers(t){
         ctx.beginPath();
         ctx.moveTo(trackPts[0].x+off,trackPts[0].y);
         for(const p of trackPts) ctx.lineTo(p.x+off,p.y);
-        ctx.globalAlpha=sk.op*.32;
-        ctx.strokeStyle='rgba(90,130,195,.9)';
+        ctx.globalAlpha=sk.op*.28;
+        ctx.strokeStyle='rgba(88,128,194,.9)';
         ctx.stroke();
       }
       ctx.restore();
     }
 
     // ── skier figure ─────────────────────────────────────────────────────────
-    // compute travel direction from a point 80 ms ago
     const py2=bgSkierY(sk,t-80);
     const px2=bgSkierX(sk,py2);
     const rot=py2<cy?Math.atan2(cy-py2,cx-px2):Math.PI/2;
@@ -403,29 +457,26 @@ function drawLiveBgSkiers(t){
     ctx.translate(cx,cy);
     ctx.rotate(rot);
     ctx.globalAlpha=sk.op;
-    const s=sk.sz;
 
-    // cast shadow (sun from upper-right)
-    ctx.save();ctx.globalAlpha=sk.op*.22;ctx.fillStyle='#3a5090';
+    // shadow
+    ctx.save(); ctx.globalAlpha=sk.op*.20; ctx.fillStyle='#3a5090';
     ctx.beginPath();
     ctx.ellipse(SHADOW_DX*s*10,SHADOW_DY*s*10,s*2,s*7,
       Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
-    ctx.fill();ctx.restore();
+    ctx.fill(); ctx.restore();
 
-    // skis (two bars along travel direction)
-    ctx.fillStyle='#180e04';
-    ctx.fillRect(-s*11,-s*1.4,s*22,s*1.1);
-    ctx.fillRect(-s*11,s*.4,s*22,s*1.1);
+    // skis
+    ctx.fillStyle='#160c04';
+    ctx.fillRect(-s*12,-s*1.4,s*24,s*1.1);
+    ctx.fillRect(-s*12,s*.4,s*24,s*1.1);
 
-    // jacket
+    // jacket + head
     ctx.fillStyle=sk.col;
-    ctx.beginPath();ctx.ellipse(0,0,s*3,s*4.5,0,0,Math.PI*2);ctx.fill();
-
-    // head (at forward end = +x after rotation)
-    ctx.fillStyle='#edb898';
-    ctx.beginPath();ctx.arc(s*3,0,s*2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0,0,s*3.2,s*4.8,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#edba96';
+    ctx.beginPath(); ctx.arc(s*3.5,0,s*2.1,0,Math.PI*2); ctx.fill();
     ctx.fillStyle=sk.col;
-    ctx.beginPath();ctx.arc(s*3,0,s*2,Math.PI*.5,Math.PI*1.5);ctx.fill();
+    ctx.beginPath(); ctx.arc(s*3.5,0,s*2.1,Math.PI*.5,Math.PI*1.5); ctx.fill();
 
     ctx.restore();
   }
@@ -577,11 +628,11 @@ const CG={
 
 // ─── cursive text layout & render ─────────────────────────────────────────────
 // Letters concatenate into one continuous path per word — a single flowing ski track
-const CW=50,CH=72,SQUISH=1.0,SPACE_W=26;
+const CW=50,CH=72,SQUISH=0.60,SPACE_W=26;
 const BASE_HALF_W=3.0,TAPER=.10,SMPTH=8,WOBBLE=1.1;
 
 // Skier travels at this y; text baseline sits on the same line
-const SKIER_LANE=H*.52;
+const SKIER_LANE=H*.64;
 
 let cursiveData=null; // {segs:[{pts,x0,x1,revX,seed}], hw}
 
@@ -787,55 +838,75 @@ function drawLabel(){
   ctx.fillText(`${name}  ·  ${date}`,W-14,H-12);ctx.restore();
 }
 
-// ─── main skier (top-down view, moving left→right) ───────────────────────────
+// ─── main skier (isometric 45° view, moving left→right) ─────────────────────
 function drawSkier(x,y,t){
-  ctx.save();ctx.translate(x,y);
+  ctx.save(); ctx.translate(x,y);
   const sway=Math.sin(t*.008)*.06;
   ctx.rotate(sway);
 
-  // soft shadow — always visible, strength varies by weather
-  const shOp={sunny:.22,overcast:.13,snowing:.11,storm:.07}[condition]||.15;
+  // Soft blurred shadow — sun from upper-right → shadow lower-left
+  const shOp={sunny:.26,overcast:.16,snowing:.12,storm:.08}[condition]||.16;
   ctx.save();
-  ctx.filter='blur(5px)';
-  ctx.globalAlpha=shOp;ctx.fillStyle='#3850a0';
+  ctx.filter='blur(6px)';
+  ctx.globalAlpha=shOp; ctx.fillStyle='#2c40a0';
   ctx.beginPath();
-  ctx.ellipse(SHADOW_DX*16,SHADOW_DY*16,13,28,Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
+  ctx.ellipse(SHADOW_DX*20,SHADOW_DY*20,20,10,Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
   ctx.fill();
   ctx.filter='none';
   ctx.restore();
 
-  // skis
-  ctx.fillStyle='#180e04';
-  ctx.fillRect(-22,-3.5,44,3);
-  ctx.fillStyle='#2a1810';ctx.fillRect(-22,-3,44,1);
-  ctx.fillStyle='#180e04';
-  ctx.fillRect(-22,1.5,44,3);
+  // Skis (pair extending left-right — forward direction is +x)
+  ctx.fillStyle='#0e0804';
+  ctx.fillRect(-30,-4,60,3);   // upper ski
+  ctx.fillRect(-30, 2,60,3);   // lower ski
+  // Ski tips (elliptical upturn)
   ctx.fillStyle='#1e1008';
-  ctx.beginPath();ctx.ellipse(22,-2,3,1.5,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(22,3,3,1.5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath(); ctx.ellipse(30,-2.5,5.5,2,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(30, 3.5,5.5,2,0,0,Math.PI*2); ctx.fill();
+  // Bindings (centre highlight)
+  ctx.fillStyle='#d8d8d8';
+  ctx.fillRect(-4,-4,8,3); ctx.fillRect(-4,2,8,3);
 
-  // jacket
+  // Pants / lower body
+  ctx.fillStyle='#1a2248';
+  ctx.beginPath(); ctx.ellipse(0,8,7,9,0,0,Math.PI*2); ctx.fill();
+
+  // Jacket body
   ctx.fillStyle=skierColor;
-  ctx.beginPath();ctx.ellipse(0,0,7,9.5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#fff';ctx.fillRect(-7,-1,14,1.5);
+  ctx.beginPath(); ctx.ellipse(0,-2,9,11,0,0,Math.PI*2); ctx.fill();
+  // Jacket racing stripe
+  ctx.fillStyle='rgba(255,255,255,.24)'; ctx.fillRect(-9,-3,18,2.5);
 
-  // arms
+  // Arms (angled back, holding poles)
   ctx.fillStyle=skierColor;
-  ctx.save();ctx.rotate(.25);ctx.fillRect(-15,-2,10,3);ctx.restore();
-  ctx.save();ctx.rotate(-.25);ctx.fillRect(-15,-1,10,3);ctx.restore();
+  ctx.save(); ctx.rotate(.30); ctx.fillRect(-20,-2.5,13,3.5); ctx.restore();
+  ctx.save(); ctx.rotate(-.30); ctx.fillRect(-20,-2.5,13,3.5); ctx.restore();
 
-  // pole baskets
-  ctx.fillStyle='rgba(80,80,80,.7)';
-  ctx.beginPath();ctx.arc(-17,-4,2,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(-17,4,2,0,Math.PI*2);ctx.fill();
+  // Pole shafts
+  ctx.strokeStyle='rgba(55,55,55,.82)'; ctx.lineWidth=1.1; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-14,-5); ctx.lineTo(-25, 9);   // upper pole
+  ctx.moveTo(-14, 5); ctx.lineTo(-25,18);   // lower pole
+  ctx.stroke();
+  // Pole baskets
+  ctx.fillStyle='rgba(45,45,45,.78)';
+  ctx.beginPath(); ctx.arc(-25, 9,2.8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-25,18,2.8,0,Math.PI*2); ctx.fill();
 
-  // helmet
+  // Helmet (sits forward of body, toward +x)
   ctx.fillStyle=skierColor;
-  ctx.beginPath();ctx.arc(8,0,5.5,0,Math.PI*2);ctx.fill();
-  // goggles
-  ctx.fillStyle='#e8c020';ctx.fillRect(5,-2.5,7,5);
-  ctx.fillStyle='#1a3a5a';ctx.fillRect(5.5,-2,6,4);
-  ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(6,-1.5,2,2);
+  ctx.beginPath(); ctx.ellipse(4,-13,7.5,6,0,0,Math.PI*2); ctx.fill();
+  // Helmet shell (dark underside)
+  ctx.fillStyle='#18181e';
+  ctx.beginPath(); ctx.ellipse(4,-11,7,4.5,0,0,Math.PI*2); ctx.fill();
+  // Goggles
+  ctx.fillStyle='#e8c020';
+  ctx.beginPath(); ctx.ellipse(4,-11,5.5,3.5,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#0e2a48';
+  ctx.beginPath(); ctx.ellipse(4,-11,4.5,3,0,0,Math.PI*2); ctx.fill();
+  // Goggle lens glint
+  ctx.fillStyle='rgba(255,255,255,.38)';
+  ctx.beginPath(); ctx.ellipse(2,-12,2,1.3,-.3,0,Math.PI*2); ctx.fill();
 
   ctx.restore();
 }
@@ -851,7 +922,7 @@ function skierPos(t){
 // ─── full scene ───────────────────────────────────────────────────────────────
 function drawScene(t,cond,sx,sy){
   ctx.drawImage(getBg(cond),0,0);
-  drawLiftCars(t);
+  drawChairs(t);
   drawLiveBgSkiers(t);
   drawSkiTracks(skiTracks);
   drawCursiveText(sx);
