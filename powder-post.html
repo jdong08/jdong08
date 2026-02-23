@@ -199,7 +199,7 @@ function paintBg(bx,cond){
 
   // ── 2. Wispy cloud streaks (clear/snowing only) ───────────────────────────────
   if(cond!=='storm'){
-    const crng=mkRng(0xc10ude);
+    const crng=mkRng(0xc10adef);
     bx.save();
     for(let i=0;i<(cond==='snowing'?3:7);i++){
       const cy=10+crng()*(HORIZON*.52), cx=50+crng()*(W-100);
