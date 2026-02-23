@@ -28,9 +28,22 @@ canvas{display:block;width:100%;height:auto}
 .progress-wrap{width:100%;max-width:820px;height:3px;background:#0d2038;border-radius:2px;margin-top:10px;overflow:hidden}
 .progress-fill{height:100%;background:#2a8cd0;border-radius:2px;width:0%;transition:width .12s}
 .status{font-size:.78rem;color:#4a7090;margin-top:7px;min-height:18px;text-align:center}
+.home-btn{position:fixed;top:14px;left:16px;display:flex;align-items:center;gap:6px;padding:7px 13px;background:rgba(15,30,55,.75);border:1px solid rgba(80,140,200,.2);border-radius:20px;color:#6a90b0;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;text-decoration:none;transition:all .2s;backdrop-filter:blur(8px);z-index:100}
+.home-btn:hover{color:#a8caec;border-color:rgba(80,140,200,.45);background:rgba(20,40,70,.85)}
+.home-btn svg{opacity:.7}
+.swatches{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0}
+.swatch:hover{transform:scale(1.15)}
+.swatch.active{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.3);transform:scale(1.15)}
+@keyframes powderPulse{0%,100%{opacity:.88}50%{opacity:1}}
+.powder-alert{position:absolute;top:10px;left:10px;background:rgba(10,40,110,.84);backdrop-filter:blur(8px);border:1px solid rgba(120,180,255,.4);border-radius:20px;padding:4px 14px;font-size:.78rem;color:#b8ddff;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:.04em;display:none;animation:powderPulse 2.2s ease-in-out infinite}
 </style>
 </head>
 <body>
+<a href="https://justinadong.com" class="home-btn">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  justinadong.com
+</a>
 <h1>⛷ Powder Post</h1>
 <p class="subtitle">Pick a resort · fetch the weather · carve your message into the snow</p>
 
@@ -97,11 +110,27 @@ canvas{display:block;width:100%;height:auto}
       <button class="btn-export" id="btnExport" disabled>Export GIF ↓</button>
     </div>
   </div>
+  <div class="row" style="align-items:center">
+    <div class="fg">
+      <label>Outfit color</label>
+      <div class="swatches" id="swatches">
+        <div class="swatch active" data-color="#cc2020" style="background:#cc2020" title="Red"></div>
+        <div class="swatch" data-color="#d06010" style="background:#d06010" title="Orange"></div>
+        <div class="swatch" data-color="#1848c0" style="background:#1848c0" title="Blue"></div>
+        <div class="swatch" data-color="#0f6e30" style="background:#0f6e30" title="Green"></div>
+        <div class="swatch" data-color="#b82868" style="background:#b82868" title="Pink"></div>
+        <div class="swatch" data-color="#601ac0" style="background:#601ac0" title="Purple"></div>
+        <div class="swatch" data-color="#1a1a3a" style="background:#1a1a3a;border:1px solid rgba(255,255,255,.15)" title="Navy"></div>
+        <div class="swatch" data-color="#d8d8d8" style="background:#d8d8d8" title="White"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="canvas-wrap">
   <canvas id="canvas" width="800" height="450"></canvas>
   <div class="weather-badge" id="weatherBadge"></div>
+  <div class="powder-alert" id="powderAlert">POWDER ALERT ❄️</div>
 </div>
 <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
 <p class="status" id="status">Pick a resort, type your message, and hit Go.</p>
@@ -205,7 +234,6 @@ function paintBg(bx,cond){
   // 5. static scene elements
   paintGondola(bx,cond);
   paintTopDownTrees(bx,cond);
-  paintTopDownBgSkiers(bx,cond);
 }
 
 // ─── gondola (top-down: thin cable + suspended cars w/ ground shadows) ────────
@@ -230,28 +258,28 @@ function paintGondola(bx,cond){
     bx.restore();
   }
 
-  // gondola cars: small rectangles with a shadow ellipse on snow below them
-  for(const t of[.1,.3,.5,.7,.9]){
-    const cx=t*W, cy=cableY;
-    const cw=12,ch=8;
+}
 
-    // shadow on snow (the car is suspended 20m above — shadow is offset & diffuse)
-    bx.save(); bx.globalAlpha=.12;
-    bx.fillStyle='#4050a0';
-    bx.beginPath();
-    bx.ellipse(cx+SHADOW_DX*18,cy+SHADOW_DY*18,cw*.75,ch*.6,0,0,Math.PI*2);
-    bx.fill(); bx.restore();
-
+// ─── animated gondola cars (live render, loop left→right) ────────────────────
+const GONDOLA_SPD=0.018; // px/ms — one crossing ~44 s
+const N_CARS=4;
+const GONDOLA_LOOP=W+52;
+function drawLiftCars(t){
+  const cableY=H*.19,cw=12,ch=8;
+  for(let i=0;i<N_CARS;i++){
+    const cx=((t*GONDOLA_SPD+i*GONDOLA_LOOP/N_CARS)%GONDOLA_LOOP+GONDOLA_LOOP)%GONDOLA_LOOP-26;
+    if(cx<-cw-2||cx>W+cw+2) continue;
+    // shadow on snow
+    ctx.save();ctx.globalAlpha=.10;ctx.fillStyle='#4050a0';
+    ctx.beginPath();ctx.ellipse(cx+SHADOW_DX*18,cableY+SHADOW_DY*18,cw*.75,ch*.6,0,0,Math.PI*2);
+    ctx.fill();ctx.restore();
     // hanger wire
-    bx.save(); bx.globalAlpha=.5; bx.strokeStyle=cc; bx.lineWidth=.8;
-    bx.beginPath(); bx.moveTo(cx,cy); bx.lineTo(cx,cy+3); bx.stroke(); bx.restore();
-
-    // car roof (top view)
-    bx.fillStyle=cond==='storm'?'#252530':'#181824';
-    bx.fillRect(cx-cw/2,cy+3,cw,ch);
+    ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle='#1a1a26';ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(cx,cableY);ctx.lineTo(cx,cableY+3);ctx.stroke();ctx.restore();
+    // car body
+    ctx.fillStyle='#181824';ctx.fillRect(cx-cw/2,cableY+3,cw,ch);
     // window strip
-    bx.fillStyle='rgba(170,205,230,.38)';
-    bx.fillRect(cx-cw/2+1.5,cy+5,cw-3,ch-4);
+    ctx.fillStyle='rgba(170,205,230,.35)';ctx.fillRect(cx-cw/2+1.5,cableY+5,cw-3,ch-4);
   }
 }
 
@@ -311,58 +339,95 @@ function paintTopDownTrees(bx,cond){
   }
 }
 
-// ─── tiny top-down background skiers ─────────────────────────────────────────
+// ─── animated background skiers (slide top→bottom continuously) ───────────────
 const SKIER_COLORS=['#cc2020','#c8980e','#1848c0','#c05010','#159838','#b82868','#601ac0'];
-const BG_SKIERS=(function(){
+const LIVE_BG_SKIERS=(function(){
   const rng=mkRng(0xabcdef12);
-  return Array.from({length:16},()=>({
-    x:80+rng()*(W-160),
-    // spread across slope but avoid the text zone (y ≈ 185-305 with SQUISH=1)
-    y:(()=>{const v=80+rng()*330;return v>175&&v<310?v<245?v-95:v+95:v;})(),
-    sz:.4+rng()*.5,
-    col:SKIER_COLORS[Math.floor(rng()*SKIER_COLORS.length)],
-    rot:(rng()-.5)*.3,
+  return Array.from({length:5},()=>({
+    startX: 70+rng()*(W-140),
+    startY: rng()*(H+160),   // staggered entry so they're not all at the top at once
+    speed:  0.055+rng()*.04, // px/ms downhill
+    amp:    18+rng()*38,     // left-right carving amplitude
+    freq:   0.013+rng()*.009,// carving frequency
+    phase:  rng()*Math.PI*2,
+    col:    SKIER_COLORS[Math.floor(rng()*SKIER_COLORS.length)],
+    sz:     0.40+rng()*.18,  // smaller than the main skier
+    op:     0.42+rng()*.2,   // semi-transparent so they don't distract
   }));
 })();
 
-function paintTopDownBgSkiers(bx,cond){
-  for(const sk of BG_SKIERS){
-    bx.save(); bx.translate(sk.x,sk.y); bx.rotate(sk.rot);
+const WRAP_H=H+170; // total loop distance (canvas + off-screen margins)
+
+function bgSkierY(sk,t){
+  return((sk.startY+sk.speed*t)%WRAP_H+WRAP_H)%WRAP_H-85;
+}
+function bgSkierX(sk,y){
+  return sk.startX+sk.amp*Math.sin(y*sk.freq+sk.phase);
+}
+
+function drawLiveBgSkiers(t){
+  for(const sk of LIVE_BG_SKIERS){
+    const cy=bgSkierY(sk,t);
+    const cx=bgSkierX(sk,cy);
+    if(cy<-85||cy>H+60) continue;
+    ctx.save();
+
+    // ── ski tracks: reconstruct last ~1.5 s of path ─────────────────────────
+    const trackPts=[];
+    for(let dt=1500;dt>=0;dt-=40){
+      const py=bgSkierY(sk,t-dt);
+      // skip any point from a previous lap (its y would wrap above current cy)
+      if(py<=cy&&py>-85) trackPts.push({x:bgSkierX(sk,py),y:py});
+    }
+    trackPts.push({x:cx,y:cy});
+    if(trackPts.length>1){
+      ctx.save();
+      ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=1.0;
+      for(const off of[-2.5,2.5]){
+        ctx.beginPath();
+        ctx.moveTo(trackPts[0].x+off,trackPts[0].y);
+        for(const p of trackPts) ctx.lineTo(p.x+off,p.y);
+        ctx.globalAlpha=sk.op*.32;
+        ctx.strokeStyle='rgba(90,130,195,.9)';
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ── skier figure ─────────────────────────────────────────────────────────
+    // compute travel direction from a point 80 ms ago
+    const py2=bgSkierY(sk,t-80);
+    const px2=bgSkierX(sk,py2);
+    const rot=py2<cy?Math.atan2(cy-py2,cx-px2):Math.PI/2;
+
+    ctx.translate(cx,cy);
+    ctx.rotate(rot);
+    ctx.globalAlpha=sk.op;
     const s=sk.sz;
 
-    // long shadow going downhill (lower-left from skier)
-    bx.save(); bx.globalAlpha=.2; bx.fillStyle='#4858a8';
-    bx.beginPath();
-    // skier shadow: elongated ellipse behind them
-    bx.ellipse(SHADOW_DX*s*12,SHADOW_DY*s*12,s*2.5,s*7,
+    // cast shadow (sun from upper-right)
+    ctx.save();ctx.globalAlpha=sk.op*.22;ctx.fillStyle='#3a5090';
+    ctx.beginPath();
+    ctx.ellipse(SHADOW_DX*s*10,SHADOW_DY*s*10,s*2,s*7,
       Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
-    bx.fill(); bx.restore();
+    ctx.fill();ctx.restore();
 
-    // skis — two horizontal bars (skier moves roughly left→right before rotation)
-    bx.fillStyle='#1a0e04';
-    bx.fillRect(-s*7,-s*1.4,s*14,s*1.1);
-    bx.fillRect(-s*7,s*.4,s*14,s*1.1);
+    // skis (two bars along travel direction)
+    ctx.fillStyle='#180e04';
+    ctx.fillRect(-s*11,-s*1.4,s*22,s*1.1);
+    ctx.fillRect(-s*11,s*.4,s*22,s*1.1);
 
-    // body (jacket blob between skis)
-    bx.fillStyle=sk.col;
-    bx.beginPath(); bx.ellipse(0,0,s*3,s*4,0,0,Math.PI*2); bx.fill();
+    // jacket
+    ctx.fillStyle=sk.col;
+    ctx.beginPath();ctx.ellipse(0,0,s*3,s*4.5,0,0,Math.PI*2);ctx.fill();
 
-    // head (at "forward" end = right, +x direction before rotation)
-    bx.fillStyle='#edb898';
-    bx.beginPath(); bx.arc(s*2.8,0,s*2,0,Math.PI*2); bx.fill();
+    // head (at forward end = +x after rotation)
+    ctx.fillStyle='#edb898';
+    ctx.beginPath();ctx.arc(s*3,0,s*2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=sk.col;
+    ctx.beginPath();ctx.arc(s*3,0,s*2,Math.PI*.5,Math.PI*1.5);ctx.fill();
 
-    // helmet
-    bx.fillStyle=sk.col;
-    bx.beginPath(); bx.arc(s*2.8,0,s*2,Math.PI*.5,Math.PI*1.5); bx.fill();
-
-    // poles (angled back from body)
-    bx.strokeStyle='rgba(50,50,50,.6)'; bx.lineWidth=s*.6; bx.lineCap='round';
-    bx.beginPath();
-    bx.moveTo(-s,s*2); bx.lineTo(-s*5,s*7);
-    bx.moveTo(-s,-s*2); bx.lineTo(-s*5,-s*7);
-    bx.stroke();
-
-    bx.restore();
+    ctx.restore();
   }
 }
 
@@ -562,6 +627,9 @@ let condition='sunny',weatherInfo=null;
 let particles=[],skiTracks=[];
 let animFrame=null,animStart=null,animDur=6000,animDone=false;
 let skierX=-80,skierY=SKIER_LANE;
+let skierColor='#cc2020';
+let windDx=0,isPowder=false;
+let powderParticles=[];
 
 // ─── weather ──────────────────────────────────────────────────────────────────
 async function fetchWeather(lat,lon){
@@ -572,11 +640,12 @@ async function fetchWeather(lat,lon){
     const d=await r.json();
     console.log('[PowderPost] weather:',d);
     if(!r.ok) throw new Error(`API ${r.status}: ${d.message||''}`);
-    return{condition:mapCode(d.weather[0].id),temp:Math.round(d.main.temp),desc:d.weather[0].description};
+    return{condition:mapCode(d.weather[0].id),temp:Math.round(d.main.temp),desc:d.weather[0].description,
+      windDeg:d.wind?.deg??270,windSpeed:d.wind?.speed??0,weatherId:d.weather[0].id};
   }catch(e){
     console.error('[PowderPost] fetch failed:',e);
     setStatus('Weather fetch failed — using clear sky');
-    return{condition:'sunny',temp:'-8',desc:'Clear sky'};
+    return{condition:'sunny',temp:-8,desc:'Clear sky',windDeg:270,windSpeed:3,weatherId:800};
   }
 }
 function mapCode(id){
@@ -599,7 +668,8 @@ function makeP(cond,randY){
     dr:(Math.random()-.5)*(storm?7:.8),op:Math.random()*.5+.3};
 }
 function updateParticles(cond){
-  const wd=cond==='storm'?3.5:0;
+  // use real wind data; ensure storms always have at least some drift
+  const wd=(cond==='storm'&&Math.abs(windDx)<1.5)?2.5:windDx;
   for(const p of particles){
     p.y+=p.spd;p.x+=p.dr+wd;
     if(p.y>H+10||p.x<-30||p.x>W+30){
@@ -633,6 +703,38 @@ function drawWind(t){
   }
   ctx.restore();
 }
+// ─── powder spray (main skier carving) ───────────────────────────────────────
+function emitPowder(x,y,sway){
+  for(let i=0;i<5;i++){
+    const a=Math.PI+(sway*.8)+(Math.random()-.5)*1.1; // backward fan
+    const spd=1.2+Math.random()*2.2;
+    const side=i<2?-4.5:4.5; // two ski edges, fifth is center burst
+    const life=20+Math.floor(Math.random()*18);
+    powderParticles.push({
+      x:x-14+(Math.random()-.5)*5, y:y+side+(Math.random()-.5)*3,
+      vx:Math.cos(a)*spd, vy:Math.sin(a)*spd+(Math.random()-.5)*.6,
+      life, maxLife:life, sz:0.7+Math.random()*1.5,
+    });
+  }
+}
+function updatePowder(){
+  for(let i=powderParticles.length-1;i>=0;i--){
+    const p=powderParticles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vx*=.90; p.vy*=.90; p.life--;
+    if(p.life<=0) powderParticles.splice(i,1);
+  }
+}
+function drawPowder(){
+  if(!powderParticles.length) return;
+  ctx.save();
+  for(const p of powderParticles){
+    ctx.globalAlpha=(p.life/p.maxLife)*.75;
+    ctx.fillStyle='rgba(240,248,255,.9)';
+    ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawSkiTracks(tracks){
   if(tracks.length<2) return;
   ctx.save();ctx.strokeStyle='rgba(140,170,210,.52)';ctx.lineWidth=1.5;ctx.lineCap='round';
@@ -660,46 +762,47 @@ function drawLabel(){
 // ─── main skier (top-down view, moving left→right) ───────────────────────────
 function drawSkier(x,y,t){
   ctx.save();ctx.translate(x,y);
-  // slight carving sway
   const sway=Math.sin(t*.008)*.06;
   ctx.rotate(sway);
 
-  // ground shadow (offset lower-left, sun from upper-right)
-  if(condition==='sunny'){
-    ctx.save();ctx.globalAlpha=.18;ctx.fillStyle='#3850a0';
-    ctx.beginPath();
-    ctx.ellipse(SHADOW_DX*14,SHADOW_DY*14,12,26,Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
-    ctx.fill();ctx.restore();
-  }
+  // soft shadow — always visible, strength varies by weather
+  const shOp={sunny:.22,overcast:.13,snowing:.11,storm:.07}[condition]||.15;
+  ctx.save();
+  ctx.filter='blur(5px)';
+  ctx.globalAlpha=shOp;ctx.fillStyle='#3850a0';
+  ctx.beginPath();
+  ctx.ellipse(SHADOW_DX*16,SHADOW_DY*16,13,28,Math.atan2(SHADOW_DY,SHADOW_DX),0,Math.PI*2);
+  ctx.fill();
+  ctx.filter='none';
+  ctx.restore();
 
-  // skis — two horizontal bars (pointing in direction of travel: right = +x)
+  // skis
   ctx.fillStyle='#180e04';
-  ctx.fillRect(-22,-3.5,44,3);   // upper ski
-  ctx.fillStyle='#2a1810';ctx.fillRect(-22,-3,44,1); // shine
+  ctx.fillRect(-22,-3.5,44,3);
+  ctx.fillStyle='#2a1810';ctx.fillRect(-22,-3,44,1);
   ctx.fillStyle='#180e04';
-  ctx.fillRect(-22,1.5,44,3);    // lower ski
-  // ski tips (slightly upturned — rounded front)
+  ctx.fillRect(-22,1.5,44,3);
   ctx.fillStyle='#1e1008';
   ctx.beginPath();ctx.ellipse(22,-2,3,1.5,0,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.ellipse(22,3,3,1.5,0,0,Math.PI*2);ctx.fill();
 
-  // body (jacket) between skis — skier is compact from above
-  ctx.fillStyle='#cc2020';
+  // jacket
+  ctx.fillStyle=skierColor;
   ctx.beginPath();ctx.ellipse(0,0,7,9.5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#fff';ctx.fillRect(-7,-1,14,1.5); // jacket stripe
+  ctx.fillStyle='#fff';ctx.fillRect(-7,-1,14,1.5);
 
-  // arms holding poles (angled back-sideways)
-  ctx.fillStyle='#cc2020';
-  ctx.save();ctx.rotate(.25);ctx.fillRect(-15,-2,10,3);ctx.restore(); // upper arm
-  ctx.save();ctx.rotate(-.25);ctx.fillRect(-15,-1,10,3);ctx.restore(); // lower arm
+  // arms
+  ctx.fillStyle=skierColor;
+  ctx.save();ctx.rotate(.25);ctx.fillRect(-15,-2,10,3);ctx.restore();
+  ctx.save();ctx.rotate(-.25);ctx.fillRect(-15,-1,10,3);ctx.restore();
 
   // pole baskets
   ctx.fillStyle='rgba(80,80,80,.7)';
   ctx.beginPath();ctx.arc(-17,-4,2,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(-17,4,2,0,Math.PI*2);ctx.fill();
 
-  // head/helmet (at the front = right side of body)
-  ctx.fillStyle='#cc2020';
+  // helmet
+  ctx.fillStyle=skierColor;
   ctx.beginPath();ctx.arc(8,0,5.5,0,Math.PI*2);ctx.fill();
   // goggles
   ctx.fillStyle='#e8c020';ctx.fillRect(5,-2.5,7,5);
@@ -720,9 +823,12 @@ function skierPos(t){
 // ─── full scene ───────────────────────────────────────────────────────────────
 function drawScene(t,cond,sx,sy){
   ctx.drawImage(getBg(cond),0,0);
+  drawLiftCars(t);
+  drawLiveBgSkiers(t);
   drawSkiTracks(skiTracks);
   drawSkiLetters(sx);
   if(sx<W+100) drawSkier(sx,sy,t);
+  drawPowder();
   drawParticles(cond);
   if(cond==='storm') drawWind(t);
   drawVignette();
@@ -738,6 +844,8 @@ function animate(ts){
   skierX=pos.x;skierY=pos.y;
   if(skiTracks.length===0||skiTracks[skiTracks.length-1].x<skierX-6)
     skiTracks.push({x:skierX,y:skierY});
+  if(skierX>0&&skierX<W){emitPowder(skierX,skierY,Math.sin(t*.008)*.06);}
+  updatePowder();
   drawScene(t,condition,skierX,skierY);
   document.getElementById('progressFill').style.width=(pos.raw*100)+'%';
   if(pos.raw>=1){
@@ -755,6 +863,7 @@ function idleTick(ts){
   if(!idleStart) idleStart=ts;
   const t=ts-idleStart+animDur;
   if(condition==='snowing'||condition==='storm') updateParticles(condition);
+  updatePowder();
   drawScene(t,condition,skierX,skierY);
   animFrame=requestAnimationFrame(idleTick);
 }
@@ -767,7 +876,7 @@ async function start(){
   document.getElementById('btnGo').disabled=true;
   document.getElementById('btnExport').disabled=true;
   document.getElementById('progressFill').style.width='0%';
-  animStart=null;animDone=false;skiTracks=[];idleStart=null;
+  animStart=null;animDone=false;skiTracks=[];idleStart=null;powderParticles=[];
 
   const sel=document.getElementById('resort');
   const [lat,lon]=sel.value.split(',').map(Number);
@@ -776,6 +885,14 @@ async function start(){
   const w=await fetchWeather(lat,lon);
   condition=w.condition;weatherInfo=w;
   bgCanvas=null; // rebuild bg for new condition
+
+  // wind: OWM deg is "from" direction → particles drift the opposite way
+  const windToRad=((w.windDeg??270)+180)*Math.PI/180;
+  windDx=Math.sin(windToRad)*Math.min(w.windSpeed??0,20)*0.28;
+
+  // powder alert: any snow condition + cold enough for dry powder
+  isPowder=(w.weatherId>=600&&w.weatherId<=622&&w.temp<=-3);
+  document.getElementById('powderAlert').style.display=isPowder?'block':'none';
 
   const badge=document.getElementById('weatherBadge');
   const emo={sunny:'☀️',snowing:'❄️',overcast:'☁️',storm:'🌨️'};
@@ -804,7 +921,9 @@ async function exportGif(){
     const savedProg=skiLetters.map(l=>l.prog);
     for(const l of skiLetters) l.prog=0;
     const savedTracks=[...skiTracks];
+    const savedPowder=[...powderParticles];
     const exportTracks=[];
+    powderParticles=[];
     initParticles(condition);
     setStatus('Rendering frames…');
 
@@ -812,6 +931,8 @@ async function exportGif(){
       const t=(i/steps)*animDur;
       const pos=skierPos(t);
       if(condition==='snowing'||condition==='storm') updateParticles(condition);
+      if(pos.x>0&&pos.x<W){emitPowder(pos.x,pos.y,Math.sin(t*.008)*.06);}
+      updatePowder();
       if(exportTracks.length===0||exportTracks[exportTracks.length-1].x<pos.x-6)
         exportTracks.push({x:pos.x,y:pos.y});
       const sv=skiTracks;skiTracks=exportTracks;
@@ -822,6 +943,7 @@ async function exportGif(){
     }
     for(let i=0;i<skiLetters.length;i++) skiLetters[i].prog=savedProg[i]||1;
     skiTracks=savedTracks;
+    powderParticles=savedPowder;
 
     gif.on('progress',p=>setStatus(`Encoding GIF: ${Math.round(p*100)}%`));
     gif.on('finished',blob=>{
@@ -845,6 +967,12 @@ function setStatus(msg){document.getElementById('status').textContent=msg;}
 document.getElementById('btnGo').addEventListener('click',start);
 document.getElementById('btnExport').addEventListener('click',exportGif);
 document.getElementById('message').addEventListener('keydown',e=>{if(e.key==='Enter')start();});
+document.getElementById('swatches').addEventListener('click',e=>{
+  const sw=e.target.closest('.swatch');
+  if(!sw) return;
+  skierColor=sw.dataset.color;
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s===sw));
+});
 
 // ─── init ─────────────────────────────────────────────────────────────────────
 (function init(){
