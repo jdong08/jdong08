@@ -2012,10 +2012,14 @@
   }
 
   function resetCounts() {
-    if (!confirm("Reset today's conversation counts to 0?")) return;
+    if (!confirm("Reset today's conversation counts and candle to 0?")) return;
     const data = loadData();
     const today = todayStr();
     if (data.days[today]) Object.keys(data.days[today]).forEach(k => data.days[today][k] = 0);
+    if (data.tokenDays && data.tokenDays[today]) {
+      const td = data.tokenDays[today];
+      td.current = td.dailyMax;
+    }
     saveData(data);
     render();
   }
