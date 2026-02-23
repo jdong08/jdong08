@@ -836,14 +836,8 @@
         const data = await res.json();
 
         if (!res.ok || data.errors) {
-          const msg = (data.errors && data.errors[0]) || `HTTP ${res.status}`;
-          if (res.status === 403 || msg.toLowerCase().includes('token') || msg.toLowerCase().includes('apikey')) {
-            showError(`<strong>Invalid API key.</strong> Check your GNews token in Settings and try again.`);
-          } else if (res.status === 429) {
-            showError(`<strong>Rate limit reached.</strong> GNews free tier allows 100 requests/day. Try again tomorrow.`);
-          } else {
-            showError(`<strong>GNews error:</strong> ${escHtml(msg)}`);
-          }
+          const msg = (data.errors && data.errors[0]) || JSON.stringify(data) || `HTTP ${res.status}`;
+          showError(`<strong>GNews error (HTTP ${res.status}):</strong> ${escHtml(msg)}`);
           showLoading(false);
           return;
         }
