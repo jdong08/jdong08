@@ -822,6 +822,79 @@
       font-style: italic;
     }
 
+    /* ── Horoscope actions ───────────────────────────── */
+    .horoscope-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .horoscope-refresh-btn {
+      background: none;
+      border: 1.5px solid #c5b49a;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 13px;
+      color: #a89880;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: border-color 0.12s, color 0.12s, transform 0.3s;
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    .horoscope-refresh-btn:hover { border-color: #A85C7A; color: #A85C7A; }
+    .horoscope-refresh-btn.spinning { transform: rotate(360deg); }
+
+    .horoscope-ask-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .horoscope-ask-input {
+      flex: 1;
+      border: 1.5px solid #ddd0be;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #4A5228;
+      background: rgba(255,255,255,0.55);
+      outline: none;
+      font-family: inherit;
+      min-width: 0;
+    }
+
+    .horoscope-ask-input::placeholder { color: #c5b49a; }
+    .horoscope-ask-input:focus { border-color: #A85C7A; background: #fff; }
+
+    .horoscope-ask-btn {
+      padding: 6px 12px;
+      background: #A85C7A;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .horoscope-ask-btn:hover { background: #8a4860; }
+    .horoscope-ask-btn:disabled { background: #c5b49a; cursor: default; }
+
+    .horoscope-text.loading {
+      color: #a89880;
+      font-style: normal;
+    }
+
     /* ── Per-person cost input ───────────────────────── */
     .cost-input {
       width: 36px;
@@ -942,8 +1015,18 @@
   </div>
 
   <div class="horoscope-card" id="horoscope-card" style="display:none">
-    <div class="horoscope-sign" id="horoscope-sign"></div>
+    <div class="horoscope-header">
+      <div class="horoscope-sign" id="horoscope-sign"></div>
+      <button class="horoscope-refresh-btn" id="horoscope-refresh-btn" onclick="refreshHoroscope()" title="Different reading">↺</button>
+    </div>
     <div class="horoscope-text" id="horoscope-text"></div>
+    <div class="horoscope-ask-row">
+      <input type="text" class="horoscope-ask-input" id="horoscope-ask-input"
+        placeholder="Ask the stars about something specific..."
+        maxlength="120"
+        onkeydown="if(event.key==='Enter') askHoroscope()"/>
+      <button class="horoscope-ask-btn" id="horoscope-ask-btn" onclick="askHoroscope()">Ask</button>
+    </div>
   </div>
 
   <div id="crowd-section">
@@ -1014,6 +1097,10 @@
       <label>Average cycle length (days)</label>
       <input type="number" id="settings-cycle-length" min="21" max="45" value="28"/>
     </div>
+    <div class="modal-field">
+      <label>Claude API key <span style="color:#b0a090;font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(optional — powers "Ask the stars")</span></label>
+      <input type="password" id="settings-api-key" placeholder="sk-ant-..."/>
+    </div>
     <button class="modal-btn" onclick="saveSettings()">Save changes</button>
     <button class="modal-btn secondary" onclick="closeSettings()">Close</button>
   </div>
@@ -1058,6 +1145,7 @@
 
   let dragState = null;
   let _pendingSuggestedTokens = 80;
+  let _horoscopeOffset = 0;
 
   const GROUP_TYPES      = { work: '💼', friend: '🌸', family: '🏡', neutral: '◎' };
   const GROUP_TYPE_ORDER = ['work', 'friend', 'family', 'neutral'];
@@ -1227,8 +1315,82 @@
     if (!data.birthday) { card.style.display = 'none'; return; }
     const z = getZodiacSign(data.birthday);
     document.getElementById('horoscope-sign').textContent = `${z.emoji} ${z.name}`;
-    document.getElementById('horoscope-text').textContent = getDailyHoroscope(z.key, new Date());
+    const textEl = document.getElementById('horoscope-text');
+    if (!textEl.classList.contains('loading')) {
+      textEl.textContent = getDailyHoroscope(z.key, new Date());
+    }
     card.style.display = '';
+  }
+
+  function refreshHoroscope() {
+    const data = loadData();
+    if (!data.birthday) return;
+    _horoscopeOffset++;
+    const z = getZodiacSign(data.birthday);
+    const msgs = HOROSCOPES[z.key];
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const textEl = document.getElementById('horoscope-text');
+    textEl.classList.remove('loading');
+    textEl.textContent = msgs[(dayOfYear + _horoscopeOffset) % msgs.length];
+    // Spin the button
+    const btn = document.getElementById('horoscope-refresh-btn');
+    if (btn) {
+      btn.classList.remove('spinning');
+      void btn.offsetWidth;
+      btn.classList.add('spinning');
+      btn.addEventListener('transitionend', () => btn.classList.remove('spinning'), { once: true });
+    }
+  }
+
+  async function askHoroscope() {
+    const data = loadData();
+    if (!data.birthday) return;
+    const questionEl = document.getElementById('horoscope-ask-input');
+    const question = questionEl.value.trim();
+    if (!question) { refreshHoroscope(); return; }
+
+    const apiKey = localStorage.getItem('conv_horoscope_key');
+    const textEl = document.getElementById('horoscope-text');
+    const sendBtn = document.getElementById('horoscope-ask-btn');
+
+    if (!apiKey) {
+      textEl.classList.remove('loading');
+      textEl.textContent = 'Add your Claude API key in ⚙ settings to ask specific questions.';
+      return;
+    }
+
+    const z = getZodiacSign(data.birthday);
+    textEl.classList.add('loading');
+    textEl.textContent = '✨ Reading the stars…';
+    sendBtn.disabled = true;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 180,
+          system: `You are a warm, intuitive astrologer. The person is a ${z.name}. Give a short personalized reading in 2-3 sentences. Be mystical but grounded, speak directly to them as a wise friend would.`,
+          messages: [{ role: 'user', content: `Today I'm wondering about: ${question}` }]
+        })
+      });
+      if (!res.ok) throw new Error(res.status);
+      const json = await res.json();
+      textEl.classList.remove('loading');
+      textEl.textContent = json.content[0].text;
+      questionEl.value = '';
+    } catch (e) {
+      textEl.classList.remove('loading');
+      textEl.textContent = 'The stars are cloudy right now — try again in a moment.';
+    } finally {
+      sendBtn.disabled = false;
+    }
   }
 
   // ── Moon phase (pure JS, no API needed) ───────────────
@@ -1462,6 +1624,10 @@
 
     document.getElementById('settings-suggested').textContent = suggested;
 
+    // API key
+    const savedKey = localStorage.getItem('conv_horoscope_key');
+    if (savedKey) document.getElementById('settings-api-key').value = savedKey;
+
     // Horoscope
     const birthdayInput = document.getElementById('settings-birthday');
     if (data.birthday) birthdayInput.value = data.birthday;
@@ -1494,6 +1660,8 @@
       setTimeout(() => dateEl.style.borderColor = '', 1000);
       return;
     }
+    const apiKeyEl = document.getElementById('settings-api-key');
+    if (apiKeyEl.value.trim()) localStorage.setItem('conv_horoscope_key', apiKeyEl.value.trim());
     const data = loadData();
     data.cycleData = { lastPeriodStart: dateEl.value, cycleLength: parseInt(lengthEl.value) || 28 };
     if (birthdayEl.value) data.birthday = birthdayEl.value;
