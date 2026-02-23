@@ -129,67 +129,73 @@
       gap: 0;
     }
 
+    /* ── Hamburger button (mobile only) ──────────────── */
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #F5F0E9;
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .hamburger-btn:hover { background: rgba(255,255,255,0.07); }
+
+    /* Sidebar overlay backdrop */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 199;
+    }
+    .sidebar-backdrop.open { display: block; }
+
     @media (max-width: 700px) {
+      /* Show hamburger, hide nothing else in header */
+      .hamburger-btn { display: block; }
+
+      /* Sidebar becomes a fixed drawer */
       .app-body { grid-template-columns: 1fr; }
-      .sidebar {
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        position: static;
-        height: auto;
-        padding: 12px 0;
-      }
-      /* Collapse sidebar into a horizontal scrollable row of view buttons */
-      .sidebar-section-label { display: none; }
-      .sidebar-divider { display: none; }
-      #client-jump-label { display: none !important; }
-      #client-jump-divider { display: none !important; }
-      #client-jumps { display: none; }
-      .view-btn {
-        display: inline-flex;
-        width: auto;
-        padding: 8px 14px;
-        border-left: none;
-        border-bottom: 2px solid transparent;
-        font-size: 0.8rem;
-      }
-      .view-btn.active {
-        border-left-color: transparent;
-        border-bottom-color: #E0C58F;
-      }
       aside.sidebar {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        gap: 0;
-        padding: 8px 12px;
-        -webkit-overflow-scrolling: touch;
+        position: fixed;
+        top: 0;
+        left: -240px;
+        width: 240px;
+        height: 100vh;
+        z-index: 200;
+        transition: left 0.25s ease;
+        padding-top: 16px;
+        overflow-y: auto;
       }
-      /* Header: stack controls on mobile */
-      .app-header {
-        padding: 10px 14px;
-        gap: 10px;
-      }
-      .header-controls {
-        width: 100%;
-        gap: 6px;
-      }
-      .header-controls select { flex: 1; min-width: 0; }
-      #fetch-btn { flex: 1; }
-      .custom-range { flex-wrap: wrap; }
-      /* Main content padding */
-      .main-content { padding: 14px 12px; }
-      /* Article cards */
+      aside.sidebar.open { left: 0; }
+
+      /* Main content full width with comfortable padding */
+      .main-content { padding: 16px 14px; }
+
+      /* Article cards: slightly less padding */
       .article-card { padding: 12px 14px; }
-      /* Client section header — wrap buttons gracefully */
+
+      /* Header: tighten up */
+      .app-header { padding: 10px 14px; gap: 10px; }
+      .header-controls { gap: 8px; flex-wrap: wrap; }
+      .header-controls select { min-width: 0; }
+      .custom-range { flex-wrap: wrap; }
+
+      /* Client section header wrap */
       .client-section-header { flex-wrap: wrap; gap: 6px; }
       .client-name-title { font-size: 1rem; }
-      .reorder-btns { margin-left: 0; order: 3; }
-      .client-section-header .btn { font-size: 0.7rem; padding: 3px 8px; order: 4; }
-      /* Themes grid: single column */
+      .reorder-btns { margin-left: 0; }
+
+      /* Themes grid single column */
       .themes-grid { grid-template-columns: 1fr; }
-      /* Modal full-screen on mobile */
-      .modal { max-width: 100%; border-radius: 12px; margin: 0 8px; }
-      .modal-overlay { padding: 12px; align-items: flex-start; padding-top: 60px; }
+
+      /* Modal comfortable on mobile */
+      .modal { max-width: calc(100vw - 24px); margin: 0 12px; border-radius: 14px; }
+      .modal-overlay { padding: 12px; align-items: flex-start; padding-top: 50px; }
     }
 
     /* ── Sidebar ──────────────────────────────────────── */
@@ -914,7 +920,9 @@
 <body>
 
   <!-- ── Header ── -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
   <header class="app-header">
+    <button class="hamburger-btn" id="hamburger-btn" title="Menu" aria-label="Open menu">☰</button>
     <a href="index.html" class="home-btn" title="Home">←</a>
     <div class="app-title">Client <span>Dash</span></div>
     <div class="header-controls">
@@ -2202,8 +2210,28 @@
 
     // View buttons
     document.querySelectorAll('.view-btn').forEach(btn => {
-      btn.addEventListener('click', () => setView(btn.dataset.view));
+      btn.addEventListener('click', () => {
+        setView(btn.dataset.view);
+        closeSidebar();
+      });
     });
+
+    // Hamburger / mobile sidebar drawer
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    function openSidebar() {
+      sidebarEl.classList.add('open');
+      sidebarBackdrop.classList.add('open');
+    }
+    function closeSidebar() {
+      sidebarEl.classList.remove('open');
+      sidebarBackdrop.classList.remove('open');
+    }
+    hamburgerBtn.addEventListener('click', () => {
+      sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    sidebarBackdrop.addEventListener('click', closeSidebar);
 
     // Sidebar jump global helper
     window.scrollToClient = scrollToClient;
