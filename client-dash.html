@@ -805,6 +805,30 @@
 
     .mark-all-read-btn:hover { color: rgba(245,240,233,0.6); }
 
+    /* ── Reorder Arrows ───────────────────────────────── */
+    .reorder-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .reorder-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,233,0.2);
+      cursor: pointer;
+      font-size: 0.65rem;
+      line-height: 1;
+      padding: 1px 4px;
+      border-radius: 3px;
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .reorder-btn:hover { color: #E0C58F; background: rgba(224,197,143,0.1); }
+    .reorder-btn:disabled { opacity: 0.1; cursor: default; background: none; }
+
     /* ── Per-client Settings Rows ─────────────────────── */
     .per-client-row { margin-bottom: 14px; }
 
@@ -1304,9 +1328,45 @@
         <div class="client-name-title">${escHtml(client)}</div>
         <div class="client-count">${baseArts.length} ${baseArts.length === 1 ? 'article' : 'articles'}</div>
       `;
+
+      // Reorder arrows
+      const clientIdx = state.clients.indexOf(client);
+      const reorderBtns = document.createElement('div');
+      reorderBtns.className = 'reorder-btns';
+      reorderBtns.style.marginLeft = 'auto';
+      const upBtn = document.createElement('button');
+      upBtn.className = 'reorder-btn';
+      upBtn.textContent = '▲';
+      upBtn.title = 'Move up';
+      upBtn.disabled = clientIdx === 0;
+      upBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        state.clients.splice(clientIdx, 1);
+        state.clients.splice(clientIdx - 1, 0, client);
+        saveStorage();
+        renderView();
+        updateSidebarJumps();
+      });
+      const downBtn = document.createElement('button');
+      downBtn.className = 'reorder-btn';
+      downBtn.textContent = '▼';
+      downBtn.title = 'Move down';
+      downBtn.disabled = clientIdx === state.clients.length - 1;
+      downBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        state.clients.splice(clientIdx, 1);
+        state.clients.splice(clientIdx + 1, 0, client);
+        saveStorage();
+        renderView();
+        updateSidebarJumps();
+      });
+      reorderBtns.appendChild(upBtn);
+      reorderBtns.appendChild(downBtn);
+      header.appendChild(reorderBtns);
+
       const gnBtn = document.createElement('button');
       gnBtn.className = 'btn btn-secondary';
-      gnBtn.style.cssText = 'font-size:0.73rem;padding:4px 10px;margin-left:auto;';
+      gnBtn.style.cssText = 'font-size:0.73rem;padding:4px 10px;';
       gnBtn.textContent = isGoogle ? '✓ Google News' : '↻ Google News';
       if (isGoogle) gnBtn.style.color = '#D9CBC2';
       gnBtn.addEventListener('click', e => { e.stopPropagation(); fetchClientGoogleNews(client, gnBtn); });
@@ -1654,6 +1714,83 @@
       document.getElementById('api-key-input').focus();
     }
 
+    async function autoDetectEarnings(client, input, detectBtn) {
+      detectBtn.disabled = true;
+      detectBtn.textContent = 'Searching…';
+
+      try {
+        const query = `"${client}" earnings date 2025 OR 2026`;
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Bad RSS');
+
+        const corpus = [...xml.getElementsByTagName('item')].map(item => {
+          const t = item.getElementsByTagName('title')[0]?.textContent || '';
+          const d = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          return t + ' ' + d;
+        }).join(' ');
+
+        // Match dates like "January 28, 2026", "Jan 28, 2026", "28 January 2026", "2026-01-28"
+        const patterns = [
+          /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(202[5-9])\b/gi,
+          /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(202[5-9])\b/gi,
+          /\b(202[5-9])-(\d{2})-(\d{2})\b/g,
+        ];
+
+        const monthMap = {
+          january:0,february:1,march:2,april:3,may:4,june:5,
+          july:6,august:7,september:8,october:9,november:10,december:11,
+          jan:0,feb:1,mar:2,apr:3,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+        };
+
+        const candidates = [];
+        let m;
+
+        // Pattern 1: Month DD, YYYY
+        const re1 = /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(202[5-9])\b/gi;
+        while ((m = re1.exec(corpus)) !== null) {
+          const mo = monthMap[m[1].toLowerCase()];
+          if (mo !== undefined) candidates.push(new Date(+m[3], mo, +m[2]));
+        }
+        // Pattern 2: DD Month YYYY
+        const re2 = /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(202[5-9])\b/gi;
+        while ((m = re2.exec(corpus)) !== null) {
+          const mo = monthMap[m[2].toLowerCase()];
+          if (mo !== undefined) candidates.push(new Date(+m[3], mo, +m[1]));
+        }
+        // Pattern 3: YYYY-MM-DD
+        const re3 = /\b(202[5-9])-(\d{2})-(\d{2})\b/g;
+        while ((m = re3.exec(corpus)) !== null) {
+          candidates.push(new Date(+m[1], +m[2]-1, +m[3]));
+        }
+
+        // Pick the nearest future date
+        const today = new Date(); today.setHours(0,0,0,0);
+        const future = candidates.filter(d => d >= today).sort((a,b) => a-b);
+
+        if (future.length) {
+          const picked = future[0];
+          const iso = toISODate(picked);
+          input.value = iso;
+          modalEarnings[client] = iso;
+          detectBtn.textContent = '✓ Found';
+        } else {
+          detectBtn.textContent = 'Not found';
+        }
+      } catch(e) {
+        detectBtn.textContent = 'Error';
+      }
+
+      setTimeout(() => {
+        detectBtn.disabled = false;
+        detectBtn.textContent = '✦ Auto-detect';
+      }, 2500);
+    }
+
     function renderEarningsInputs() {
       const el = document.getElementById('earnings-inputs');
       if (!modalClients.length) {
@@ -1667,13 +1804,22 @@
         const label = document.createElement('div');
         label.className = 'per-client-label';
         label.textContent = client;
+        const inputRow = document.createElement('div');
+        inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;';
         const input = document.createElement('input');
         input.type = 'date';
         input.className = 'per-client-date';
         input.value = modalEarnings[client] || '';
         input.addEventListener('change', () => { modalEarnings[client] = input.value; });
+        const detectBtn = document.createElement('button');
+        detectBtn.className = 'suggest-btn';
+        detectBtn.textContent = '✦ Auto-detect';
+        detectBtn.title = 'Search Google News for next earnings date';
+        detectBtn.addEventListener('click', () => autoDetectEarnings(client, input, detectBtn));
+        inputRow.appendChild(input);
+        inputRow.appendChild(detectBtn);
         row.appendChild(label);
-        row.appendChild(input);
+        row.appendChild(inputRow);
         el.appendChild(row);
       });
     }
