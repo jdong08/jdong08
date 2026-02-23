@@ -832,7 +832,7 @@
 
       try {
         const gNewsUrl = `https://gnews.io/api/v4/search?${params}`;
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(gNewsUrl)}`);
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(gNewsUrl)}`);
         const data = await res.json();
 
         if (!res.ok || data.errors) {
