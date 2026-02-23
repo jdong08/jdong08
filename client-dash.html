@@ -4,20 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Client Dash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #EDD9C0;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #112250;
       min-height: 100vh;
-      color: #4A5228;
+      color: #F5F0E9;
     }
 
     /* ── Header ───────────────────────────────────────── */
     .app-header {
-      background: #f5ede0;
-      border-bottom: 1px solid #c9b89e;
+      background: #162a52;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       padding: 14px 24px;
       display: flex;
       align-items: center;
@@ -29,15 +32,31 @@
     }
 
     .app-title {
-      font-size: 1.1rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
       font-weight: 700;
-      color: #4A5228;
-      letter-spacing: 0.04em;
+      color: #F5F0E9;
+      letter-spacing: 0.02em;
       margin-right: auto;
     }
 
     .app-title span {
-      color: #D4882A;
+      color: #E0C58F;
+    }
+
+    .home-btn {
+      color: rgba(245,240,233,0.5);
+      text-decoration: none;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .home-btn:hover {
+      color: #F5F0E9;
+      background: rgba(255,255,255,0.07);
     }
 
     .header-controls {
@@ -49,17 +68,17 @@
 
     select, input[type="date"] {
       padding: 7px 12px;
-      border: 1px solid #c9b89e;
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 8px;
-      background: white;
-      color: #4A5228;
+      background: #1e3464;
+      color: #F5F0E9;
       font-size: 0.85rem;
       font-family: inherit;
       cursor: pointer;
     }
 
     select:focus, input[type="date"]:focus {
-      outline: 2px solid #D4882A;
+      outline: 2px solid #E0C58F;
       outline-offset: 1px;
     }
 
@@ -68,7 +87,7 @@
       align-items: center;
       gap: 6px;
       font-size: 0.8rem;
-      color: #4A5228;
+      color: #F5F0E9;
     }
 
     .custom-range input[type="date"] {
@@ -91,14 +110,14 @@
     .btn:active { transform: translateY(0); }
 
     .btn-primary {
-      background: #D4882A;
-      color: white;
+      background: #E0C58F;
+      color: #112250;
     }
 
     .btn-secondary {
-      background: white;
-      color: #4A5228;
-      border: 1px solid #c9b89e;
+      background: rgba(255,255,255,0.07);
+      color: #F5F0E9;
+      border: 1px solid rgba(255,255,255,0.18);
     }
 
     /* ── Layout ───────────────────────────────────────── */
@@ -111,13 +130,13 @@
 
     @media (max-width: 700px) {
       .app-body { grid-template-columns: 1fr; }
-      .sidebar { border-right: none; border-bottom: 1px solid #c9b89e; }
+      .sidebar { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
     }
 
     /* ── Sidebar ──────────────────────────────────────── */
     .sidebar {
-      background: #f5ede0;
-      border-right: 1px solid #c9b89e;
+      background: #162a52;
+      border-right: 1px solid rgba(255,255,255,0.1);
       padding: 20px 0;
       position: sticky;
       top: 57px;
@@ -126,10 +145,11 @@
     }
 
     .sidebar-section-label {
-      font-size: 0.65rem;
-      text-transform: uppercase;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.8rem;
+      font-variant: small-caps;
       letter-spacing: 0.12em;
-      color: #A85C7A;
+      color: #D9CBC2;
       padding: 0 18px 8px;
       font-weight: 600;
     }
@@ -144,24 +164,24 @@
       border: none;
       font-family: inherit;
       font-size: 0.875rem;
-      color: #4A5228;
+      color: #F5F0E9;
       cursor: pointer;
       text-align: left;
       border-left: 3px solid transparent;
       transition: background 0.12s, border-color 0.12s;
     }
 
-    .view-btn:hover { background: rgba(212,136,42,0.08); }
+    .view-btn:hover { background: rgba(224,197,143,0.08); }
 
     .view-btn.active {
-      border-left-color: #D4882A;
-      background: rgba(212,136,42,0.12);
+      border-left-color: #E0C58F;
+      background: rgba(224,197,143,0.12);
       font-weight: 600;
-      color: #D4882A;
+      color: #E0C58F;
     }
 
     .badge {
-      background: #A85C7A;
+      background: #D9CBC2;
       color: white;
       border-radius: 20px;
       font-size: 0.68rem;
@@ -171,11 +191,11 @@
       text-align: center;
     }
 
-    .view-btn.active .badge { background: #D4882A; }
+    .view-btn.active .badge { background: #E0C58F; color: #112250; }
 
     .sidebar-divider {
       border: none;
-      border-top: 1px solid #c9b89e;
+      border-top: 1px solid rgba(255,255,255,0.1);
       margin: 12px 18px;
     }
 
@@ -183,7 +203,7 @@
       display: block;
       padding: 6px 18px 6px 22px;
       font-size: 0.8rem;
-      color: #4A5228;
+      color: #F5F0E9;
       text-decoration: none;
       transition: color 0.12s;
       cursor: pointer;
@@ -194,7 +214,7 @@
       font-family: inherit;
     }
 
-    .client-jump:hover { color: #D4882A; }
+    .client-jump:hover { color: #E0C58F; }
 
     /* ── Main ─────────────────────────────────────────── */
     .main-content {
@@ -208,13 +228,13 @@
       align-items: center;
       justify-content: center;
       min-height: 300px;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
       text-align: center;
       gap: 10px;
     }
 
     .empty-state .icon { font-size: 2.5rem; }
-    .empty-state h3 { font-size: 1rem; font-weight: 600; color: #7A8C3C; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; color: #D9CBC2; }
     .empty-state p { font-size: 0.85rem; max-width: 320px; line-height: 1.5; }
 
     /* ── Client Section ───────────────────────────────── */
@@ -231,11 +251,11 @@
       user-select: none;
     }
 
-    .client-section-header:hover .client-name-title { color: #D4882A; }
+    .client-section-header:hover .client-name-title { color: #E0C58F; }
 
     .collapse-chevron {
       font-size: 0.7rem;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
       transition: transform 0.18s ease;
       flex-shrink: 0;
     }
@@ -244,28 +264,29 @@
     .client-section.collapsed .collapse-body { display: none; }
 
     .client-name-title {
+      font-family: 'Playfair Display', serif;
       font-size: 1.1rem;
       font-weight: 700;
-      color: #4A5228;
+      color: #F5F0E9;
     }
 
     .client-count {
       font-size: 0.8rem;
-      color: #A85C7A;
+      color: #D9CBC2;
       font-weight: 600;
     }
 
     .client-summary {
       font-size: 0.82rem;
-      color: #7A8C3C;
+      color: #D9CBC2;
       margin-bottom: 14px;
       font-style: italic;
     }
 
     /* ── Article Card ─────────────────────────────────── */
     .article-card {
-      background: #f5ede0;
-      border: 1px solid #c9b89e;
+      background: #162a52;
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
       padding: 14px 16px;
       margin-bottom: 10px;
@@ -273,7 +294,7 @@
     }
 
     .article-card:hover {
-      box-shadow: 0 4px 14px rgba(74,82,40,0.1);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
 
     .card-meta {
@@ -285,29 +306,31 @@
     }
 
     .card-source {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.82rem;
+      font-variant: small-caps;
+      font-weight: 600;
       letter-spacing: 0.08em;
-      color: #A85C7A;
+      color: #E0C58F;
     }
 
     .card-dot {
-      color: #c9b89e;
+      color: rgba(255,255,255,0.1);
       font-size: 0.7rem;
     }
 
     .card-date {
       font-size: 0.75rem;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
     }
 
     .card-title {
-      font-size: 0.92rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
       font-weight: 600;
-      color: #4A5228;
+      color: #F5F0E9;
       margin-bottom: 5px;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .card-title a {
@@ -315,11 +338,11 @@
       text-decoration: none;
     }
 
-    .card-title a:hover { color: #D4882A; text-decoration: underline; }
+    .card-title a:hover { color: #E0C58F; text-decoration: underline; }
 
     .card-desc {
       font-size: 0.82rem;
-      color: #6a7840;
+      color: rgba(245,240,233,0.65);
       line-height: 1.5;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -335,8 +358,8 @@
     }
 
     .tag {
-      background: rgba(168,92,122,0.12);
-      color: #A85C7A;
+      background: rgba(224,197,143,0.1);
+      color: #D9CBC2;
       border-radius: 20px;
       font-size: 0.68rem;
       font-weight: 600;
@@ -353,22 +376,22 @@
     }
 
     .theme-card {
-      background: #f5ede0;
-      border: 1px solid #c9b89e;
+      background: #162a52;
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 14px;
       overflow: hidden;
     }
 
     .theme-card-header {
-      background: linear-gradient(135deg, rgba(212,136,42,0.15), rgba(168,92,122,0.08));
+      background: linear-gradient(135deg, rgba(212,136,42,0.15), rgba(60,80,125,0.25));
       padding: 14px 16px 10px;
-      border-bottom: 1px solid #c9b89e;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     .theme-label {
       display: inline-block;
-      background: #D4882A;
-      color: white;
+      background: #E0C58F;
+      color: #112250;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 700;
@@ -380,13 +403,13 @@
 
     .theme-count {
       font-size: 0.8rem;
-      color: #A85C7A;
+      color: #D9CBC2;
       font-weight: 600;
     }
 
     .theme-summary {
       font-size: 0.78rem;
-      color: #7A8C3C;
+      color: #D9CBC2;
       font-style: italic;
       margin-top: 4px;
     }
@@ -405,25 +428,25 @@
     .theme-article-source {
       font-size: 0.68rem;
       font-weight: 700;
-      color: #A85C7A;
+      color: #D9CBC2;
       text-transform: uppercase;
       letter-spacing: 0.07em;
     }
 
     .theme-article-title a {
-      color: #4A5228;
+      color: #F5F0E9;
       text-decoration: none;
       line-height: 1.35;
     }
 
-    .theme-article-title a:hover { color: #D4882A; text-decoration: underline; }
+    .theme-article-title a:hover { color: #E0C58F; text-decoration: underline; }
 
     /* ── Loading / Error ──────────────────────────────── */
     .loading-bar {
       display: none;
       text-align: center;
       padding: 48px;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
       font-size: 0.9rem;
     }
 
@@ -433,8 +456,8 @@
       display: inline-block;
       width: 24px;
       height: 24px;
-      border: 3px solid #c9b89e;
-      border-top-color: #D4882A;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #E0C58F;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-bottom: 12px;
@@ -443,24 +466,24 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .error-box {
-      background: rgba(212,136,42,0.1);
-      border: 1px solid #D4882A;
+      background: rgba(224,197,143,0.1);
+      border: 1px solid #E0C58F;
       border-radius: 10px;
       padding: 16px 20px;
       margin: 20px 0;
       font-size: 0.85rem;
-      color: #4A5228;
+      color: #F5F0E9;
       line-height: 1.6;
     }
 
-    .error-box strong { color: #D4882A; }
+    .error-box strong { color: #E0C58F; }
 
     /* ── Settings Modal ───────────────────────────────── */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(74,82,40,0.35);
+      background: rgba(0,0,0,0.65);
       z-index: 200;
       align-items: center;
       justify-content: center;
@@ -470,13 +493,13 @@
     .modal-overlay.open { display: flex; }
 
     .modal {
-      background: #f5ede0;
+      background: #162a52;
       border-radius: 18px;
       width: 100%;
       max-width: 560px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 8px 40px rgba(74,82,40,0.25);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
     }
 
     .modal-header {
@@ -484,31 +507,31 @@
       align-items: center;
       justify-content: space-between;
       padding: 20px 24px 16px;
-      border-bottom: 1px solid #c9b89e;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       position: sticky;
       top: 0;
-      background: #f5ede0;
+      background: #162a52;
       z-index: 1;
     }
 
     .modal-title {
       font-size: 1rem;
       font-weight: 700;
-      color: #4A5228;
+      color: #F5F0E9;
     }
 
     .modal-close {
       background: none;
       border: none;
       font-size: 1.3rem;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
       cursor: pointer;
       line-height: 1;
       padding: 2px 6px;
       border-radius: 6px;
     }
 
-    .modal-close:hover { background: rgba(74,82,40,0.08); }
+    .modal-close:hover { background: rgba(255,255,255,0.07); }
 
     .modal-body { padding: 20px 24px; }
 
@@ -517,23 +540,24 @@
     }
 
     .settings-section-title {
-      font-size: 0.72rem;
-      text-transform: uppercase;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+      font-variant: small-caps;
       letter-spacing: 0.12em;
-      color: #A85C7A;
-      font-weight: 700;
+      color: #E0C58F;
+      font-weight: 600;
       margin-bottom: 10px;
     }
 
     .api-instructions {
       font-size: 0.82rem;
-      color: #6a7840;
+      color: rgba(245,240,233,0.65);
       line-height: 1.6;
       margin-bottom: 12px;
     }
 
     .api-instructions a {
-      color: #D4882A;
+      color: #E0C58F;
       text-decoration: none;
       font-weight: 600;
     }
@@ -542,7 +566,7 @@
 
     .api-note {
       font-size: 0.75rem;
-      color: #a89880;
+      color: rgba(245,240,233,0.45);
       margin-top: 8px;
       font-style: italic;
     }
@@ -550,16 +574,18 @@
     .text-input {
       width: 100%;
       padding: 9px 12px;
-      border: 1px solid #c9b89e;
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 8px;
-      background: white;
-      color: #4A5228;
+      background: #1e3464;
+      color: #F5F0E9;
       font-size: 0.875rem;
       font-family: inherit;
     }
 
+    .text-input::placeholder { color: rgba(245,240,233,0.35); }
+
     .text-input:focus {
-      outline: 2px solid #D4882A;
+      outline: 2px solid #E0C58F;
       outline-offset: 1px;
     }
 
@@ -581,9 +607,9 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(168,92,122,0.12);
-      border: 1px solid rgba(168,92,122,0.25);
-      color: #A85C7A;
+      background: rgba(224,197,143,0.1);
+      border: 1px solid rgba(224,197,143,0.2);
+      color: #D9CBC2;
       border-radius: 20px;
       font-size: 0.78rem;
       font-weight: 500;
@@ -593,7 +619,7 @@
     .removable-tag button {
       background: none;
       border: none;
-      color: #A85C7A;
+      color: #D9CBC2;
       cursor: pointer;
       font-size: 0.85rem;
       line-height: 1;
@@ -605,13 +631,13 @@
 
     .modal-footer {
       padding: 16px 24px;
-      border-top: 1px solid #c9b89e;
+      border-top: 1px solid rgba(255,255,255,0.1);
       display: flex;
       justify-content: flex-end;
       gap: 10px;
       position: sticky;
       bottom: 0;
-      background: #f5ede0;
+      background: #162a52;
     }
   </style>
 </head>
@@ -619,6 +645,7 @@
 
   <!-- ── Header ── -->
   <header class="app-header">
+    <a href="index.html" class="home-btn" title="Home">←</a>
     <div class="app-title">Client <span>Dash</span></div>
     <div class="header-controls">
       <select id="date-range-select" title="Date range">
@@ -973,7 +1000,7 @@
       gnBtn.className = 'btn btn-secondary';
       gnBtn.style.cssText = 'font-size:0.73rem;padding:4px 10px;margin-left:auto;';
       gnBtn.textContent = isGoogle ? '✓ Google News' : '↻ Google News';
-      if (isGoogle) gnBtn.style.color = '#7A8C3C';
+      if (isGoogle) gnBtn.style.color = '#D9CBC2';
       gnBtn.addEventListener('click', e => { e.stopPropagation(); fetchClientGoogleNews(client, gnBtn); });
       header.appendChild(gnBtn);
       header.addEventListener('click', () => {
@@ -989,7 +1016,7 @@
       const summary = document.createElement('div');
       summary.className = 'client-summary';
       summary.innerHTML = arts.length
-        ? escHtml(clientSummary(arts)) + (isGoogle ? ' <span style="color:#7A8C3C;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
+        ? escHtml(clientSummary(arts)) + (isGoogle ? ' <span style="color:#D9CBC2;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
         : 'No articles found — try <strong>↻ Google News</strong> for broader results.';
       body.appendChild(summary);
 
@@ -1091,7 +1118,7 @@
                 <div class="theme-article-title"><a href="${escAttr(a.url)}" target="_blank" rel="noopener">${escHtml(a.title)}</a></div>
               </div>
             `).join('')}
-            ${arts.length > 5 ? `<div style="font-size:0.75rem;color:#a89880;font-style:italic">+${arts.length - 5} more</div>` : ''}
+            ${arts.length > 5 ? `<div style="font-size:0.75rem;color:rgba(245,240,233,0.45);font-style:italic">+${arts.length - 5} more</div>` : ''}
           </div>
         `;
         grid.appendChild(card);
