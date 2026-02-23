@@ -797,6 +797,31 @@
 
     .forecast-suggested strong { color: #4A5228; font-size: 16px; }
 
+    /* ── Horoscope card ──────────────────────────────── */
+    .horoscope-card {
+      background: linear-gradient(135deg, #f5ede0 0%, #e8d4b8 100%);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 6px rgba(74,82,40,0.08);
+    }
+
+    .horoscope-sign {
+      font-size: 11px;
+      font-weight: 700;
+      color: #A85C7A;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+    }
+
+    .horoscope-text {
+      font-size: 13px;
+      color: #4A5228;
+      line-height: 1.58;
+      font-style: italic;
+    }
+
     /* ── Per-person cost input ───────────────────────── */
     .cost-input {
       width: 36px;
@@ -916,6 +941,11 @@
     </div>
   </div>
 
+  <div class="horoscope-card" id="horoscope-card" style="display:none">
+    <div class="horoscope-sign" id="horoscope-sign"></div>
+    <div class="horoscope-text" id="horoscope-text"></div>
+  </div>
+
   <div id="crowd-section">
     <div id="crowd-canvas">
       <!-- Central figure + avatars injected by JS -->
@@ -965,6 +995,16 @@
       </div>
       <div class="forecast-divider"></div>
       <div class="forecast-suggested">Suggested today: <strong id="settings-suggested">—</strong> tokens</div>
+      <div class="forecast-divider" id="settings-horoscope-divider" style="display:none"></div>
+      <div id="settings-zodiac-row" class="forecast-row" style="display:none">
+        <span id="settings-zodiac-emoji"></span>
+        <span class="forecast-row-label" id="settings-zodiac-name" style="font-style:italic;color:#A85C7A"></span>
+      </div>
+      <div id="settings-horoscope-text" style="font-size:12px;color:#5a3a18;font-style:italic;line-height:1.55;margin-top:4px;display:none"></div>
+    </div>
+    <div class="modal-field">
+      <label>Birthday (for horoscope)</label>
+      <input type="date" id="settings-birthday"/>
     </div>
     <div class="modal-field">
       <label>Last period start date</label>
@@ -1021,6 +1061,175 @@
 
   const GROUP_TYPES      = { work: '💼', friend: '🌸', family: '🏡', neutral: '◎' };
   const GROUP_TYPE_ORDER = ['work', 'friend', 'family', 'neutral'];
+
+  // ── Zodiac ────────────────────────────────────────────
+  const ZODIAC = [
+    { key:'capricorn',   emoji:'♑', name:'Capricorn',   ranges:[[12,22],[1,19]]  },
+    { key:'aquarius',    emoji:'♒', name:'Aquarius',    ranges:[[1,20],[2,18]]   },
+    { key:'pisces',      emoji:'♓', name:'Pisces',      ranges:[[2,19],[3,20]]   },
+    { key:'aries',       emoji:'♈', name:'Aries',       ranges:[[3,21],[4,19]]   },
+    { key:'taurus',      emoji:'♉', name:'Taurus',      ranges:[[4,20],[5,20]]   },
+    { key:'gemini',      emoji:'♊', name:'Gemini',      ranges:[[5,21],[6,20]]   },
+    { key:'cancer',      emoji:'♋', name:'Cancer',      ranges:[[6,21],[7,22]]   },
+    { key:'leo',         emoji:'♌', name:'Leo',         ranges:[[7,23],[8,22]]   },
+    { key:'virgo',       emoji:'♍', name:'Virgo',       ranges:[[8,23],[9,22]]   },
+    { key:'libra',       emoji:'♎', name:'Libra',       ranges:[[9,23],[10,22]]  },
+    { key:'scorpio',     emoji:'♏', name:'Scorpio',     ranges:[[10,23],[11,21]] },
+    { key:'sagittarius', emoji:'♐', name:'Sagittarius', ranges:[[11,22],[12,21]] },
+  ];
+
+  const HOROSCOPES = {
+    aries: [
+      "Bold energy surrounds you — your directness opens doors today. Trust your instincts when connecting with others.",
+      "A restless spark pushes you toward new conversations. Channel that fire into meaningful exchanges.",
+      "Your leadership energy is strong; someone needs your honest perspective — offer it with warmth.",
+      "The stars favor initiative. Reach out first; the connection you've been waiting on won't arrive on its own.",
+      "Your natural charisma is amplified. Social situations that once felt draining may surprise you with ease.",
+      "Mars lends extra stamina for emotional labor today. You can hold space for others without depleting yourself.",
+      "A blunt truth lands softer than you'd expect — speak your mind with care and you'll be heard.",
+      "Someone you reconnect with today carries more significance than it first appears.",
+    ],
+    taurus: [
+      "Slow, steady connection is your gift today. Deep conversations nourish you more than surface-level chatter.",
+      "Venus asks you to invest in relationships that have stood the test of time. Quality over quantity.",
+      "Your presence is grounding for others — lean into that, but guard your own stillness.",
+      "Comfort and routine bring unexpected joy. A familiar face brings news worth hearing.",
+      "Patience is your superpower right now. Don't rush someone who needs time to open up.",
+      "Your loyalty is being noticed. The energy you've put into relationships begins to return.",
+      "A shared meal or walk transforms small talk into real connection. Lean into sensory richness.",
+      "Someone is asking for your trust. Your instincts about their sincerity are probably right.",
+    ],
+    gemini: [
+      "Your mind is buzzing with ideas — conversations spark and branch in unexpected directions. Follow the threads.",
+      "Mercury sharpens your wit today. Words flow easily, but choose them thoughtfully.",
+      "You're the connector today — two people in your circle would benefit from knowing each other.",
+      "Curiosity is your compass. Ask the question you've been holding back.",
+      "Your adaptability lets you meet people exactly where they are. This is a rare gift.",
+      "A flood of messages and plans arrives — prioritize what truly feeds your spirit.",
+      "Duality works in your favor: listen as much as you speak and you'll learn something surprising.",
+      "An idea you share casually today plants a seed that comes back in full bloom later.",
+    ],
+    cancer: [
+      "Your intuition about people is especially sharp today — trust it. Not everyone deserves access to your inner world.",
+      "Emotional tides are high; let yourself feel without explaining. The right people won't need reasons.",
+      "Nurturing energy flows from you naturally. Someone close needs care more than advice.",
+      "Home and heart are your anchors. Genuine warmth goes further than witty banter.",
+      "The moon amplifies your empathy — a beautiful gift, but remember to shield your own energy.",
+      "An old memory surfaces to teach you something about a current relationship.",
+      "Your protective instincts are activated. Check in on someone who's been quiet lately.",
+      "Vulnerability is a strength today. Letting your guard down slightly deepens a bond significantly.",
+    ],
+    leo: [
+      "The sun energizes your social presence — you light up every room today. Use it generously.",
+      "Your warmth draws people toward you. Lead with your heart and let others bask in your attention.",
+      "A creative spark turns an ordinary exchange into something memorable. Don't hold back your flair.",
+      "Generosity of spirit is your signature. Celebrating someone else's win costs you nothing and means everything.",
+      "You're being seen, and rightly so. Let yourself receive appreciation gracefully.",
+      "Drama finds its way to you — rise above it and you emerge looking like the leader you are.",
+      "Playfulness and humor are your bridge into deeper connection today. Don't underestimate lightness.",
+      "Someone quietly admires your confidence. A kind word from you could change their day.",
+    ],
+    virgo: [
+      "Your attention to detail serves relationships today. You notice what others miss — and it matters.",
+      "Mercury sharpens your analytical mind, but the heart resists spreadsheets. Let some things be imperfect.",
+      "Service is love in your language. A small, practical gesture means more than grand declarations.",
+      "Listen carefully today — the real message often hides beneath what's being said.",
+      "Your high standards are a gift and a challenge. Extend a little more grace and connections deepen.",
+      "An overlooked detail in a recent conversation deserves revisiting. You were right to notice.",
+      "Your help is most powerful when it's asked for. Wait to be invited before offering solutions.",
+      "Quiet consistency builds the trust that flashy gestures never could. Keep showing up.",
+    ],
+    libra: [
+      "Venus blesses your social grace today — harmony comes naturally and others gravitate toward your calm.",
+      "Balance is your pursuit, but sometimes choosing a side is an act of love. Don't over-equivocate.",
+      "Beauty in connection is your theme. Seek conversations that feel like art, not obligation.",
+      "A relationship reaches a crossroads. Fairness and honesty together are your best compass.",
+      "Your peacemaking instincts are needed. You're the only one who can bridge a particular divide.",
+      "Indecision clears when you ask: what would I want if no one were watching?",
+      "Partnership energy is strong. A collaboration discussed today could become something lasting.",
+      "Your charm is a tool — wield it with intention rather than habit today.",
+    ],
+    scorpio: [
+      "Your perceptive depth cuts through pretense today. You see what others can't — trust that vision.",
+      "Intensity is your birthright. Channel it into meaningful exchange rather than quiet brooding.",
+      "A truth surfaces that needed to come to light. Your ability to hold it without flinching is your strength.",
+      "Not everyone can handle your full depth — and that's okay. Reveal yourself in layers.",
+      "Pluto stirs transformation. A conversation that feels small today reshapes something fundamental.",
+      "Your loyalty runs deep; make sure it's reciprocated before you extend more of yourself.",
+      "Silence communicates volumes coming from you today. Use it deliberately.",
+      "A hidden connection between people or events becomes clear to you — follow that thread.",
+    ],
+    sagittarius: [
+      "Your optimism is infectious — share it freely. Even a brief exchange can lift someone's entire week.",
+      "Adventure calls even in conversation. Seek out minds that challenge your assumptions.",
+      "Jupiter expands your social world. A new connection today opens doors you didn't know existed.",
+      "Your honesty, while bracing, is exactly what someone in your circle needs to hear.",
+      "Freedom and connection aren't opposites today — you find both in the right exchange.",
+      "A philosophical question worth sitting with: who in your life truly expands your horizons?",
+      "Let what genuinely excites you lead — your enthusiasm is a renewable resource, and it's contagious.",
+      "Seek a perspective wildly different from your own. Mental travel refreshes your social spirit.",
+    ],
+    capricorn: [
+      "Your reliability is a gift. The people who count on you feel it, even when it goes unspoken.",
+      "Saturn rewards patience — a relationship you've been tending quietly begins to bear fruit.",
+      "Practical care is your love language. Small, consistent acts build the trust words alone never could.",
+      "Your ambition is admirable, but don't let it crowd out the softer moments today.",
+      "A mentor or elder figure offers wisdom worth receiving — set aside your self-sufficiency for a moment.",
+      "Structure brings you peace, but flexibility unlocks connection. Loosen the plan slightly today.",
+      "Long-term thinking guides your relationships. The investment you make today pays dividends.",
+      "Someone quietly depends on your steadiness. Simply showing up is more than enough.",
+    ],
+    aquarius: [
+      "Your originality shines in connection today — the stranger the conversation, the better.",
+      "Uranus sparks unexpected encounters. Someone outside your usual circle carries a key insight.",
+      "Your idealism is a compass. Let it guide you toward the relationships that actually matter.",
+      "You're ahead of the curve, as usual. Be patient with those still catching up to your vision.",
+      "Collective energy feeds you today. Seek out groups, communities, or even a lively group chat.",
+      "Detachment is different from indifference — you can observe clearly and still care deeply.",
+      "An unconventional approach to a stuck situation opens a conversation you'd given up on.",
+      "Your friendship is rare and valuable. Someone today is quietly hoping to earn more of it.",
+    ],
+    pisces: [
+      "Your empathy flows like water today, finding every crack. Set intentional limits on what you absorb.",
+      "Neptune deepens your intuition — you feel the undercurrent of every room you enter.",
+      "Dreams and reality blur at the edges. A hunch about someone deserves gentle exploration.",
+      "Your compassion is your superpower and your vulnerability. Choose carefully who receives it today.",
+      "Share something you love with someone who'd appreciate it — art, music, beauty opens hearts.",
+      "Forgiveness asks for your attention — not because it was deserved, but because you're ready.",
+      "A spiritual or creative connection feels fated today. Don't brush it off as coincidence.",
+      "Your sensitivity picks up on what others overlook. Trust the feeling that something important is left unsaid.",
+    ],
+  };
+
+  function getZodiacSign(birthday) {
+    const [, mo, dy] = birthday.split('-').map(Number);
+    for (const z of ZODIAC) {
+      const [[sm, sd], [em, ed]] = z.ranges;
+      if (sm > em) { // wraps year (Capricorn)
+        if ((mo === sm && dy >= sd) || (mo === em && dy <= ed)) return z;
+      } else {
+        if ((mo === sm && dy >= sd) || (mo > sm && mo < em) || (mo === em && dy <= ed)) return z;
+      }
+    }
+    return ZODIAC[0];
+  }
+
+  function getDailyHoroscope(key, date) {
+    const msgs = HOROSCOPES[key];
+    if (!msgs) return '';
+    const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+    return msgs[dayOfYear % msgs.length];
+  }
+
+  function updateHoroscope(data) {
+    const card = document.getElementById('horoscope-card');
+    if (!card) return;
+    if (!data.birthday) { card.style.display = 'none'; return; }
+    const z = getZodiacSign(data.birthday);
+    document.getElementById('horoscope-sign').textContent = `${z.emoji} ${z.name}`;
+    document.getElementById('horoscope-text').textContent = getDailyHoroscope(z.key, new Date());
+    card.style.display = '';
+  }
 
   // ── Moon phase (pure JS, no API needed) ───────────────
   function getMoonPhaseInfo(date) {
@@ -1252,6 +1461,23 @@
     }
 
     document.getElementById('settings-suggested').textContent = suggested;
+
+    // Horoscope
+    const birthdayInput = document.getElementById('settings-birthday');
+    if (data.birthday) birthdayInput.value = data.birthday;
+    const hDivider = document.getElementById('settings-horoscope-divider');
+    const hZodiac  = document.getElementById('settings-zodiac-row');
+    const hText    = document.getElementById('settings-horoscope-text');
+    if (data.birthday) {
+      const z = getZodiacSign(data.birthday);
+      document.getElementById('settings-zodiac-emoji').textContent = z.emoji;
+      document.getElementById('settings-zodiac-name').textContent  = z.name;
+      hText.textContent = getDailyHoroscope(z.key, new Date());
+      hDivider.style.display = hZodiac.style.display = hText.style.display = '';
+    } else {
+      hDivider.style.display = hZodiac.style.display = hText.style.display = 'none';
+    }
+
     document.getElementById('settings-modal').classList.remove('hidden');
   }
 
@@ -1260,8 +1486,9 @@
   }
 
   function saveSettings() {
-    const dateEl   = document.getElementById('settings-period-date');
-    const lengthEl = document.getElementById('settings-cycle-length');
+    const dateEl     = document.getElementById('settings-period-date');
+    const lengthEl   = document.getElementById('settings-cycle-length');
+    const birthdayEl = document.getElementById('settings-birthday');
     if (!dateEl.value) {
       dateEl.style.borderColor = '#A85C7A';
       setTimeout(() => dateEl.style.borderColor = '', 1000);
@@ -1269,8 +1496,10 @@
     }
     const data = loadData();
     data.cycleData = { lastPeriodStart: dateEl.value, cycleLength: parseInt(lengthEl.value) || 28 };
+    if (birthdayEl.value) data.birthday = birthdayEl.value;
     saveData(data);
     updateCandlePhase(data);
+    updateHoroscope(data);
     closeSettings();
   }
 
@@ -1592,6 +1821,7 @@
 
     if (!data.tokenDays) data.tokenDays = {};
     if (!data.personCosts) data.personCosts = {};
+    if (data.birthday === undefined) data.birthday = null;
     if (data.cycleData === undefined) data.cycleData = null;
 
     const today = todayStr();
@@ -1875,6 +2105,7 @@
     renderHistory(data);
     updateCandleVisual(data);
     updateCandlePhase(data);
+    updateHoroscope(data);
   }
 
   // ── Drag & Drop ───────────────────────────────────────
