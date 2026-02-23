@@ -848,7 +848,9 @@
           return;
         }
 
-        state.articles = (data.articles || []).filter(a => a.url && a.title);
+        state.articles = (data.articles || [])
+          .filter(a => a.url && a.title)
+          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
         renderContent();
         showLoading(false);
       } catch(e) {
@@ -1053,7 +1055,7 @@
             publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
             source: { name: sourceName },
           };
-        });
+        }).sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
         const existing = document.getElementById(`client-${slugify(client)}`);
         if (existing) existing.replaceWith(buildClientSection(client));
