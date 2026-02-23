@@ -14,7 +14,22 @@
       padding: 24px 16px 48px;
     }
 
-    .container { max-width: 480px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Two-column main grid ─────────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) 1.5fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .left-col  { display: flex; flex-direction: column; }
+    .right-col { display: flex; flex-direction: column; }
+
+    @media (max-width: 660px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
 
     header {
       display: flex;
@@ -781,6 +796,26 @@
     }
 
     .forecast-suggested strong { color: #4A5228; font-size: 16px; }
+
+    /* ── Per-person cost input ───────────────────────── */
+    .cost-input {
+      width: 36px;
+      padding: 3px 4px;
+      border: 1.5px solid #e5d8c4;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      background: rgba(255,255,255,0.5);
+      outline: none;
+      -moz-appearance: textfield;
+      flex-shrink: 0;
+      font-family: inherit;
+      cursor: text;
+    }
+    .cost-input::-webkit-inner-spin-button,
+    .cost-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .cost-input:focus { border-color: #D4882A; background: #fff; }
   </style>
 </head>
 <body>
@@ -795,6 +830,9 @@
     </div>
   </header>
 
+  <div class="main-grid">
+    <div class="left-col">
+
   <div class="candle-widget" id="candle-widget">
     <div class="candle-svg-wrap" id="candle-svg-wrap">
       <svg id="candle-svg" viewBox="0 0 48 150" xmlns="http://www.w3.org/2000/svg" width="48" height="150">
@@ -802,16 +840,62 @@
           <clipPath id="candle-clip">
             <rect x="10" y="40" width="28" height="106" rx="6"/>
           </clipPath>
+          <!-- Cylindrical wax gradient (dark edges, bright center) -->
+          <linearGradient id="wax-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#9a6e30"/>
+            <stop offset="22%"  stop-color="#dcc090"/>
+            <stop offset="50%"  stop-color="#f2e0b8"/>
+            <stop offset="78%"  stop-color="#d0a868"/>
+            <stop offset="100%" stop-color="#9a6e30"/>
+          </linearGradient>
+          <!-- Wax level fill gradient -->
+          <linearGradient id="wax-fill-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#b89050"/>
+            <stop offset="22%"  stop-color="#EDD9C0"/>
+            <stop offset="78%"  stop-color="#EDD9C0"/>
+            <stop offset="100%" stop-color="#b89050"/>
+          </linearGradient>
+          <!-- Warm glow behind flame -->
+          <radialGradient id="flame-glow-grad" cx="50%" cy="80%" r="60%">
+            <stop offset="0%"   stop-color="#f7c14f" stop-opacity="0.50"/>
+            <stop offset="100%" stop-color="#D4882A" stop-opacity="0"/>
+          </radialGradient>
         </defs>
-        <rect id="candle-wick" x="23" y="28" width="2" height="12" rx="1" fill="#4A5228"/>
-        <rect x="10" y="40" width="28" height="106" rx="6" fill="#e8d5b0" stroke="#c5a878" stroke-width="1.2"/>
-        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="#EDD9C0" clip-path="url(#candle-clip)"/>
+
+        <!-- Warm ambient glow around flame area -->
+        <ellipse cx="24" cy="27" rx="16" ry="22" fill="url(#flame-glow-grad)"/>
+
+        <!-- Candle body with cylindrical shading -->
+        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-grad)" stroke="#9a7038" stroke-width="0.8"/>
+
+        <!-- Wax level fill (remaining wax) -->
+        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="url(#wax-fill-grad)" clip-path="url(#candle-clip)"/>
+
+        <!-- Wax drips -->
+        <path d="M13 46 Q11 62 12 82" stroke="#c8a060" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.38" clip-path="url(#candle-clip)"/>
+        <path d="M36 48 Q38 61 37 72" stroke="#c8a060" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.30" clip-path="url(#candle-clip)"/>
+
+        <!-- Shine highlight (left side of cylinder) -->
         <rect id="candle-shine" x="14" y="43" width="5" height="36" rx="2.5" fill="rgba(255,255,255,0.22)" clip-path="url(#candle-clip)"/>
+
+        <!-- Curved wick -->
+        <path id="candle-wick" d="M24 29 Q23.2 34 24 40" stroke="#3d4018" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+        <!-- Organic flame -->
         <g id="candle-flame" class="flame-group">
-          <ellipse cx="24" cy="16" rx="8" ry="12" fill="#D4882A" opacity="0.88"/>
-          <ellipse cx="24" cy="18" rx="5"   ry="7.5" fill="#f7c14f"/>
-          <ellipse cx="24" cy="21" rx="2"   ry="3"   fill="#fff" opacity="0.55"/>
+          <!-- Outer glow layer -->
+          <path d="M24 30 C15 25 13 17 15 10 C16 4 20 1 24 2 C28 1 32 4 33 10 C35 17 33 25 24 30Z" fill="#D4882A" opacity="0.78"/>
+          <!-- Main flame body -->
+          <path d="M24 29 C17 23 16 16 17 11 C18.5 5 21 3 24 4 C27 3 29.5 5 31 11 C32 16 31 23 24 29Z" fill="#e07818"/>
+          <!-- Golden inner flame -->
+          <path d="M24 27 C19 21 18.5 15 20 11 C21 7 22.5 5 24 6 C25.5 5 27 7 28 11 C29.5 15 29 21 24 27Z" fill="#f7c14f"/>
+          <!-- Bright core -->
+          <path d="M24 24 C21 18 21 13 22.5 9.5 C23 8 23.5 7 24 7 C24.5 7 25 8 25.5 9.5 C27 13 27 18 24 24Z" fill="#fffaee" opacity="0.90"/>
+          <!-- Tip -->
+          <ellipse cx="24" cy="9" rx="2" ry="3" fill="white" opacity="0.40"/>
         </g>
+
+        <!-- Burned-out wax puddle -->
         <g id="candle-puddle" style="display:none">
           <ellipse cx="24" cy="146" rx="18" ry="4" fill="#c5a878" opacity="0.35"/>
         </g>
@@ -838,6 +922,9 @@
     <div id="crowd-stats">No conversations yet today</div>
   </div>
 
+    </div><!-- /.left-col -->
+    <div class="right-col">
+
   <div id="groups-container" class="groups-container"></div>
 
   <button class="add-group-btn" onclick="addGroup()">+ Add Group</button>
@@ -846,6 +933,9 @@
     <div class="total">Total today: <span id="total-count">0</span></div>
     <button class="reset-btn" onclick="resetCounts()">Reset Today</button>
   </div>
+
+    </div><!-- /.right-col -->
+  </div><!-- /.main-grid -->
 
   <div class="history-section">
     <div class="history-header" onclick="toggleHistory()">
@@ -967,6 +1057,11 @@
   }
 
   function getGroupType(group) { return group.type || 'neutral'; }
+
+  function getPersonCost(name, groupType, data) {
+    if (data.personCosts && data.personCosts[name] !== undefined) return data.personCosts[name];
+    return { work: 1, friend: -1, family: 0, neutral: 0 }[groupType] ?? 0;
+  }
 
   // ── Candle visual ─────────────────────────────────────
   function updateCandleVisual(data) {
@@ -1409,7 +1504,7 @@
   }
 
   function avatarSize(count) {
-    return Math.round(34 + Math.min(count-1, 5) * 3.6);
+    return Math.round(28 + Math.min(count - 1, 6) * 7);
   }
 
   // ── Day transition ────────────────────────────────────
@@ -1495,6 +1590,7 @@
     });
 
     if (!data.tokenDays) data.tokenDays = {};
+    if (!data.personCosts) data.personCosts = {};
     if (data.cycleData === undefined) data.cycleData = null;
 
     const today = todayStr();
@@ -1713,9 +1809,15 @@
       body.addEventListener('dragleave', e => { if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over'); });
       body.addEventListener('drop',      e => onDrop(e, group.id));
 
+      const COST_DEFAULTS = { work: 1, friend: -1, family: 0, neutral: 0 };
+      const gType = getGroupType(group);
       group.people.forEach(name => {
         const count = todayCounts[name] || 0;
         const isRegular = data.regulars.includes(name);
+        const personCost = (data.personCosts && data.personCosts[name] !== undefined)
+          ? data.personCosts[name]
+          : (COST_DEFAULTS[gType] ?? 0);
+        const costColor = personCost > 0 ? '#A85C7A' : personCost < 0 ? '#7A8C3C' : '#b0a090';
         const card = document.createElement('div');
         card.className = 'person-card';
         card.draggable = true;
@@ -1726,12 +1828,23 @@
             ${escapeHtml(name)}
             ${isRegular ? '<span class="streak-badge">🔥 regular</span>' : ''}
           </div>
+          <input type="number" class="cost-input" title="Token cost per convo (+drains / −restores)"
+            value="${personCost}" min="-10" max="10" step="1" style="color:${costColor}"/>
           <div class="person-count" id="cnt-${CSS.escape(name)}">${count}</div>
           <button class="tap-btn" title="Log conversation">+1</button>
           <button class="delete-btn" title="Remove">✕</button>
         `;
         card.querySelector('.tap-btn').addEventListener('click',    () => increment(name));
         card.querySelector('.delete-btn').addEventListener('click', () => removePerson(name, group.id));
+        card.querySelector('.cost-input').addEventListener('change', e => {
+          const val = Math.max(-10, Math.min(10, parseInt(e.target.value) || 0));
+          e.target.value = val;
+          e.target.style.color = val > 0 ? '#A85C7A' : val < 0 ? '#7A8C3C' : '#b0a090';
+          const d = loadData();
+          if (!d.personCosts) d.personCosts = {};
+          d.personCosts[name] = val;
+          saveData(d);
+        });
         card.addEventListener('dragstart', e => {
           dragState = { name, fromGroupId: group.id };
           e.dataTransfer.effectAllowed = 'move';
@@ -1844,15 +1957,17 @@
 
     updateCrowdLabel(grandTotal);
 
-    // Token update based on group type
+    // Token update based on per-person cost
     const groupType = group ? getGroupType(group) : 'neutral';
     const todayTd = data.tokenDays && data.tokenDays[today];
-    if (todayTd && (groupType === 'work' || groupType === 'friend')) {
-      if (groupType === 'work')   todayTd.current = Math.max(0, todayTd.current - 1);
-      if (groupType === 'friend') todayTd.current = Math.min(todayTd.dailyMax, todayTd.current + 1);
-      saveData(data);
-      updateCandleVisual(data);
-      triggerFlameAnimation(groupType);
+    if (todayTd) {
+      const cost = getPersonCost(name, groupType, data);
+      if (cost !== 0) {
+        todayTd.current = Math.max(0, Math.min(todayTd.dailyMax, todayTd.current - cost));
+        saveData(data);
+        updateCandleVisual(data);
+        triggerFlameAnimation(cost > 0 ? 'work' : 'friend');
+      }
     }
   }
 
