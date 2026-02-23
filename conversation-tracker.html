@@ -840,20 +840,21 @@
           <clipPath id="candle-clip">
             <rect x="10" y="40" width="28" height="106" rx="6"/>
           </clipPath>
-          <!-- Cylindrical wax gradient (dark edges, bright center) -->
+          <!-- Burned/consumed wax (dark) — shown where tokens have been spent -->
           <linearGradient id="wax-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stop-color="#9a6e30"/>
-            <stop offset="22%"  stop-color="#dcc090"/>
-            <stop offset="50%"  stop-color="#f2e0b8"/>
-            <stop offset="78%"  stop-color="#d0a868"/>
-            <stop offset="100%" stop-color="#9a6e30"/>
+            <stop offset="0%"   stop-color="#2e1a06"/>
+            <stop offset="22%"  stop-color="#5a3410"/>
+            <stop offset="50%"  stop-color="#7a4e22"/>
+            <stop offset="78%"  stop-color="#5a3410"/>
+            <stop offset="100%" stop-color="#2e1a06"/>
           </linearGradient>
-          <!-- Wax level fill gradient -->
+          <!-- Remaining wax (bright cream) — shown for current tokens left -->
           <linearGradient id="wax-fill-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stop-color="#b89050"/>
-            <stop offset="22%"  stop-color="#EDD9C0"/>
-            <stop offset="78%"  stop-color="#EDD9C0"/>
-            <stop offset="100%" stop-color="#b89050"/>
+            <stop offset="0%"   stop-color="#c09840"/>
+            <stop offset="22%"  stop-color="#f0d898"/>
+            <stop offset="50%"  stop-color="#faecc8"/>
+            <stop offset="78%"  stop-color="#f0d898"/>
+            <stop offset="100%" stop-color="#c09840"/>
           </linearGradient>
           <!-- Warm glow behind flame -->
           <radialGradient id="flame-glow-grad" cx="50%" cy="80%" r="60%">
@@ -866,7 +867,7 @@
         <ellipse cx="24" cy="27" rx="16" ry="22" fill="url(#flame-glow-grad)"/>
 
         <!-- Candle body with cylindrical shading -->
-        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-grad)" stroke="#9a7038" stroke-width="0.8"/>
+        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-grad)" stroke="#3a2008" stroke-width="0.8"/>
 
         <!-- Wax level fill (remaining wax) -->
         <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="url(#wax-fill-grad)" clip-path="url(#candle-clip)"/>
