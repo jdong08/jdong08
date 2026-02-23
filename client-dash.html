@@ -639,6 +639,116 @@
       bottom: 0;
       background: #162a52;
     }
+
+    /* ── Feature Badges ───────────────────────────────── */
+    .client-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-positive { background: rgba(100,196,143,0.15); color: #64C48F; }
+    .badge-neutral  { background: rgba(217,203,194,0.1);  color: #D9CBC2; }
+    .badge-negative { background: rgba(229,100,100,0.15); color: #E57373; }
+    .badge-quiet    { background: rgba(224,197,143,0.1);  color: #E0C58F; border: 1px solid rgba(224,197,143,0.2); }
+    .badge-earnings { background: rgba(130,180,255,0.15); color: #8AB4FF; }
+
+    /* ── Client Tabs ──────────────────────────────────── */
+    .client-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .client-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      color: rgba(245,240,233,0.4);
+      padding: 6px 16px 8px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+
+    .client-tab:hover { color: #F5F0E9; }
+    .client-tab.active { color: #E0C58F; border-bottom-color: #E0C58F; font-weight: 600; }
+
+    /* ── Mark as Read ─────────────────────────────────── */
+    .article-card { position: relative; }
+
+    .article-card.is-read { opacity: 0.3; }
+
+    .read-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 0.72rem;
+      color: rgba(245,240,233,0.2);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.12s, background 0.12s;
+      line-height: 1;
+    }
+
+    .read-btn:hover { color: #E0C58F; background: rgba(224,197,143,0.1); }
+    .article-card.is-read .read-btn { color: rgba(224,197,143,0.5); }
+
+    .show-read-toggle {
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem;
+      color: rgba(245,240,233,0.3);
+      cursor: pointer;
+      padding: 6px 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .show-read-toggle:hover { color: rgba(245,240,233,0.6); }
+
+    /* ── Per-client Settings Rows ─────────────────────── */
+    .per-client-row { margin-bottom: 14px; }
+
+    .per-client-label {
+      font-size: 0.78rem;
+      color: #D9CBC2;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input.per-client-date {
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      background: #1e3464;
+      color: #F5F0E9;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+
+    input.per-client-date:focus { outline: 2px solid #E0C58F; outline-offset: 1px; }
   </style>
 </head>
 <body>
@@ -732,6 +842,20 @@
           <div class="tags-container" id="clients-tags"></div>
         </div>
 
+        <!-- Earnings Dates -->
+        <div class="settings-section">
+          <div class="settings-section-title">Earnings Dates</div>
+          <p class="api-note" style="margin-bottom:12px;">Next earnings date per client — shows a countdown badge when within 14 days.</p>
+          <div id="earnings-inputs"></div>
+        </div>
+
+        <!-- Competitors -->
+        <div class="settings-section">
+          <div class="settings-section-title">Competitors</div>
+          <p class="api-note" style="margin-bottom:12px;">Competitor names per client — enables a Competitors tab on each client section.</p>
+          <div id="competitors-inputs"></div>
+        </div>
+
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
@@ -766,10 +890,16 @@
     let state = {
       clients: [],
       apiKey: '',
-      articles: [],    // raw GNews articles
-      clientGoogleNews: {},  // client name → articles from Google News RSS
-      clientCollapsed: {},   // client name → boolean
+      articles: [],
+      clientGoogleNews: {},
+      clientCollapsed: {},
       currentView: 'by-client',
+      earnings: {},        // client → 'YYYY-MM-DD'
+      competitors: {},     // client → [names]
+      competitorNews: {},  // client → articles
+      clientActiveTab: {}, // client → 'news'|'competitors'
+      readUrls: new Set(), // read article URLs
+      showRead: {},        // client → boolean
     };
 
     // ── Storage ───────────────────────────────────────────────────────────────
@@ -779,12 +909,21 @@
         const c = localStorage.getItem('cd_clients');
         if (c) state.clients = JSON.parse(c);
         state.apiKey = localStorage.getItem('cd_apikey') || '';
+        const e = localStorage.getItem('cd_earnings');
+        if (e) state.earnings = JSON.parse(e);
+        const comp = localStorage.getItem('cd_competitors');
+        if (comp) state.competitors = JSON.parse(comp);
+        const r = localStorage.getItem('cd_read');
+        if (r) state.readUrls = new Set(JSON.parse(r));
       } catch(e) {}
     }
 
     function saveStorage() {
       localStorage.setItem('cd_clients', JSON.stringify(state.clients));
       localStorage.setItem('cd_apikey', state.apiKey);
+      localStorage.setItem('cd_earnings', JSON.stringify(state.earnings));
+      localStorage.setItem('cd_competitors', JSON.stringify(state.competitors));
+      localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
     }
 
     // ── Date Helpers ──────────────────────────────────────────────────────────
@@ -977,24 +1116,112 @@
       else renderAllNews(area);
     }
 
+    // ── Sentiment Detection ───────────────────────────────────────────────────
+
+    const POSITIVE_WORDS = new Set([
+      'profit','profits','gain','gains','growth','record','beats','beat','exceeds',
+      'rises','rise','surges','surge','strong','wins','win','success','breakthrough',
+      'partnership','deal','launch','expands','expand','upgraded','upgrade','dividend',
+      'innovation','award','leading','boosts','boost','soars','soar','rebound','recovery',
+      'approved','agreement','higher','raised','increases','top','best',
+    ]);
+    const NEGATIVE_WORDS = new Set([
+      'loss','losses','drops','drop','falls','fall','crash','crisis','layoffs','layoff',
+      'cuts','cut','lawsuit','sued','scandal','investigation','fraud','decline','declines',
+      'warning','miss','misses','disappoints','disappointing','recession','bankruptcy',
+      'fine','penalty','breach','hack','hacked','recall','fails','fail','failed',
+      'slump','plunges','plunge','worst','deficit','downgrade','downgraded','lower',
+      'reduced','halts','halt','concern','concerns','risks','risk','trouble','troubled',
+    ]);
+
+    function detectSentiment(articles) {
+      if (!articles.length) return null;
+      let score = 0;
+      articles.forEach(a => {
+        const words = ((a.title || '') + ' ' + (a.description || '')).toLowerCase().match(/[a-z]+/g) || [];
+        words.forEach(w => {
+          if (POSITIVE_WORDS.has(w)) score++;
+          if (NEGATIVE_WORDS.has(w)) score--;
+        });
+      });
+      const label = score > 1 ? 'positive' : score < -1 ? 'negative' : 'neutral';
+      return { label, score };
+    }
+
+    // ── Earnings Countdown ────────────────────────────────────────────────────
+
+    function getEarningsCountdown(client) {
+      const dateStr = state.earnings[client];
+      if (!dateStr) return null;
+      const earningsDate = new Date(dateStr + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diff = Math.round((earningsDate - today) / (1000 * 60 * 60 * 24));
+      return (diff >= 0 && diff <= 14) ? diff : null;
+    }
+
+    // ── Competitor News Fetch ─────────────────────────────────────────────────
+
+    async function fetchCompetitorNews(client, btn) {
+      const competitors = state.competitors[client] || [];
+      if (!competitors.length) return;
+      btn.disabled = true;
+      btn.textContent = '↻ Loading…';
+
+      const allArticles = [];
+      for (const comp of competitors) {
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + comp + '"')}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        try {
+          const res = await fetch(proxyUrl);
+          if (!res.ok) continue;
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'text/xml');
+          if (xml.querySelector('parsererror')) continue;
+          [...xml.getElementsByTagName('item')].forEach(item => {
+            const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+            const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
+            const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
+            const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim() || (srcMatch && srcMatch[1].trim()) || '';
+            const linkEl = item.getElementsByTagName('link')[0];
+            const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
+            const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+            const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+            allArticles.push({
+              title, url, description: desc,
+              publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
+              source: { name: sourceName },
+              _competitor: comp,
+            });
+          });
+        } catch(e) {}
+      }
+
+      state.competitorNews[client] = allArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      const existing = document.getElementById(`client-${slugify(client)}`);
+      if (existing) existing.replaceWith(buildClientSection(client));
+    }
+
     function buildClientSection(client) {
       const gnArts = state.clientGoogleNews[client];
-      const arts = gnArts || state.articles.filter(a => getArticleClients(a).includes(client));
+      const baseArts = gnArts || state.articles.filter(a => getArticleClients(a).includes(client));
       const isGoogle = !!gnArts;
-
       const collapsed = !!state.clientCollapsed[client];
+      const activeTab = state.clientActiveTab[client] || 'news';
+      const hasCompetitors = (state.competitors[client] || []).length > 0;
+      const showRead = !!state.showRead[client];
 
       const section = document.createElement('div');
       section.className = 'client-section' + (collapsed ? ' collapsed' : '');
       section.id = `client-${slugify(client)}`;
 
-      // Header row (clicking anywhere toggles collapse)
+      // ── Header ──
       const header = document.createElement('div');
       header.className = 'client-section-header';
       header.innerHTML = `
         <span class="collapse-chevron">▼</span>
         <div class="client-name-title">${escHtml(client)}</div>
-        <div class="client-count">${arts.length} ${arts.length === 1 ? 'article' : 'articles'}</div>
+        <div class="client-count">${baseArts.length} ${baseArts.length === 1 ? 'article' : 'articles'}</div>
       `;
       const gnBtn = document.createElement('button');
       gnBtn.className = 'btn btn-secondary';
@@ -1009,23 +1236,113 @@
       });
       section.appendChild(header);
 
-      // Collapsible body
+      // ── Collapsible body ──
       const body = document.createElement('div');
       body.className = 'collapse-body';
 
+      // Badges: sentiment, drought, earnings
+      const hasFetched = state.articles.length > 0 || gnArts;
+      const sentiment = detectSentiment(baseArts);
+      const drought = hasFetched && baseArts.length === 0;
+      const earningsDays = getEarningsCountdown(client);
+
+      if (sentiment || drought || earningsDays !== null) {
+        const badges = document.createElement('div');
+        badges.className = 'client-badges';
+        if (sentiment && baseArts.length > 0) {
+          const sb = document.createElement('span');
+          sb.className = `badge-pill badge-${sentiment.label}`;
+          sb.textContent = sentiment.label === 'positive' ? '↑ Positive' : sentiment.label === 'negative' ? '↓ Negative' : '→ Neutral';
+          badges.appendChild(sb);
+        }
+        if (drought) {
+          const qb = document.createElement('span');
+          qb.className = 'badge-pill badge-quiet';
+          qb.textContent = 'Quiet period';
+          badges.appendChild(qb);
+        }
+        if (earningsDays !== null) {
+          const eb = document.createElement('span');
+          eb.className = 'badge-pill badge-earnings';
+          eb.textContent = earningsDays === 0 ? 'Earnings today' : `Earnings in ${earningsDays}d`;
+          badges.appendChild(eb);
+        }
+        if (badges.children.length) body.appendChild(badges);
+      }
+
+      // Summary
       const summary = document.createElement('div');
       summary.className = 'client-summary';
-      summary.innerHTML = arts.length
-        ? escHtml(clientSummary(arts)) + (isGoogle ? ' <span style="color:#D9CBC2;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
+      summary.innerHTML = baseArts.length
+        ? escHtml(clientSummary(baseArts)) + (isGoogle ? ' <span style="color:#D9CBC2;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
         : 'No articles found — try <strong>↻ Google News</strong> for broader results.';
       body.appendChild(summary);
 
-      arts.forEach(art => {
-        body.appendChild(buildArticleCard(art, isGoogle ? [client] : getArticleClients(art)));
-      });
+      // Tabs (News / Competitors) — only if competitors configured
+      if (hasCompetitors) {
+        const tabsDiv = document.createElement('div');
+        tabsDiv.className = 'client-tabs';
+        ['news', 'competitors'].forEach(tab => {
+          const btn = document.createElement('button');
+          btn.className = 'client-tab' + (activeTab === tab ? ' active' : '');
+          btn.textContent = tab === 'news' ? 'News' : 'Competitors';
+          btn.addEventListener('click', () => {
+            state.clientActiveTab[client] = tab;
+            const el = document.getElementById(`client-${slugify(client)}`);
+            if (el) el.replaceWith(buildClientSection(client));
+          });
+          tabsDiv.appendChild(btn);
+        });
+        body.appendChild(tabsDiv);
+      }
+
+      // Article list (tab-aware)
+      if (activeTab === 'competitors' && hasCompetitors) {
+        if (!state.competitorNews[client]) {
+          const fetchWrap = document.createElement('div');
+          fetchWrap.style.cssText = 'padding:24px 0;text-align:center;';
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-secondary';
+          btn.textContent = '↻ Fetch Competitor News';
+          btn.addEventListener('click', () => fetchCompetitorNews(client, btn));
+          fetchWrap.appendChild(btn);
+          body.appendChild(fetchWrap);
+        } else {
+          const compArts = state.competitorNews[client];
+          const unread = compArts.filter(a => !state.readUrls.has(a.url));
+          const read   = compArts.filter(a =>  state.readUrls.has(a.url));
+          (showRead ? compArts : unread).forEach(art => {
+            const tags = [art._competitor || client];
+            body.appendChild(buildArticleCard(art, tags, state.readUrls.has(art.url)));
+          });
+          appendShowReadToggle(body, client, read.length, showRead);
+        }
+      } else {
+        const unread = baseArts.filter(a => !state.readUrls.has(a.url));
+        const read   = baseArts.filter(a =>  state.readUrls.has(a.url));
+        (showRead ? baseArts : unread).forEach(art => {
+          body.appendChild(buildArticleCard(art, isGoogle ? [client] : getArticleClients(art), state.readUrls.has(art.url)));
+        });
+        appendShowReadToggle(body, client, read.length, showRead);
+      }
 
       section.appendChild(body);
       return section;
+    }
+
+    function appendShowReadToggle(container, client, readCount, showRead) {
+      if (readCount === 0) return;
+      const btn = document.createElement('button');
+      btn.className = 'show-read-toggle';
+      btn.textContent = showRead
+        ? 'Hide read articles'
+        : `Show ${readCount} read ${readCount === 1 ? 'article' : 'articles'}`;
+      btn.addEventListener('click', () => {
+        state.showRead[client] = !showRead;
+        const el = document.getElementById(`client-${slugify(client)}`);
+        if (el) el.replaceWith(buildClientSection(client));
+      });
+      container.appendChild(btn);
     }
 
     function renderByClient(container) {
@@ -1141,9 +1458,9 @@
       });
     }
 
-    function buildArticleCard(art, clientTags) {
+    function buildArticleCard(art, clientTags, isRead = false) {
       const card = document.createElement('div');
-      card.className = 'article-card';
+      card.className = 'article-card' + (isRead ? ' is-read' : '');
 
       const source = art.source?.name || '';
       const date = formatDate(art.publishedAt);
@@ -1161,6 +1478,23 @@
         ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
         ${clientTags.length ? `<div class="card-tags">${clientTags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
       `;
+
+      // Mark as read button
+      const readBtn = document.createElement('button');
+      readBtn.className = 'read-btn';
+      readBtn.title = isRead ? 'Read' : 'Mark as read';
+      readBtn.textContent = '✓';
+      readBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!state.readUrls.has(art.url)) {
+          state.readUrls.add(art.url);
+          localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
+          card.classList.add('is-read');
+          readBtn.style.color = '#E0C58F';
+        }
+      });
+      card.appendChild(readBtn);
+
       return card;
     }
 
@@ -1205,15 +1539,107 @@
 
     // Temporary state while modal is open
     let modalClients = [];
+    let modalEarnings = {};
+    let modalCompetitors = {};
 
     function openModal() {
       modalClients = [...state.clients];
+      modalEarnings = Object.assign({}, state.earnings);
+      modalCompetitors = {};
+      state.clients.forEach(c => { modalCompetitors[c] = [...(state.competitors[c] || [])]; });
 
       document.getElementById('api-key-input').value = state.apiKey;
       renderRemovableTags('clients-tags', modalClients);
+      renderEarningsInputs();
+      renderCompetitorInputs();
 
       document.getElementById('modal-overlay').classList.add('open');
       document.getElementById('api-key-input').focus();
+    }
+
+    function renderEarningsInputs() {
+      const el = document.getElementById('earnings-inputs');
+      if (!modalClients.length) {
+        el.innerHTML = '<p class="api-note">Add clients above first.</p>';
+        return;
+      }
+      el.innerHTML = '';
+      modalClients.forEach(client => {
+        const row = document.createElement('div');
+        row.className = 'per-client-row';
+        const label = document.createElement('div');
+        label.className = 'per-client-label';
+        label.textContent = client;
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.className = 'per-client-date';
+        input.value = modalEarnings[client] || '';
+        input.addEventListener('change', () => { modalEarnings[client] = input.value; });
+        row.appendChild(label);
+        row.appendChild(input);
+        el.appendChild(row);
+      });
+    }
+
+    function renderCompetitorInputs() {
+      const el = document.getElementById('competitors-inputs');
+      el.innerHTML = '';
+      if (!modalClients.length) {
+        el.innerHTML = '<p class="api-note">Add clients above first.</p>';
+        return;
+      }
+      modalClients.forEach(client => {
+        if (!modalCompetitors[client]) modalCompetitors[client] = [];
+        const div = document.createElement('div');
+        div.className = 'per-client-row';
+        const label = document.createElement('div');
+        label.className = 'per-client-label';
+        label.textContent = client;
+        div.appendChild(label);
+
+        const row = document.createElement('div');
+        row.className = 'tag-input-row';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'text-input';
+        input.placeholder = 'Add competitor name…';
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-primary';
+        addBtn.textContent = 'Add';
+        addBtn.addEventListener('click', () => {
+          const val = input.value.trim();
+          if (val && !modalCompetitors[client].includes(val)) {
+            modalCompetitors[client].push(val);
+            renderCompetitorInputs();
+          }
+          input.value = '';
+        });
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { addBtn.click(); e.preventDefault(); } });
+        row.appendChild(input);
+        row.appendChild(addBtn);
+        div.appendChild(row);
+
+        const tagsDiv = document.createElement('div');
+        tagsDiv.className = 'tags-container';
+        tagsDiv.style.marginTop = '6px';
+        modalCompetitors[client].forEach((comp, i) => {
+          const span = document.createElement('span');
+          span.className = 'removable-tag';
+          const nameNode = document.createTextNode(comp + ' ');
+          const removeBtn = document.createElement('button');
+          removeBtn.title = 'Remove';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', () => {
+            modalCompetitors[client].splice(i, 1);
+            renderCompetitorInputs();
+          });
+          span.appendChild(nameNode);
+          span.appendChild(removeBtn);
+          tagsDiv.appendChild(span);
+        });
+        div.appendChild(tagsDiv);
+        el.appendChild(div);
+      });
     }
 
     function renderRemovableTags(containerId, arr) {
@@ -1239,6 +1665,8 @@
     function saveModal() {
       state.apiKey = document.getElementById('api-key-input').value.trim();
       state.clients = [...modalClients];
+      state.earnings = Object.assign({}, modalEarnings);
+      state.competitors = Object.assign({}, modalCompetitors);
       saveStorage();
       closeModal();
       updateSidebarJumps();
@@ -1249,7 +1677,10 @@
       const val = input.value.trim();
       if (val && !modalClients.includes(val)) {
         modalClients.push(val);
+        if (!modalCompetitors[val]) modalCompetitors[val] = [];
         renderRemovableTags('clients-tags', modalClients);
+        renderEarningsInputs();
+        renderCompetitorInputs();
       }
       input.value = '';
       input.focus();
@@ -1331,17 +1762,17 @@
 
     function init() {
       loadStorage();
+      // Fallback to hardcoded key so settings modal doesn't auto-open on new devices
+      if (!state.apiKey) {
+        state.apiKey = '8c208a2cea34650fab322c85f0e8e845';
+        saveStorage();
+      }
       // Set default custom range dates
       const today = new Date();
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 6);
       document.getElementById('date-to').value = toISODate(today);
       document.getElementById('date-from').value = toISODate(weekAgo);
-
-      // Open settings modal automatically if no API key
-      if (!state.apiKey) {
-        openModal();
-      }
     }
 
     init();
