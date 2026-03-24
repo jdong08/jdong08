@@ -1,7 +1,1 @@
-{
-  "functions": {
-    "api/horoscope.js": {
-      "runtime": "edge"
-    }
-  }
-}
+{}
