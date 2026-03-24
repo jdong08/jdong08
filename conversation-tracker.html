@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>People I Talk To</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="conversation-tracker.css">
 </head>
 <body>
@@ -23,53 +26,40 @@
 
   <div class="vibe-section">
     <div class="vibe-header" onclick="toggleVibe()">
-      <span class="vibe-title">Today's vibe</span>
+      <span class="vibe-title">Tonight's sky</span>
       <span class="vibe-toggle" id="vibe-toggle">▼</span>
     </div>
     <div id="vibe-body">
 
-  <div class="candle-widget" id="candle-widget">
-    <div class="candle-svg-wrap" id="candle-svg-wrap">
-      <svg id="candle-svg" viewBox="0 0 48 150" xmlns="http://www.w3.org/2000/svg" width="48" height="150">
+  <!-- Candle widget: token info strip -->
+  <div class="candle-widget">
+    <div class="candle-svg-wrap">
+      <!-- Minimal candle SVG just for the widget -->
+      <svg viewBox="0 0 48 150" xmlns="http://www.w3.org/2000/svg" width="32" height="100">
         <defs>
-          <clipPath id="candle-clip">
-            <rect x="10" y="40" width="28" height="106" rx="6"/>
-          </clipPath>
-          <linearGradient id="wax-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stop-color="#2e1a06"/>
-            <stop offset="22%"  stop-color="#5a3410"/>
-            <stop offset="50%"  stop-color="#7a4e22"/>
-            <stop offset="78%"  stop-color="#5a3410"/>
-            <stop offset="100%" stop-color="#2e1a06"/>
+          <linearGradient id="wax-g" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#1a0e04"/>
+            <stop offset="50%"  stop-color="#3a2008"/>
+            <stop offset="100%" stop-color="#1a0e04"/>
           </linearGradient>
-          <linearGradient id="wax-fill-grad" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stop-color="#c09840"/>
-            <stop offset="22%"  stop-color="#f0d898"/>
-            <stop offset="50%"  stop-color="#faecc8"/>
-            <stop offset="78%"  stop-color="#f0d898"/>
-            <stop offset="100%" stop-color="#c09840"/>
+          <linearGradient id="wax-fill-g" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#8a6830"/>
+            <stop offset="50%"  stop-color="#c5a050"/>
+            <stop offset="100%" stop-color="#8a6830"/>
           </linearGradient>
-          <radialGradient id="flame-glow-grad" cx="50%" cy="80%" r="60%">
-            <stop offset="0%"   stop-color="#f7c14f" stop-opacity="0.50"/>
-            <stop offset="100%" stop-color="#D4882A" stop-opacity="0"/>
-          </radialGradient>
+          <clipPath id="wax-clip"><rect x="10" y="40" width="28" height="106" rx="6"/></clipPath>
         </defs>
-        <ellipse cx="24" cy="27" rx="16" ry="22" fill="url(#flame-glow-grad)"/>
-        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-grad)" stroke="#3a2008" stroke-width="0.8"/>
-        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="url(#wax-fill-grad)" clip-path="url(#candle-clip)"/>
-        <path d="M13 46 Q11 62 12 82" stroke="#c8a060" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.38" clip-path="url(#candle-clip)"/>
-        <path d="M36 48 Q38 61 37 72" stroke="#c8a060" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.30" clip-path="url(#candle-clip)"/>
-        <rect id="candle-shine" x="14" y="43" width="5" height="36" rx="2.5" fill="rgba(255,255,255,0.22)" clip-path="url(#candle-clip)"/>
-        <path id="candle-wick" d="M24 29 Q23.2 34 24 40" stroke="#3d4018" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <g id="candle-flame" class="flame-group">
-          <path d="M24 30 C15 25 13 17 15 10 C16 4 20 1 24 2 C28 1 32 4 33 10 C35 17 33 25 24 30Z" fill="#D4882A" opacity="0.78"/>
+        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-g)"/>
+        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="url(#wax-fill-g)" clip-path="url(#wax-clip)"/>
+        <path d="M24 29 Q23.2 34 24 40" stroke="#3d4018" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <g id="candle-flame" class="flame-group" style="transform-origin:24px 28px; animation: flameDance 2.6s ease-in-out infinite;">
+          <path d="M24 30 C15 25 13 17 15 10 C16 4 20 1 24 2 C28 1 32 4 33 10 C35 17 33 25 24 30Z" fill="#d4822a" opacity="0.75"/>
           <path d="M24 29 C17 23 16 16 17 11 C18.5 5 21 3 24 4 C27 3 29.5 5 31 11 C32 16 31 23 24 29Z" fill="#e07818"/>
           <path d="M24 27 C19 21 18.5 15 20 11 C21 7 22.5 5 24 6 C25.5 5 27 7 28 11 C29.5 15 29 21 24 27Z" fill="#f7c14f"/>
-          <path d="M24 24 C21 18 21 13 22.5 9.5 C23 8 23.5 7 24 7 C24.5 7 25 8 25.5 9.5 C27 13 27 18 24 24Z" fill="#fffaee" opacity="0.90"/>
-          <ellipse cx="24" cy="9" rx="2" ry="3" fill="white" opacity="0.40"/>
+          <ellipse cx="24" cy="9" rx="2" ry="3" fill="white" opacity="0.55"/>
         </g>
         <g id="candle-puddle" style="display:none">
-          <ellipse cx="24" cy="146" rx="18" ry="4" fill="#c5a878" opacity="0.35"/>
+          <ellipse cx="24" cy="146" rx="18" ry="4" fill="#8a6830" opacity="0.3"/>
         </g>
       </svg>
     </div>
@@ -83,30 +73,25 @@
       <div class="token-bar-wrap">
         <div class="token-bar-fill" id="token-bar-fill" style="width:0%"></div>
       </div>
-      <div class="candle-burnout" id="candle-burnout">recharge tomorrow 🌙</div>
+      <div class="candle-burnout" id="candle-burnout">recharge tomorrow</div>
     </div>
   </div>
 
-  <div class="horoscope-card" id="horoscope-card" style="display:none">
-    <div class="horoscope-header">
-      <div class="horoscope-sign" id="horoscope-sign"></div>
-      <button class="horoscope-refresh-btn" id="horoscope-refresh-btn" onclick="refreshHoroscope()" title="Different reading">↺</button>
+  <!-- Tarot card (replaces horoscope) -->
+  <div id="tarot-card">
+    <div class="tarot-header">
+      <div class="tarot-name" id="tarot-name"></div>
+      <button class="tarot-shuffle-btn" id="tarot-shuffle-btn" onclick="shuffleTarot()" title="Draw again">↺</button>
     </div>
-    <div class="horoscope-text" id="horoscope-text"></div>
-    <div class="horoscope-ask-row">
-      <input type="text" class="horoscope-ask-input" id="horoscope-ask-input"
-        placeholder="Ask the stars about something specific..."
-        maxlength="120"
-        onkeydown="if(event.key==='Enter') askHoroscope()"/>
-      <button class="horoscope-ask-btn" id="horoscope-ask-btn" onclick="askHoroscope()">Ask</button>
-    </div>
+    <div class="tarot-text" id="tarot-text"></div>
   </div>
 
+  <!-- Scene canvas (night sky + stars + town + moon-boat) -->
   <div id="crowd-section">
     <div id="crowd-canvas">
-      <!-- Central figure + avatars injected by JS -->
+      <!-- scene SVG injected by JS -->
     </div>
-    <div id="crowd-stats">No conversations yet today</div>
+    <div id="crowd-stats">no conversations yet today</div>
   </div>
 
     </div><!-- /#vibe-body -->
@@ -117,12 +102,12 @@
 
   <div id="groups-container" class="groups-container"></div>
 
-  <button class="add-group-btn" onclick="addGroup()">+ Add Group</button>
+  <button class="add-group-btn" onclick="addGroup()">+ add group</button>
 
   <div class="footer">
     <div class="total">Total today: <span id="total-count">0</span></div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <button class="export-btn" onclick="exportData()" title="Download your data as JSON">Export</button>
+      <button class="export-btn" onclick="exportData()" title="Download data as JSON">Export</button>
       <button class="reset-btn" onclick="resetCounts()">Reset Today</button>
     </div>
   </div>
@@ -143,7 +128,7 @@
 <!-- Settings modal -->
 <div class="modal-overlay hidden" id="settings-modal">
   <div class="modal-box">
-    <h2>Energy Settings ⚙️</h2>
+    <h2>Energy Settings</h2>
     <div class="settings-forecast">
       <div class="forecast-row">
         <span id="settings-moon-emoji">🌕</span>
@@ -157,16 +142,6 @@
       </div>
       <div class="forecast-divider"></div>
       <div class="forecast-suggested">Suggested today: <strong id="settings-suggested">—</strong> tokens</div>
-      <div class="forecast-divider" id="settings-horoscope-divider" style="display:none"></div>
-      <div id="settings-zodiac-row" class="forecast-row" style="display:none">
-        <span id="settings-zodiac-emoji"></span>
-        <span class="forecast-row-label" id="settings-zodiac-name" style="font-style:italic;color:#A85C7A"></span>
-      </div>
-      <div id="settings-horoscope-text" style="font-size:12px;color:#5a3a18;font-style:italic;line-height:1.55;margin-top:4px;display:none"></div>
-    </div>
-    <div class="modal-field">
-      <label>Birthday (for horoscope)</label>
-      <input type="date" id="settings-birthday"/>
     </div>
     <div class="modal-field">
       <label>Last period start date</label>
@@ -184,7 +159,7 @@
 <!-- Setup modal -->
 <div class="modal-overlay hidden" id="setup-modal">
   <div class="modal-box">
-    <h2>Track your energy 🕯️</h2>
+    <h2>Track your energy</h2>
     <p>The candle syncs with your cycle and the moon to suggest your starting energy each morning. Your data stays on this device.</p>
     <div class="modal-field">
       <label>Last period start date</label>
@@ -194,7 +169,7 @@
       <label>Average cycle length (days)</label>
       <input type="number" id="setup-cycle-length" value="28" min="21" max="45"/>
     </div>
-    <button class="modal-btn" onclick="saveSetupAndSuggest()">Continue →</button>
+    <button class="modal-btn" onclick="saveSetupAndSuggest()">Continue</button>
     <button class="modal-btn secondary" onclick="skipSetup()">Skip for now</button>
   </div>
 </div>
