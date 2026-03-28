@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Methodical Monastic</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            headline: ['Manrope', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f9f9f9; color: #1a1c1c; }
+    .font-headline { font-family: 'Manrope', sans-serif; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .nav-btn.active { color: #6e3325; }
+    .nav-btn { color: rgba(83,67,63,0.4); }
+    .filter-btn.active { background: #6e3325; color: white; }
+    .filter-btn { background: #f3f3f3; color: #53433f; }
+    input[type="date"], input[type="number"], input[type="text"], select, textarea {
+      background: #f3f3f3; border: none; border-radius: 0.75rem;
+      padding: 0.875rem 1rem; width: 100%; font-size: 0.875rem;
+      color: #1a1c1c; outline: none; font-family: 'Inter', sans-serif;
+    }
+    input:focus, select:focus, textarea:focus {
+      box-shadow: 0 0 0 2px rgba(110,51,37,0.25);
+    }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2353433f' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <!-- ── DASHBOARD ── -->
+  <div id="screen-dashboard" class="screen active px-5 pt-10 pb-6 max-w-md mx-auto">
+
+    <div class="mb-8">
+      <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:4px;">Current Trajectory</div>
+      <div style="display:flex; align-items:baseline; gap:16px;">
+        <h1 id="dash-weight" class="font-headline" style="font-size:64px; font-weight:800; letter-spacing:-2px; line-height:1;">—</h1>
+        <span style="font-size:20px; color:rgba(83,67,63,.35);">lbs</span>
+        <div style="border-left:1px solid #d8c2bc; padding-left:16px;">
+          <div id="dash-remaining" class="font-headline" style="font-size:18px; font-weight:700; color:#004e42;">—</div>
+          <div style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:rgba(83,67,63,.5);">to goal</div>
+        </div>
+      </div>
+      <div id="dash-days-label" style="font-size:10px; color:rgba(83,67,63,.45); margin-top:6px; letter-spacing:.05em;"></div>
+    </div>
+
+    <!-- Weight chart -->
+    <div style="background:white; border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 4px 16px rgba(26,28,28,.06); border-left:4px solid #6e3325;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <span style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase;">Weight Progression</span>
+        <div style="display:flex; gap:12px; font-size:9px; font-weight:600; color:rgba(83,67,63,.4);">
+          <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:14px; height:2px; background:#6e3325; border-radius:1px;"></span>Trend</span>
+          <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:14px; height:0; border-top:1.5px dashed rgba(134,115,110,.5);"></span>132</span>
+        </div>
+      </div>
+      <svg id="dash-chart" width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none" style="display:block;">
+        <line id="dash-goal-line" x1="0" x2="300" stroke="#86736e" stroke-width="1" stroke-dasharray="4 3" opacity="0.45"/>
+        <path id="dash-path" fill="none" stroke="#6e3325" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g id="dash-dots"></g>
+      </svg>
+      <div id="dash-chart-labels" style="display:flex; justify-content:space-between; font-size:9px; color:rgba(83,67,63,.4); margin-top:6px;"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex; gap:12px; margin-bottom:24px;">
+      <button onclick="showScreen('log-weight')" style="flex:1; padding:14px; border-radius:999px; background:#f3f3f3; color:#6e3325; font-size:14px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; font-family:'Inter',sans-serif; transition:background .15s;">
+        <span class="material-symbols-outlined" style="font-size:18px;">edit_note</span>
+        Log Weight
+      </button>
+      <button onclick="showScreen('log-workout')" style="flex:1; padding:14px; border-radius:999px; background:linear-gradient(135deg,#6e3325,#8b4a3a); color:white; font-size:14px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:0 6px 20px rgba(110,51,37,.2); transition:opacity .15s;">
+        <span class="material-symbols-outlined" style="font-size:18px;">fitness_center</span>
+        Log Workout
+      </button>
+    </div>
+
+    <!-- Recent workouts -->
+    <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:10px;">Recent Workouts</div>
+    <div id="dash-recent-workouts"></div>
+
+  </div>
+
+  <!-- ── LOG WEIGHT ── -->
+  <div id="screen-log-weight" class="screen px-5 pt-10 pb-6 max-w-md mx-auto">
+    <button onclick="showScreen('dashboard')" style="display:flex; align-items:center; gap:4px; color:#6e3325; font-size:14px; font-weight:500; background:none; border:none; cursor:pointer; padding:0; margin-bottom:28px; font-family:'Inter',sans-serif;">
+      <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> Back
+    </button>
+    <h2 class="font-headline" style="font-size:36px; font-weight:800; letter-spacing:-1.5px; margin-bottom:28px;">Log Weight</h2>
+    <form onsubmit="saveWeight(event)">
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Date</label>
+        <input id="weight-date" type="date"/>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Weight (lbs)</label>
+        <input id="weight-value" type="number" step="0.1" min="80" max="300" placeholder="141.0"/>
+      </div>
+      <div style="margin-bottom:28px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Note (optional)</label>
+        <textarea id="weight-note" rows="2" placeholder="Morning, post-workout..." style="resize:none;"></textarea>
+      </div>
+      <button type="submit" style="width:100%; padding:16px; border-radius:999px; background:linear-gradient(135deg,#6e3325,#8b4a3a); color:white; font-size:14px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:0 6px 20px rgba(110,51,37,.2);">Save</button>
+    </form>
+  </div>
+
+  <!-- ── LOG WORKOUT ── -->
+  <div id="screen-log-workout" class="screen px-5 pt-10 pb-6 max-w-md mx-auto">
+    <button onclick="showScreen('dashboard')" style="display:flex; align-items:center; gap:4px; color:#6e3325; font-size:14px; font-weight:500; background:none; border:none; cursor:pointer; padding:0; margin-bottom:28px; font-family:'Inter',sans-serif;">
+      <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> Back
+    </button>
+    <h2 class="font-headline" style="font-size:36px; font-weight:800; letter-spacing:-1.5px; margin-bottom:28px;">Log Workout</h2>
+    <form onsubmit="saveWorkout(event)">
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Date</label>
+        <input id="workout-date" type="date"/>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Activity</label>
+        <select id="workout-type">
+          <option value="Pilates">Pilates</option>
+          <option value="Yoga">Yoga</option>
+          <option value="Strength">Strength</option>
+          <option value="Cardio">Cardio</option>
+          <option value="Walk">Walk</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Studio / Location (optional)</label>
+        <input id="workout-location" type="text" placeholder="BK Pilates, Holydog..."/>
+      </div>
+      <div style="margin-bottom:28px;">
+        <label style="display:block; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:8px;">Duration (minutes)</label>
+        <input id="workout-duration" type="number" min="1" max="300" placeholder="60"/>
+      </div>
+      <button type="submit" style="width:100%; padding:16px; border-radius:999px; background:linear-gradient(135deg,#6e3325,#8b4a3a); color:white; font-size:14px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:0 6px 20px rgba(110,51,37,.2);">Save</button>
+    </form>
+  </div>
+
+  <!-- ── HISTORY ── -->
+  <div id="screen-history" class="screen px-5 pt-10 pb-6 max-w-md mx-auto">
+    <h2 class="font-headline" style="font-size:36px; font-weight:800; letter-spacing:-1.5px; margin-bottom:20px;">History</h2>
+
+    <!-- Filter tabs -->
+    <div style="display:flex; gap:8px; margin-bottom:20px;">
+      <button id="filter-week" class="filter-btn active" onclick="setFilter('week')" style="padding:8px 16px; border-radius:999px; font-size:11px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif;">Week</button>
+      <button id="filter-month" class="filter-btn" onclick="setFilter('month')" style="padding:8px 16px; border-radius:999px; font-size:11px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif;">Month</button>
+      <button id="filter-all" class="filter-btn" onclick="setFilter('all')" style="padding:8px 16px; border-radius:999px; font-size:11px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif;">All Time</button>
+    </div>
+
+    <!-- Weight chart -->
+    <div style="background:white; border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 4px 16px rgba(26,28,28,.06); border-left:4px solid #6e3325;">
+      <span style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; display:block; margin-bottom:14px;">Weight</span>
+      <svg id="hist-chart" width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none" style="display:block;">
+        <line id="hist-goal-line" x1="0" x2="300" stroke="#86736e" stroke-width="1" stroke-dasharray="4 3" opacity="0.45"/>
+        <path id="hist-path" fill="none" stroke="#6e3325" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g id="hist-dots"></g>
+      </svg>
+      <div id="hist-chart-labels" style="display:flex; justify-content:space-between; font-size:9px; color:rgba(83,67,63,.4); margin-top:6px;"></div>
+    </div>
+
+    <!-- Workout log -->
+    <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:10px;">Workouts</div>
+    <div id="hist-workouts" style="margin-bottom:24px;"></div>
+
+    <!-- Weight log -->
+    <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(83,67,63,.55); text-transform:uppercase; margin-bottom:10px;">Weight Log</div>
+    <div id="hist-weights"></div>
+  </div>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav style="position:fixed; bottom:0; left:0; right:0; background:rgba(249,249,249,.92); backdrop-filter:blur(12px); border-top:1px solid rgba(216,194,188,.3); display:flex; justify-content:space-around; padding:10px 0 16px;">
+    <button id="nav-dashboard" class="nav-btn active" onclick="showScreen('dashboard')" style="display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; cursor:pointer; font-family:'Inter',sans-serif;">
+      <span class="material-symbols-outlined">home</span>
+      <span style="font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;">Dashboard</span>
+    </button>
+    <button id="nav-history" class="nav-btn" onclick="showScreen('history')" style="display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; cursor:pointer; font-family:'Inter',sans-serif;">
+      <span class="material-symbols-outlined">history</span>
+      <span style="font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;">History</span>
+    </button>
+  </nav>
+
+  <script>
+    const GOAL = 132;
+    const GOAL_DATE = new Date('2026-06-25');
+    let currentFilter = 'week';
+
+    // ── Storage ──
+    function load(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+    function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    // ── Navigation ──
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const nb = document.getElementById('nav-' + name);
+      if (nb) nb.classList.add('active');
+      if (name === 'dashboard') renderDashboard();
+      if (name === 'history') renderHistory();
+      if (name === 'log-weight') initDate('weight-date');
+      if (name === 'log-workout') initDate('workout-date');
+    }
+
+    function initDate(id) {
+      document.getElementById(id).value = today();
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // ── Save weight ──
+    function saveWeight(e) {
+      e.preventDefault();
+      const date = document.getElementById('weight-date').value;
+      const weight = parseFloat(document.getElementById('weight-value').value);
+      if (!date || isNaN(weight)) return;
+      const note = document.getElementById('weight-note').value.trim();
+      const entries = load('weights');
+      const i = entries.findIndex(w => w.date === date);
+      if (i >= 0) entries[i] = { date, weight, note };
+      else entries.push({ date, weight, note });
+      entries.sort((a, b) => a.date.localeCompare(b.date));
+      save('weights', entries);
+      document.getElementById('weight-value').value = '';
+      document.getElementById('weight-note').value = '';
+      showScreen('dashboard');
+    }
+
+    // ── Save workout ──
+    function saveWorkout(e) {
+      e.preventDefault();
+      const date = document.getElementById('workout-date').value;
+      const type = document.getElementById('workout-type').value;
+      if (!date || !type) return;
+      const location = document.getElementById('workout-location').value.trim();
+      const dur = parseInt(document.getElementById('workout-duration').value);
+      const entries = load('workouts');
+      entries.push({ date, type, location, duration: isNaN(dur) ? null : dur });
+      entries.sort((a, b) => a.date.localeCompare(b.date));
+      save('workouts', entries);
+      document.getElementById('workout-location').value = '';
+      document.getElementById('workout-duration').value = '';
+      showScreen('dashboard');
+    }
+
+    // ── Dashboard ──
+    function renderDashboard() {
+      const weights = load('weights');
+      const workouts = load('workouts');
+      const daysLeft = Math.max(0, Math.ceil((GOAL_DATE - new Date()) / 86400000));
+      document.getElementById('dash-days-label').textContent = daysLeft + ' days until June 25';
+
+      if (weights.length > 0) {
+        const latest = weights[weights.length - 1].weight;
+        document.getElementById('dash-weight').textContent = latest.toFixed(1);
+        const rem = latest - GOAL;
+        document.getElementById('dash-remaining').textContent = rem > 0 ? '−' + rem.toFixed(1) + ' lbs' : 'Goal reached!';
+      } else {
+        document.getElementById('dash-weight').textContent = '—';
+        document.getElementById('dash-remaining').textContent = '—';
+      }
+
+      drawChart('dash-chart', 'dash-goal-line', 'dash-path', 'dash-dots', 'dash-chart-labels', weights.slice(-14));
+
+      const recent = [...workouts].reverse().slice(0, 3);
+      document.getElementById('dash-recent-workouts').innerHTML = recent.length
+        ? recent.map(workoutCard).join('')
+        : '<p style="font-size:14px; color:rgba(83,67,63,.4); font-style:italic;">No workouts logged yet.</p>';
+    }
+
+    // ── History ──
+    function setFilter(f) {
+      currentFilter = f;
+      ['week','month','all'].forEach(k => {
+        const b = document.getElementById('filter-' + k);
+        b.classList.toggle('active', k === f);
+      });
+      renderHistory();
+    }
+
+    function filterByPeriod(entries, f) {
+      if (f === 'all') return entries;
+      const cut = new Date();
+      cut.setDate(cut.getDate() - (f === 'week' ? 7 : 30));
+      const cutStr = cut.toISOString().slice(0, 10);
+      return entries.filter(e => e.date >= cutStr);
+    }
+
+    function renderHistory() {
+      const weights = filterByPeriod(load('weights'), currentFilter);
+      const workouts = filterByPeriod(load('workouts'), currentFilter);
+
+      drawChart('hist-chart', 'hist-goal-line', 'hist-path', 'hist-dots', 'hist-chart-labels', weights);
+
+      const wb = document.getElementById('hist-workouts');
+      const sorted = [...workouts].reverse();
+      wb.innerHTML = sorted.length
+        ? sorted.map(workoutCard).join('')
+        : '<p style="font-size:14px; color:rgba(83,67,63,.4); font-style:italic; margin-bottom:8px;">No workouts in this period.</p>';
+
+      const wgb = document.getElementById('hist-weights');
+      const sortedW = [...weights].reverse();
+      wgb.innerHTML = sortedW.length
+        ? sortedW.map(weightCard).join('')
+        : '<p style="font-size:14px; color:rgba(83,67,63,.4); font-style:italic;">No weight entries in this period.</p>';
+    }
+
+    // ── SVG Chart ──
+    function drawChart(svgId, goalLineId, pathId, dotsId, labelsId, weights) {
+      const W = 300, H = 140, PAD = 10;
+      const goalLineEl = document.getElementById(goalLineId);
+      const pathEl = document.getElementById(pathId);
+      const dotsEl = document.getElementById(dotsId);
+      const labelsEl = labelsId ? document.getElementById(labelsId) : null;
+
+      if (weights.length < 1) {
+        goalLineEl.setAttribute('y1', H / 2); goalLineEl.setAttribute('y2', H / 2);
+        pathEl.setAttribute('d', '');
+        dotsEl.innerHTML = '';
+        if (labelsEl) labelsEl.innerHTML = '';
+        return;
+      }
+
+      const vals = weights.map(w => w.weight);
+      const minV = Math.min(...vals, GOAL) - 2;
+      const maxV = Math.max(...vals) + 2;
+      const toY = v => PAD + (H - PAD * 2) * (1 - (v - minV) / (maxV - minV));
+      const toX = i => weights.length === 1 ? W / 2 : PAD + (W - PAD * 2) * (i / (weights.length - 1));
+
+      const gy = toY(GOAL);
+      goalLineEl.setAttribute('y1', gy.toFixed(1));
+      goalLineEl.setAttribute('y2', gy.toFixed(1));
+
+      const pts = weights.map((w, i) => `${toX(i).toFixed(1)},${toY(w.weight).toFixed(1)}`);
+      pathEl.setAttribute('d', weights.length === 1 ? '' : 'M' + pts.join(' L'));
+
+      dotsEl.innerHTML = weights.map((w, i) =>
+        `<circle cx="${toX(i).toFixed(1)}" cy="${toY(w.weight).toFixed(1)}" r="3.5" fill="#6e3325"/>`
+      ).join('');
+
+      if (labelsEl) {
+        const show = weights.length <= 3
+          ? weights
+          : [weights[0], weights[Math.floor((weights.length - 1) / 2)], weights[weights.length - 1]];
+        labelsEl.innerHTML = show.map(w => `<span>${fmtShort(w.date)}</span>`).join('');
+      }
+    }
+
+    // ── Card templates ──
+    function workoutCard(w) {
+      return `<div style="display:flex; align-items:center; justify-content:space-between; background:white; border-radius:10px; padding:12px 16px; margin-bottom:8px; box-shadow:0 2px 8px rgba(26,28,28,.04);">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:#1a1c1c;">${w.type}${w.location ? ' · ' + w.location : ''}</div>
+          <div style="font-size:10px; color:rgba(83,67,63,.45); margin-top:2px;">${fmtDate(w.date)}</div>
+        </div>
+        ${w.duration ? `<div style="font-size:13px; font-weight:500; color:rgba(83,67,63,.55);">${w.duration}m</div>` : ''}
+      </div>`;
+    }
+
+    function weightCard(w) {
+      return `<div style="display:flex; align-items:center; justify-content:space-between; background:white; border-radius:10px; padding:12px 16px; margin-bottom:8px; box-shadow:0 2px 8px rgba(26,28,28,.04);">
+        <div style="font-size:10px; color:rgba(83,67,63,.45);">${fmtDate(w.date)}</div>
+        <div style="font-size:15px; font-weight:700; font-family:'Manrope',sans-serif; color:#1a1c1c;">${w.weight.toFixed(1)} lbs${w.note ? ' <span style="font-size:11px; font-weight:400; color:rgba(83,67,63,.45);">· ' + w.note + '</span>' : ''}</div>
+      </div>`;
+    }
+
+    function fmtDate(d) {
+      const [y, m, day] = d.split('-');
+      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1] + ' ' + +day + ', ' + y;
+    }
+
+    function fmtShort(d) {
+      const [, m, day] = d.split('-');
+      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1] + ' ' + +day;
+    }
+
+    // ── Init ──
+    renderDashboard();
+  </script>
+</body>
+</html>
