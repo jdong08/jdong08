@@ -1088,23 +1088,9 @@ const link = g.append('g').selectAll('line').data(links).join('line')
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
   .call(d3.drag()
-    .on('start', (e, d) => {
-      if (!e.active) sim.alphaTarget(0.12).restart();
-      d.fx = d.x; d.fy = d.y;
-      d._tapX = e.x; d._tapY = e.y; // store start for tap detection
-    })
+    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.12).restart(); d.fx = d.x; d.fy = d.y; })
     .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
-    .on('end',   (e, d) => {
-      if (!e.active) sim.alphaTarget(0);
-      d.fx = null; d.fy = null;
-      // On touch: detect tap (movement < 6px) and fire open action
-      if (e.sourceEvent && e.sourceEvent.type === 'touchend') {
-        const dx = e.x - d._tapX, dy = e.y - d._tapY;
-        if (Math.sqrt(dx * dx + dy * dy) < 6) {
-          (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d);
-        }
-      }
-    })
+    .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
   );
 
 node.append('circle')
@@ -1139,9 +1125,31 @@ node
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
   })
-  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); });
+  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); })
+  .on('touchstart.tap', (e, d) => {
+    // Record touch start position for tap detection
+    // Fires on node g before SVG zoom sees the touch (inner → outer bubble order)
+    const t = e.touches[0];
+    d._tapClientX = t.clientX;
+    d._tapClientY = t.clientY;
+  }, { passive: true })
+  .on('touchend.tap', (e, d) => {
+    if (d._tapClientX == null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - d._tapClientX;
+    const dy = t.clientY - d._tapClientY;
+    d._tapClientX = null; d._tapClientY = null;
+    // Tap = finger moved less than 10px
+    if (Math.sqrt(dx * dx + dy * dy) < 10) {
+      (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d);
+    }
+  });
 
 svg.on('click', () => { closePanel(); });
+svg.on('touchend.close', (e) => {
+  // Close panel on tap of empty SVG area (not on a node)
+  if (e.target === svg.node() || e.target.tagName === 'line') closePanel();
+});
 
 sim.on('tick', () => {
   link
