@@ -330,6 +330,117 @@ header {
   color: #877276;
 }
 
+/* ── Lightbox ── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 23, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+}
+.lightbox-overlay.visible { opacity: 1; pointer-events: all; }
+.lightbox-card {
+  background: #fcf9f0;
+  border-radius: 18px;
+  padding: 28px 28px 24px;
+  max-width: 820px;
+  width: calc(100% - 32px);
+  max-height: calc(100vh - 64px);
+  box-shadow: 0 32px 64px rgba(28,28,23,0.22);
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  overflow: hidden;
+  position: relative;
+}
+.lightbox-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none;
+  cursor: pointer;
+  color: #877276; font-size: 0.85rem;
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.lightbox-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.lightbox-meta {
+  flex: 0 0 220px;
+  min-width: 0;
+}
+.lightbox-type {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #3d6b7a;
+  margin-bottom: 4px;
+}
+.lightbox-title {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  color: #1c1c17;
+  margin-bottom: 6px;
+}
+.lightbox-date {
+  font-size: 0.68rem;
+  color: #877276;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+.lightbox-desc {
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #544246;
+  margin-bottom: 18px;
+}
+.lightbox-made-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+.lightbox-made-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.lightbox-img-wrap {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(218,192,197,0.35);
+  max-height: calc(100vh - 128px);
+  display: flex;
+  align-items: flex-start;
+}
+.lightbox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+@media (max-width: 600px) {
+  .lightbox-card {
+    flex-direction: column;
+    padding: 20px 18px 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .lightbox-meta { flex: none; width: 100%; }
+  .lightbox-img-wrap { width: 100%; max-height: 220px; border-radius: 8px; }
+}
+
 /* ── Hint ── */
 .hint {
   position: fixed;
@@ -449,6 +560,10 @@ header {
         <div class="legend-dot" style="background:#765700"></div>
         <span>Integration</span>
       </div>
+      <div class="legend-item" data-type="output" onclick="toggleType('output')">
+        <div class="legend-dot" style="background:#3d6b7a"></div>
+        <span>Output</span>
+      </div>
     </div>
     <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
@@ -486,6 +601,23 @@ header {
   </div>
 </div>
 
+<div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+  <div class="lightbox-card" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-meta">
+      <div class="lightbox-type">Output</div>
+      <div class="lightbox-title" id="lb-title"></div>
+      <div class="lightbox-date" id="lb-date"></div>
+      <div class="lightbox-desc" id="lb-desc"></div>
+      <div class="lightbox-made-label">Made with</div>
+      <div class="lightbox-made-tags" id="lb-made"></div>
+    </div>
+    <div class="lightbox-img-wrap">
+      <img class="lightbox-img" id="lb-img" src="" alt=""/>
+    </div>
+  </div>
+</div>
+
 <div class="hint" id="hint">hover to explore · click to open · scroll to zoom</div>
 
 <div class="projects-dock">
@@ -509,8 +641,8 @@ header {
 </div>
 
 <script>
-const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700' };
-const RADIUS = { agent: 10, skill: 8, mcp: 8 };
+const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700', output: '#3d6b7a' };
+const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10 };
 
 const nodes = [
   { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
@@ -618,6 +750,32 @@ const nodes = [
   { id: 'nimbalyst-mcp',   label: 'Nimbalyst',       type: 'mcp',
     desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.',
     example: 'Connected to the editor Jay works in — can create charts, diagrams, commit code, and track sessions.' },
+
+  // ── Real outputs ──
+  { id: 'parent-newsletter', label: 'Parents Newsletter', type: 'output',
+    desc: 'Monthly AI briefing written for Jay\'s Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
+    example: 'A newsletter explaining AI breakthroughs to Jay\'s parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
+    screenshot: 'artifacts/parent-newsletter.png',
+    made: ['flitwick', 'nadia', 'lian'],
+    date: 'March 2026' },
+  { id: 'instacart-analysis', label: 'Instacart Analysis', type: 'output',
+    desc: '5-year spending analysis across 139 orders. Tracked inflation on recurring items, behavioral shifts by year, fee evolution, and shrinkflation signals — all from live receipt data.',
+    example: 'Jay uploaded 5 years of Instacart receipts and asked what it said about her spending. The output was a full research report: data tables, price tracking across every recurring item, and behavioral analysis by year.',
+    screenshot: 'artifacts/instacart-analysis.png',
+    made: ['cosimo'],
+    date: 'March 2026' },
+  { id: 'board-app', label: 'The Board App', type: 'output',
+    desc: 'A custom web app giving Jay conversational access to 13 specialist advisors. Built from scratch — design, frontend, and API integration.',
+    example: 'Jay wanted a visual interface for her advisor council. In one session, Claude built a full dark-mode web app with advisor cards, portraits, and a live chat interface wired to each agent.',
+    screenshot: 'artifacts/board-app.png',
+    made: ['minerva', 'ada'],
+    date: 'February 2026' },
+  { id: 'ai-news', label: 'AI Intelligence Brief', type: 'output',
+    desc: 'Weekly AI news report covering frontier model releases, policy shifts, and professional relevance. Sourced live, synthesized by Flitwick, formatted for mobile reading.',
+    example: 'Every week, Flitwick searches the AI landscape and writes a briefing Jay can read on her phone — covering what shipped, what it means for her work, and what to watch.',
+    screenshot: 'artifacts/ai-news.png',
+    made: ['flitwick'],
+    date: 'March 2026' },
 ];
 
 const links = [
@@ -649,6 +807,13 @@ const links = [
   { source: 'nimbalyst-mcp',   target: 'minerva' },
   { source: 'nimbalyst-mcp',   target: 'ada' },
   { source: 'nimbalyst-mcp',   target: 'amelie' },
+  // outputs ← producers
+  { source: 'parent-newsletter', target: 'flitwick' },
+  { source: 'parent-newsletter', target: 'lian' },
+  { source: 'instacart-analysis', target: 'cosimo' },
+  { source: 'board-app',          target: 'minerva' },
+  { source: 'board-app',          target: 'ada' },
+  { source: 'ai-news',            target: 'flitwick' },
 ];
 
 // Build adjacency map
@@ -724,7 +889,7 @@ node
     if (pinnedNode) return;
     resetHighlight();
   })
-  .on('click', (e, d) => { e.stopPropagation(); openPanel(d); });
+  .on('click', (e, d) => { e.stopPropagation(); d.type === 'output' ? openLightbox(d) : openPanel(d); });
 
 svg.on('click', () => { closePanel(); });
 
@@ -890,6 +1055,31 @@ function applySearch(q) {
   link.attr('stroke-opacity', 0.04);
 }
 
+function openLightbox(d) {
+  document.getElementById('lb-title').textContent = d.label;
+  document.getElementById('lb-date').textContent = d.date || '';
+  document.getElementById('lb-desc').textContent = d.desc;
+  document.getElementById('lb-img').src = d.screenshot || '';
+  document.getElementById('lb-img').alt = d.label;
+  const madeEl = document.getElementById('lb-made');
+  madeEl.innerHTML = '';
+  (d.made || []).forEach(id => {
+    const n = nodeMap[id]; if (!n) return;
+    const tag = document.createElement('button');
+    tag.className = 'conn-tag';
+    tag.textContent = n.label;
+    tag.style.color = COLORS[n.type];
+    tag.style.borderColor = COLORS[n.type] + '55';
+    tag.style.background = COLORS[n.type] + '10';
+    tag.onclick = ev => { ev.stopPropagation(); closeLightbox(); openPanel(n); };
+    madeEl.appendChild(tag);
+  });
+  document.getElementById('lightbox-overlay').classList.add('visible');
+}
+function closeLightbox() {
+  document.getElementById('lightbox-overlay').classList.remove('visible');
+}
+
 function toggleAbout() {
   document.getElementById('about-overlay').classList.toggle('visible');
 }
@@ -906,7 +1096,7 @@ function toggleProjects() {
 
 // Keyboard
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closePanel(); closeAbout(); }
+  if (e.key === 'Escape') { closePanel(); closeAbout(); closeLightbox(); }
 });
 
 // Touch hint
@@ -927,6 +1117,8 @@ window.applySearch = applySearch;
 window.toggleAbout = toggleAbout;
 window.closeAbout = closeAbout;
 window.toggleProjects = toggleProjects;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
 </script>
 </body>
 </html>
