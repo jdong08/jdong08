@@ -1056,11 +1056,19 @@ const g = svg.append('g');
 const zoom = d3.zoom().scaleExtent([0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
 svg.call(zoom);
 
+// Seed nodes near center — prevents violent scatter from random corner positions at startup
+nodes.forEach(n => {
+  n.x = W / 2 + (Math.random() - 0.5) * 120;
+  n.y = H / 2 + (Math.random() - 0.5) * 120;
+});
+
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
   .force('charge', d3.forceManyBody().strength(-200))
   .force('center', d3.forceCenter(W / 2, H / 2))
   .force('collision', d3.forceCollide().radius(d => (RADIUS[d.type] || 10) + 22))
+  .alpha(0.6)
+  .alphaDecay(0.04)
   .velocityDecay(0.55)
   .force('bounds', () => {
     const pad = 80, top = 60;
