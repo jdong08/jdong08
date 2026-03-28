@@ -1111,7 +1111,7 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
         const dt = Date.now() - tap.t;
         const moved = Math.hypot(endFx - tap.x, endFy - tap.y);
         // tap = short duration AND node barely moved (locked by fx/fy during touch)
-        if (dt < 200 && moved < 8) {
+        if (dt < 400 && moved < 12) {
           if (d.type === 'output') openLightbox(d);
           else { openPanel(d); panToNodeMobile(d); }
         }
@@ -1119,18 +1119,21 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
     })
   );
 
-// Transparent hit-pad: enlarges touch target to 44px+ on mobile
 node.append('circle')
-  .attr('r', d => Math.max((RADIUS[d.type] || 10) + 18, 26))
-  .attr('fill', 'transparent')
-  .attr('stroke', 'none');
-
-node.append('circle')
+  .attr('class', 'vis-circle')
   .attr('r', d => RADIUS[d.type] || 10)
   .attr('fill', d => COLORS[d.type])
   .attr('fill-opacity', 0.82)
   .attr('stroke', '#fcf9f0')
   .attr('stroke-width', 2.5);
+
+// Transparent hit-pad on top (z-order: last = highest) — 44px+ touch target on mobile
+node.append('circle')
+  .attr('class', 'hit-pad')
+  .attr('r', d => Math.max((RADIUS[d.type] || 10) + 18, 26))
+  .attr('fill', 'transparent')
+  .attr('stroke', 'none')
+  .style('pointer-events', 'all');
 
 node.append('text')
   .attr('class', 'node-label')
@@ -1142,7 +1145,7 @@ node
   .on('mouseover', (e, d) => {
     if (pinnedNode) return;
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
-    node.select('circle')
+    node.select('.vis-circle')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
     node.select('text')
@@ -1199,7 +1202,7 @@ sim.on('tick', () => {
 // ── Functions ──
 
 function resetHighlight() {
-  node.select('circle')
+  node.select('.vis-circle')
     .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 0.82)
     .attr('r', d => RADIUS[d.type] || 10)
     .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
@@ -1212,7 +1215,7 @@ function resetHighlight() {
 
 function applyNeighborhoodHighlight(d) {
   const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
-  node.select('circle')
+  node.select('.vis-circle')
     .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
     .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10))
     .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
@@ -1333,7 +1336,7 @@ function togglePin() {
     // Freeze the neighborhood highlight
     const d = currentNode;
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
-    node.select('circle')
+    node.select('.vis-circle')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
     node.select('text')
@@ -1367,7 +1370,7 @@ function toggleType(type) {
 function applySearch(q) {
   const query = q.toLowerCase().trim();
   if (!query) { resetHighlight(); return; }
-  node.select('circle')
+  node.select('.vis-circle')
     .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.08)
     .attr('r', n => n.label.toLowerCase().includes(query) ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
   node.select('text')
