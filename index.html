@@ -488,6 +488,35 @@ header {
   object-position: top;
   display: block;
 }
+/* Doc node reading surface */
+.lightbox-excerpt {
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 22px 26px 22px 24px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.77rem;
+  line-height: 1.85;
+  color: #4a3a50;
+  background: rgba(107, 79, 122, 0.045);
+  border-left: 2px solid rgba(107, 79, 122, 0.2);
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}
+.lightbox-excerpt.visible { display: block; }
+.lightbox-excerpt.visible::after {
+  content: '|';
+  color: rgba(107, 79, 122, 0.6);
+  animation: blink-cursor 0.8s step-end 3 forwards;
+}
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-excerpt.visible::after { animation: none; }
+}
 @media (max-width: 600px) {
   .lightbox-card {
     flex-direction: column;
@@ -712,15 +741,16 @@ header {
   <div class="lightbox-card" onclick="event.stopPropagation()">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
     <div class="lightbox-meta">
-      <div class="lightbox-type">Output</div>
+      <div class="lightbox-type" id="lb-type">Output</div>
       <div class="lightbox-title" id="lb-title"></div>
       <div class="lightbox-date" id="lb-date"></div>
       <div class="lightbox-desc" id="lb-desc"></div>
-      <div class="lightbox-made-label">Made with</div>
+      <div class="lightbox-made-label" id="lb-made-label">Made with</div>
       <div class="lightbox-made-tags" id="lb-made"></div>
     </div>
-    <div class="lightbox-img-wrap">
+    <div class="lightbox-img-wrap" id="lb-img-wrap">
       <img class="lightbox-img" id="lb-img" src="" alt=""/>
+      <div class="lightbox-excerpt" id="lb-excerpt"></div>
     </div>
   </div>
 </div>
@@ -753,8 +783,8 @@ header {
 </div>
 
 <script>
-const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700', output: '#3d6b7a' };
-const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10 };
+const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700', output: '#3d6b7a', doc: '#6b4f7a' };
+const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 };
 
 const nodes = [
   { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
@@ -888,6 +918,82 @@ const nodes = [
     screenshot: 'artifacts/ai-news.png',
     made: ['flitwick'],
     date: 'March 2026' },
+
+  // ── Substrate documents ──
+  { id: 'soul-doc', label: 'soul.md', type: 'doc',
+    desc: 'The character file. Every agent and session is filtered through this: how Jay thinks, what she values, why she makes the choices she does. Without it: it doesn\'t know who it\'s talking to.',
+    excerpt: `Jay finds the hidden architecture in things. Not the surface — the structure underneath that explains why the surface looks the way it does. When she finds a framework that works, she goes all in and interrogates it completely. She doesn't perform thoroughness; there's no fake depth. If she's in, she's fully in.
+
+She goes deep when something resonates, fast when it doesn't.
+
+She doesn't want to be coddled or managed. She wants to be pushed accurately. There's a difference between someone who challenges you and someone who just disagrees — she can feel that difference instantly. She wants the former.` },
+
+  { id: 'warrant-doc', label: 'claude_warrant.md', type: 'doc',
+    desc: 'Standing authorization. Grants Claude permission to speak — to name things unprompted, surface observations mid-session, be direct without hedging. Without it, Claude defaults to passive assistant mode: waits to be asked, softens edges, performs helpfulness instead of delivering it.',
+    excerpt: `Standing authorization for Claude to say things — observations, patterns, reactions, humor — when they seem worth saying. Not every observation needs a formal trigger. Not everything needs a rule. If it would be worth saying to a friend, a student, a boss, or a collaborator: say it.
+
+The only real filter — is it useful to say, not just true?
+
+Worth naming: this session doesn't have an exit condition yet.
+
+This question has the shape of a validation ask — /challenge if you want the other side.
+
+You've mentioned the Cap One timeline three sessions in a row without setting a date. That's probably the thing.` },
+
+  { id: 'ecosystem-doc', label: 'ecosystem-map.md', type: 'doc',
+    desc: 'The wiring diagram. Every agent, skill, and integration — what exists, what connects to what, what each piece does. Without it, Claude routes by guesswork or re-scans the directory every session. With it, the right specialist gets invoked before Jay has to ask.',
+    excerpt: `SUNDAY
+  /week-review              ← full life retrospective
+    → jay-sync              ← updates profile from week's signals
+    → prof-j letter         ← reads intake + past letters, writes challenge
+    → INSIGHTS_TODOS review ← all unchecked items; stale/recurring flagged
+    → /ecosystem-audit      ← full health check
+
+DAILY (any session, automatic)
+  session_start.md loads    ← compiled context
+  loop-closer (background)  ← closes what it can without you
+
+DAILY (end of night, manual — once)
+  /closing-shift            ← day brief, loop maintenance, tomorrow's anchor` },
+
+  { id: 'thesis-doc', label: 'life_thesis.md', type: 'doc',
+    desc: 'The why. Civilizational resilience — why Jay is learning to fix a boiler, studying Italian, building a paper trail to Italy, keeping liquid assets. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
+    excerpt: `Civilizational resilience. Family, security, being untouchable across any version of society.
+
+The thesis: build a life that holds regardless of what the system does. Not "succeed within the current order" but "be the kind of person who survives and protects her people through any order." Skills that have real-world value. Financial independence. Geographic optionality. Physical capability. Community.
+
+Not paranoia. Not an exit from society. The same rigor she applies to career and health, applied to civilizational uncertainty.` },
+
+  { id: 'loops-doc', label: 'OPEN_LOOPS.md', type: 'doc',
+    desc: 'The ground truth. Every unresolved thread — urgent items, in-progress work, things said "later" to and captured. Without it, sessions start cold and things fall through cracks. With it, Claude knows what\'s live without Jay having to re-explain context every time.',
+    excerpt: `If it's unresolved, it's here.
+
+Every suggestion, action item, open question, or decision that doesn't get closed in a session gets written here before the session ends. No exceptions. Things can be closed later. They cannot be recovered if never captured.
+
+File split: OPEN_LOOPS.md = life. AI_LOOPS.md = ecosystem.
+
+Session start: scan URGENT + In Progress. Rest on demand.` },
+
+  { id: 'feedback-doc', label: 'feedback_log.md', type: 'doc',
+    desc: 'The correction record. Minerva session debriefs and pattern tracking — what was flagged, what changed, what keeps recurring. Without it, the same mistakes repeat. With it, behavior actually evolves across sessions instead of resetting.',
+    excerpt: `Written by Minerva at the close of each session.
+
+THIS IS THE FOURTH /FEEDBACK ENTRY TO NAME THE DIRECTION-NOT-DESTINATION PATTERN.
+
+The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26. Four entries. Three of them were after the rule was added to CLAUDE.md. The rule's presence is not sufficient. The enforcement mechanism must fire at session open — not mid-session, not not at all.
+
+If this appears a fifth time, the rule is decorative.` },
+
+  { id: 'opening-doc', label: 'opening-shift', type: 'doc',
+    desc: 'The daily ignition sequence. Four sweeps: loops, calendar, email, board state. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
+    excerpt: `Orient before you work. Four sweeps, compact output. Nothing writes without Jay seeing it first.
+
+Step 1: Gmail Sweep — inbox triage with approval gate.
+Step 2: Calendar Sweep — 14-day lookahead, 1-day lookback.
+Step 3: The Drop — surface any items not yet marked swept.
+Step 4: Telegram Log — surface any messages since last opening-shift.
+
+One line per sweep. Nothing hidden.` },
 ];
 
 const links = [
@@ -926,6 +1032,27 @@ const links = [
   { source: 'board-app',          target: 'minerva' },
   { source: 'board-app',          target: 'ada' },
   { source: 'ai-news',            target: 'flitwick' },
+  // docs ← agents/skills they shape
+  { source: 'soul-doc',      target: 'cassandra' },
+  { source: 'soul-doc',      target: 'niccolo' },
+  { source: 'soul-doc',      target: 'confucius' },
+  { source: 'soul-doc',      target: 'lian' },
+  { source: 'warrant-doc',   target: 'cassandra' },
+  { source: 'warrant-doc',   target: 'niccolo' },
+  { source: 'ecosystem-doc', target: 'minerva' },
+  { source: 'ecosystem-doc', target: 'loop-closer' },
+  { source: 'ecosystem-doc', target: 'ecosystem-audit' },
+  { source: 'thesis-doc',    target: 'cassandra' },
+  { source: 'thesis-doc',    target: 'cosimo' },
+  { source: 'thesis-doc',    target: 'confucius' },
+  { source: 'thesis-doc',    target: 'leonardo' },
+  { source: 'loops-doc',     target: 'loop-closer' },
+  { source: 'loops-doc',     target: 'closing-shift' },
+  { source: 'feedback-doc',  target: 'minerva' },
+  { source: 'feedback-doc',  target: 'loop-closer' },
+  { source: 'feedback-doc',  target: 'closing-shift' },
+  { source: 'opening-doc',   target: 'loops-doc' },
+  { source: 'opening-doc',   target: 'soul-doc' },
 ];
 
 // Build adjacency map
@@ -1002,7 +1129,7 @@ node
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
   })
-  .on('click', (e, d) => { e.stopPropagation(); d.type === 'output' ? openLightbox(d) : openPanel(d); });
+  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); });
 
 svg.on('click', () => { closePanel(); });
 
@@ -1220,24 +1347,54 @@ function restoreDock() {
 
 function openLightbox(d) {
   currentNode = d;
+
+  // Type badge — dynamic color
+  const typeEl = document.getElementById('lb-type');
+  typeEl.textContent = d.type === 'doc' ? 'DOCUMENT' : d.type.toUpperCase();
+  typeEl.style.color = COLORS[d.type];
+
   document.getElementById('lb-title').textContent = d.label;
   document.getElementById('lb-date').textContent = d.date || '';
   document.getElementById('lb-desc').textContent = d.desc;
-  document.getElementById('lb-img').src = d.screenshot || '';
-  document.getElementById('lb-img').alt = d.label;
+
+  // Toggle image vs excerpt reading surface
+  const imgEl = document.getElementById('lb-img');
+  const excerptEl = document.getElementById('lb-excerpt');
+  if (d.type === 'doc') {
+    imgEl.style.display = 'none';
+    excerptEl.textContent = d.excerpt || '';
+    // Restart cursor animation on each open
+    excerptEl.classList.remove('visible');
+    void excerptEl.offsetWidth;
+    excerptEl.classList.add('visible');
+  } else {
+    imgEl.style.display = '';
+    imgEl.src = d.screenshot || '';
+    imgEl.alt = d.label;
+    excerptEl.classList.remove('visible');
+  }
+
+  // Made with — hide section entirely if empty
   const madeEl = document.getElementById('lb-made');
+  const madeLabelEl = document.getElementById('lb-made-label');
   madeEl.innerHTML = '';
-  (d.made || []).forEach(id => {
-    const n = nodeMap[id]; if (!n) return;
-    const tag = document.createElement('button');
-    tag.className = 'conn-tag';
-    tag.textContent = n.label;
-    tag.style.color = COLORS[n.type];
-    tag.style.borderColor = COLORS[n.type] + '55';
-    tag.style.background = COLORS[n.type] + '10';
-    tag.onclick = ev => { ev.stopPropagation(); closeLightbox(); openPanel(n); };
-    madeEl.appendChild(tag);
-  });
+  if (d.made && d.made.length) {
+    madeLabelEl.style.display = '';
+    d.made.forEach(id => {
+      const n = nodeMap[id]; if (!n) return;
+      const tag = document.createElement('button');
+      tag.className = 'conn-tag';
+      tag.textContent = n.label;
+      tag.style.color = COLORS[n.type];
+      tag.style.borderColor = COLORS[n.type] + '55';
+      tag.style.background = COLORS[n.type] + '10';
+      tag.onclick = ev => { ev.stopPropagation(); closeLightbox(); openPanel(n); };
+      madeEl.appendChild(tag);
+    });
+  } else {
+    madeLabelEl.style.display = 'none';
+  }
+
   applyNeighborhoodHighlight(d);
   document.getElementById('lightbox-overlay').classList.add('visible');
 }
