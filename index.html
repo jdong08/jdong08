@@ -1092,21 +1092,25 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
     .on('start', (e, d) => {
       if (!e.active) sim.alphaTarget(0.12).restart();
       d.fx = d.x; d.fy = d.y;
-      const se = e.sourceEvent;
-      d._tapStart = { t: Date.now(), x: se.clientX, y: se.clientY };
+      // Only track tap start for touch pointer events (not mouse)
+      const pt = e.sourceEvent && e.sourceEvent.pointerType;
+      d._tapStart = (pt === 'touch') ? { t: Date.now(), x: d.x, y: d.y } : null;
     })
     .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
     .on('end',   (e, d) => {
       if (!e.active) sim.alphaTarget(0);
       const tap = d._tapStart; d._tapStart = null;
+      // Save forced position before clearing (reflects where user dragged to)
+      const endFx = d.fx != null ? d.fx : d.x;
+      const endFy = d.fy != null ? d.fy : d.y;
       d.fx = null; d.fy = null;
       if (tap) {
-        const se = e.sourceEvent;
         const dt = Date.now() - tap.t;
-        const dist = Math.hypot(se.clientX - tap.x, se.clientY - tap.y);
-        if (dt < 250 && dist < 15) {
+        const moved = Math.hypot(endFx - tap.x, endFy - tap.y);
+        // tap = short duration AND node barely moved (locked by fx/fy during touch)
+        if (dt < 200 && moved < 8) {
           if (d.type === 'output') openLightbox(d);
-          else { openPanel(d); if (window.innerWidth <= 600) panToNodeMobile(d); }
+          else { openPanel(d); panToNodeMobile(d); }
         }
       }
     })
