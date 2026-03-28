@@ -1552,8 +1552,10 @@ window.checkPrivate = function() {
     setTimeout(() => inp.classList.remove('shake'), 400);
   }
 };
-document.getElementById('private-modal').addEventListener('click', function(e) { if (e.target === this) closePrivate(); });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('private-modal').classList.contains('open')) checkPrivate(); });
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('private-modal').addEventListener('click', function(e) { if (e.target === this) closePrivate(); });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('private-modal') && document.getElementById('private-modal').classList.contains('open')) checkPrivate(); });
 </script>
 <!-- Lock button -->
 <button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
