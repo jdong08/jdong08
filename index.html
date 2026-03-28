@@ -1125,31 +1125,50 @@ node
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
   })
-  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); })
-  .on('touchstart.tap', (e, d) => {
-    // Record touch start position for tap detection
-    // Fires on node g before SVG zoom sees the touch (inner → outer bubble order)
-    const t = e.touches[0];
-    d._tapClientX = t.clientX;
-    d._tapClientY = t.clientY;
-  }, { passive: true })
-  .on('touchend.tap', (e, d) => {
-    if (d._tapClientX == null) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - d._tapClientX;
-    const dy = t.clientY - d._tapClientY;
-    d._tapClientX = null; d._tapClientY = null;
-    // Tap = finger moved less than 10px
-    if (Math.sqrt(dx * dx + dy * dy) < 10) {
-      (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d);
-    }
-  });
+  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); });
 
 svg.on('click', () => { closePanel(); });
-svg.on('touchend.close', (e) => {
-  // Close panel on tap of empty SVG area (not on a node)
-  if (e.target === svg.node() || e.target.tagName === 'line') closePanel();
-});
+
+// ── Mobile tap — native addEventListener bypasses D3 zoom's stopImmediatePropagation ──
+// D3's .on() handlers are blocked by zoom; native DOM listeners on the same element are not.
+let _tapT = 0, _tapX = 0, _tapY = 0;
+
+svg.node().addEventListener('touchstart', (e) => {
+  if (e.touches.length > 1) return; // ignore pinch/multi-touch
+  _tapT = Date.now();
+  _tapX = e.touches[0].clientX;
+  _tapY = e.touches[0].clientY;
+}, { passive: true });
+
+svg.node().addEventListener('touchend', (e) => {
+  if (e.changedTouches.length !== 1 || _tapT === 0) return;
+  const t = e.changedTouches[0];
+  const dt = Date.now() - _tapT;
+  const dist = Math.hypot(t.clientX - _tapX, t.clientY - _tapY);
+  _tapT = 0;
+  if (dt > 300 || dist > 12) return; // pan or long-press — not a tap
+
+  // Convert client coords → SVG node space (accounting for zoom/pan)
+  const rect = svg.node().getBoundingClientRect();
+  const tr = d3.zoomTransform(svg.node());
+  const sx = (t.clientX - rect.left - tr.x) / tr.k;
+  const sy = (t.clientY - rect.top  - tr.y) / tr.k;
+
+  // Find closest node within hit radius
+  let hit = null, best = Infinity;
+  nodes.forEach(n => {
+    if (hiddenTypes.has(n.type)) return;
+    const d = Math.hypot(n.x - sx, n.y - sy);
+    const r = Math.max((RADIUS[n.type] || 10) + 8, 20);
+    if (d < r && d < best) { hit = n; best = d; }
+  });
+
+  if (hit) {
+    (hit.type === 'output' || hit.type === 'doc') ? openLightbox(hit) : openPanel(hit);
+  } else {
+    closePanel(); // tap on empty space closes panel
+  }
+}, { passive: true });
 
 sim.on('tick', () => {
   link
