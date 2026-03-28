@@ -1091,6 +1091,7 @@ const link = g.append('g').selectAll('line').data(links).join('line')
 
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
+  .attr('pointer-events', 'all')
   .call(d3.drag()
     .clickDistance(10)  // finger wobble <10px still fires click; >10px = real drag
     .on('start', (e, d) => {
@@ -1151,11 +1152,11 @@ node
     else { openPanel(d); panToNodeMobile(d); }
   });
 
-svg.on('click', () => { closePanel(); });
+svg.on('click', (e) => { if (e.target === svg.node()) closePanel(); });
 
 // ── Mobile background-tap-to-close ──
 // Uses pointer events in capture phase (fires before D3's bubble-phase listeners).
-// Node tap-to-open is handled inside D3 drag's end event above — no touch events needed.
+// Node tap-to-open: D3 .clickDistance(10) fires synthetic click → node.on('click') → openPanel().
 let _bgTap = null;
 svg.node().addEventListener('pointerdown', (e) => {
   if (e.pointerType !== 'touch') return;
