@@ -981,6 +981,7 @@ node
   })
   .on('mouseout', () => {
     if (pinnedNode) return;
+    if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
   })
   .on('click', (e, d) => { e.stopPropagation(); d.type === 'output' ? openLightbox(d) : openPanel(d); });
@@ -1009,6 +1010,21 @@ function resetHighlight() {
     .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
     .attr('font-weight', '400');
   link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.2);
+}
+
+function applyNeighborhoodHighlight(d) {
+  const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+  node.select('circle')
+    .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+    .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10))
+    .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
+    .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
+  node.select('text')
+    .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+    .attr('font-weight', n => n.id === d.id ? '600' : '400');
+  link
+    .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
+    .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
 }
 
 function fitAll() {
@@ -1073,19 +1089,16 @@ function openPanel(d) {
     heading.style.display = 'none';
   }
 
-  // Apply ring to selected node
-  node.select('circle')
-    .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
-    .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
-
   // Reset pin button
   const pinBtn = document.getElementById('pin-btn');
   if (pinnedNode !== d.id) {
     pinnedNode = null;
     pinBtn.classList.remove('pinned');
     pinBtn.textContent = '⊙';
-    resetHighlight();
   }
+
+  // Apply neighborhood dimming for selected node
+  applyNeighborhoodHighlight(d);
 
   document.getElementById('panel').classList.add('visible');
 }
@@ -1188,6 +1201,7 @@ function restoreDock() {
 }
 
 function openLightbox(d) {
+  currentNode = d;
   document.getElementById('lb-title').textContent = d.label;
   document.getElementById('lb-date').textContent = d.date || '';
   document.getElementById('lb-desc').textContent = d.desc;
@@ -1206,10 +1220,13 @@ function openLightbox(d) {
     tag.onclick = ev => { ev.stopPropagation(); closeLightbox(); openPanel(n); };
     madeEl.appendChild(tag);
   });
+  applyNeighborhoodHighlight(d);
   document.getElementById('lightbox-overlay').classList.add('visible');
 }
 function closeLightbox() {
   document.getElementById('lightbox-overlay').classList.remove('visible');
+  currentNode = null;
+  resetHighlight();
 }
 
 function toggleAbout() {
