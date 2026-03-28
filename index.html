@@ -711,13 +711,13 @@ node
     if (pinnedNode) return;
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
     node.select('circle')
-      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.1))
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
     node.select('text')
-      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.15))
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
     link
-      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.04)
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
       .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
   })
   .on('mouseout', () => {
@@ -848,13 +848,13 @@ function togglePin() {
     const d = currentNode;
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
     node.select('circle')
-      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.1))
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
     node.select('text')
-      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.15))
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
     link
-      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.04)
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
       .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
   }
 }
