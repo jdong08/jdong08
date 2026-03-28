@@ -1091,7 +1091,6 @@ const link = g.append('g').selectAll('line').data(links).join('line')
 
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
-  .attr('pointer-events', 'all')
   .call(d3.drag()
     .clickDistance(10)  // finger wobble <10px still fires click; >10px = real drag
     .on('start', (e, d) => {
