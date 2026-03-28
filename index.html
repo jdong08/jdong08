@@ -242,6 +242,9 @@ header {
   transition: background 0.15s, color 0.15s;
   font-family: 'Work Sans', sans-serif;
 }
+@media (max-width: 600px) {
+  .panel-btn { width: 44px; height: 44px; font-size: 1rem; }
+}
 .panel-btn:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
 .panel-btn.pinned { color: #9a3a5a; background: rgba(154,58,90,0.1); }
 
@@ -1116,6 +1119,12 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
     })
   );
 
+// Transparent hit-pad: enlarges touch target to 44px+ on mobile
+node.append('circle')
+  .attr('r', d => Math.max((RADIUS[d.type] || 10) + 18, 26))
+  .attr('fill', 'transparent')
+  .attr('stroke', 'none');
+
 node.append('circle')
   .attr('r', d => RADIUS[d.type] || 10)
   .attr('fill', d => COLORS[d.type])
@@ -1173,7 +1182,7 @@ svg.node().addEventListener('pointerup', (e) => {
   const tr = d3.zoomTransform(svg.node());
   const sx = (e.clientX - rect.left - tr.x) / tr.k;
   const sy = (e.clientY - rect.top  - tr.y) / tr.k;
-  const hitNode = nodes.some(n => !hiddenTypes.has(n.type) && Math.hypot(n.x - sx, n.y - sy) < Math.max((RADIUS[n.type] || 10) + 8, 22));
+  const hitNode = nodes.some(n => !hiddenTypes.has(n.type) && Math.hypot(n.x - sx, n.y - sy) < Math.max((RADIUS[n.type] || 10) + 18, 26));
   if (!hitNode) closePanel();
 }, { capture: true, passive: true });
 
@@ -1384,7 +1393,14 @@ function applySearch(q) {
     panelEl.style.height = newH + 'px';
     e.preventDefault();
   }, { passive: false });
-  handle.addEventListener('touchend', () => { startY = null; });
+  handle.addEventListener('touchend', (e) => {
+    if (startY !== null) {
+      const dy = startY - (e.changedTouches[0] ? e.changedTouches[0].clientY : startY);
+      // Negative dy = dragged down; close panel if dragged down > 60px
+      if (dy < -60) closePanel();
+    }
+    startY = null;
+  });
 })();
 
 // ── Dock dismiss / restore (mobile) ──
