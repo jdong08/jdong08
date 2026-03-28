@@ -1092,30 +1092,15 @@ const link = g.append('g').selectAll('line').data(links).join('line')
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
   .call(d3.drag()
+    .clickDistance(10)  // finger wobble <10px still fires click; >10px = real drag
     .on('start', (e, d) => {
       if (!e.active) sim.alphaTarget(0.12).restart();
       d.fx = d.x; d.fy = d.y;
-      // Only track tap start for touch pointer events (not mouse)
-      const pt = e.sourceEvent && e.sourceEvent.pointerType;
-      d._tapStart = (pt === 'touch') ? { t: Date.now(), x: d.x, y: d.y } : null;
     })
     .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
     .on('end',   (e, d) => {
       if (!e.active) sim.alphaTarget(0);
-      const tap = d._tapStart; d._tapStart = null;
-      // Save forced position before clearing (reflects where user dragged to)
-      const endFx = d.fx != null ? d.fx : d.x;
-      const endFy = d.fy != null ? d.fy : d.y;
       d.fx = null; d.fy = null;
-      if (tap) {
-        const dt = Date.now() - tap.t;
-        const moved = Math.hypot(endFx - tap.x, endFy - tap.y);
-        // tap = short duration AND node barely moved (locked by fx/fy during touch)
-        if (dt < 400 && moved < 12) {
-          if (d.type === 'output') openLightbox(d);
-          else { openPanel(d); panToNodeMobile(d); }
-        }
-      }
     })
   );
 
@@ -1160,7 +1145,11 @@ node
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
   })
-  .on('click', (e, d) => { e.stopPropagation(); (d.type === 'output' || d.type === 'doc') ? openLightbox(d) : openPanel(d); });
+  .on('click', (e, d) => {
+    e.stopPropagation();
+    if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
+    else { openPanel(d); panToNodeMobile(d); }
+  });
 
 svg.on('click', () => { closePanel(); });
 
