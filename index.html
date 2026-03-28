@@ -1135,7 +1135,7 @@ const sim = d3.forceSimulation(nodes)
   .force('center', d3.forceCenter(W / 2, H / 2))
   .force('collision', d3.forceCollide().radius(d => (RADIUS[d.type] || 10) + 22))
   .alpha(0.6)
-  .alphaDecay(0.04)
+  .alphaDecay(isMobile ? 0.06 : 0.04)
   .velocityDecay(0.55)
   .force('bounds', () => {
     const pad = 80, top = 60;
@@ -1298,7 +1298,7 @@ function fitAll() {
   const scale = Math.min(W / bw, H / bh, 1.2);
   const tx = (W - scale * (minX + maxX)) / 2;
   const ty = (H - scale * (minY + maxY)) / 2;
-  svg.transition().duration(900).ease(d3.easeCubicOut)
+  svg.transition().duration(isMobile ? 600 : 900).ease(d3.easeCubicOut)
     .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
 }
 
@@ -1314,7 +1314,7 @@ function panToNodeMobile(d) {
   const t = d3.zoomTransform(svg.node());
   const tx = W / 2 - t.k * d.x;
   const ty = H * 0.28 - t.k * d.y; // upper third — keeps node visible above 42vh panel
-  svg.transition().duration(400).ease(d3.easeCubicOut)
+  svg.transition().duration(350).ease(d3.easeCubicOut)
     .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
 }
 
