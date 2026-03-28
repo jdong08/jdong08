@@ -1089,9 +1089,27 @@ const link = g.append('g').selectAll('line').data(links).join('line')
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
   .call(d3.drag()
-    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.12).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('start', (e, d) => {
+      if (!e.active) sim.alphaTarget(0.12).restart();
+      d.fx = d.x; d.fy = d.y;
+      const se = e.sourceEvent;
+      d._tapStart = { t: Date.now(), x: se.clientX, y: se.clientY };
+    })
     .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
-    .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+    .on('end',   (e, d) => {
+      if (!e.active) sim.alphaTarget(0);
+      const tap = d._tapStart; d._tapStart = null;
+      d.fx = null; d.fy = null;
+      if (tap) {
+        const se = e.sourceEvent;
+        const dt = Date.now() - tap.t;
+        const dist = Math.hypot(se.clientX - tap.x, se.clientY - tap.y);
+        if (dt < 250 && dist < 15) {
+          if (d.type === 'output') openLightbox(d);
+          else { openPanel(d); if (window.innerWidth <= 600) panToNodeMobile(d); }
+        }
+      }
+    })
   );
 
 node.append('circle')
@@ -1130,53 +1148,30 @@ node
 
 svg.on('click', () => { closePanel(); });
 
-// ── Mobile tap fix ──
-// touch-action: none on SVG prevents browser from claiming touch gestures (the root cause
-// of why the previous implementation failed). preventDefault() on touchend kills the
-// synthetic click that would immediately re-close the panel via svg.on('click', closePanel).
-let _tapT = 0, _tapX = 0, _tapY = 0;
-
-svg.node().addEventListener('touchstart', (e) => {
-  if (e.touches.length > 1) { _tapT = 0; return; } // ignore pinch/multi-touch
-  _tapT = Date.now();
-  _tapX = e.touches[0].clientX;
-  _tapY = e.touches[0].clientY;
-}, { passive: true });
-
-svg.node().addEventListener('touchcancel', () => { _tapT = 0; }, { passive: true });
-
-svg.node().addEventListener('touchend', (e) => {
-  // preventDefault kills the synthetic click that would re-close the panel
-  e.preventDefault();
-
-  if (e.changedTouches.length !== 1 || _tapT === 0) return;
-  const t = e.changedTouches[0];
-  const dt = Date.now() - _tapT;
-  const dist = Math.hypot(t.clientX - _tapX, t.clientY - _tapY);
-  _tapT = 0;
-  if (dt > 300 || dist > 15) return; // pan or long-press — not a tap
-
-  // Convert client coords → SVG node space (accounting for zoom/pan)
+// ── Mobile background-tap-to-close ──
+// Uses pointer events in capture phase (fires before D3's bubble-phase listeners).
+// Node tap-to-open is handled inside D3 drag's end event above — no touch events needed.
+let _bgTap = null;
+svg.node().addEventListener('pointerdown', (e) => {
+  if (e.pointerType !== 'touch') return;
+  if (!e.isPrimary) { _bgTap = null; return; } // second finger (pinch) — cancel
+  _bgTap = { t: Date.now(), x: e.clientX, y: e.clientY };
+}, { capture: true, passive: true });
+svg.node().addEventListener('pointercancel', () => { _bgTap = null; }, { capture: true, passive: true });
+svg.node().addEventListener('pointerup', (e) => {
+  if (e.pointerType !== 'touch' || !e.isPrimary || !_bgTap) return;
+  const dt = Date.now() - _bgTap.t;
+  const dist = Math.hypot(e.clientX - _bgTap.x, e.clientY - _bgTap.y);
+  _bgTap = null;
+  if (dt > 300 || dist > 15) return;
+  // Only close if background was tapped (not a node — D3 drag handles node taps)
   const rect = svg.node().getBoundingClientRect();
   const tr = d3.zoomTransform(svg.node());
-  const sx = (t.clientX - rect.left - tr.x) / tr.k;
-  const sy = (t.clientY - rect.top  - tr.y) / tr.k;
-
-  // Find closest node within hit radius
-  let hit = null, best = Infinity;
-  nodes.forEach(n => {
-    if (hiddenTypes.has(n.type)) return;
-    const d = Math.hypot(n.x - sx, n.y - sy);
-    const r = Math.max((RADIUS[n.type] || 10) + 8, 22);
-    if (d < r && d < best) { hit = n; best = d; }
-  });
-
-  if (hit) {
-    if (hit.type === 'output') { openLightbox(hit); } else { openPanel(hit); panToNodeMobile(hit); }
-  } else {
-    closePanel(); // tap on empty space closes panel
-  }
-}, { passive: false }); // passive: false required to call preventDefault()
+  const sx = (e.clientX - rect.left - tr.x) / tr.k;
+  const sy = (e.clientY - rect.top  - tr.y) / tr.k;
+  const hitNode = nodes.some(n => !hiddenTypes.has(n.type) && Math.hypot(n.x - sx, n.y - sy) < Math.max((RADIUS[n.type] || 10) + 8, 22));
+  if (!hitNode) closePanel();
+}, { capture: true, passive: true });
 
 sim.on('tick', () => {
   link
