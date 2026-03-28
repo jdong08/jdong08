@@ -1141,6 +1141,10 @@ svg.node().addEventListener('touchstart', (e) => {
 }, { passive: true });
 
 svg.node().addEventListener('touchend', (e) => {
+  // preventDefault MUST come first — stops browser from synthesizing a click event
+  // that would immediately re-close the panel via svg.on('click', closePanel)
+  e.preventDefault();
+
   if (e.changedTouches.length !== 1 || _tapT === 0) return;
   const t = e.changedTouches[0];
   const dt = Date.now() - _tapT;
@@ -1168,7 +1172,7 @@ svg.node().addEventListener('touchend', (e) => {
   } else {
     closePanel(); // tap on empty space closes panel
   }
-}, { passive: true });
+}, { passive: false }); // passive: false required to call preventDefault()
 
 sim.on('tick', () => {
   link
