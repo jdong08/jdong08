@@ -1,92 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jdong08</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>jdong08 — AI OS</title>
+<meta name="description" content="Tessa OS — an AI-native personal operating system. 20 specialist agents, 25 skills, 5 integrations."/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background-color: #EDD9C0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
+body {
+  background: #fcf9f0;
+  font-family: 'Work Sans', -apple-system, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
 
-    h1 {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #4A5228;
-      letter-spacing: 0.08em;
-      margin-bottom: 48px;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAykYNZs0B6uSHxahfCbbiN718c7hzh_1ghrBdpCmk3Fx1ha3P7evcU2nboH_fXiXH495eoY-B4ft57ABL6B3jV8rOwnuOzssXpA4ifvLwcKnN-ZZu8rTDMXnGNq9iHZR7QqblLBq8MNCZHKK-5F1UosS4ZBFj-3knfKNHKBeZxOMWEIZikUsFPa3UlTBmAZro7dC-iuCwHNJ7zwH4leGaNUd6uh71lqovcoXRk38z840ZkJBoiO54qVyN9bWYXRFJKDIefsKs1a684);
+  z-index: 0;
+}
 
-    .projects {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-      max-width: 320px;
-    }
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+  background: rgba(252, 249, 240, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(218, 192, 197, 0.25);
+}
 
-    a {
-      display: block;
-      background: white;
-      border-radius: 12px;
-      padding: 20px 24px;
-      text-decoration: none;
-      color: #4A5228;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 2px 8px rgba(74, 82, 40, 0.08);
-    }
+.brand {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #9a3a5a;
+}
 
-    a:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(74, 82, 40, 0.12);
-    }
+.brand-sub {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-left: 10px;
+}
 
-    .label {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #A85C7A;
-      margin-bottom: 4px;
-    }
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+}
 
-    .name {
-      font-size: 1rem;
-      font-weight: 500;
-    }
+.legend-item { display: flex; align-items: center; gap: 6px; }
 
-    .coming-soon .name {
-      color: #999;
-    }
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
 
-    .coming-soon .label {
-      color: #ccc;
-    }
-  </style>
+.hint {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #877276;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+#graph-svg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  cursor: grab;
+}
+#graph-svg:active { cursor: grabbing; }
+
+#panel {
+  position: fixed;
+  top: 57px;
+  right: 0;
+  width: 288px;
+  height: calc(100vh - 57px);
+  background: rgba(252, 249, 240, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(218, 192, 197, 0.45);
+  padding: 28px 22px 28px 24px;
+  z-index: 20;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+#panel.visible { transform: translateX(0); }
+
+@media (max-width: 600px) {
+  #panel {
+    top: auto; bottom: 0; right: 0; left: 0;
+    width: 100%; height: 62vh;
+    border-left: none;
+    border-top: 1px solid rgba(218, 192, 197, 0.45);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+  }
+  #panel.visible { transform: translateY(0); }
+  .legend { display: none; }
+}
+
+.panel-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #877276;
+  font-size: 0.9rem;
+  background: transparent;
+  border: none;
+  transition: background 0.15s, color 0.15s;
+}
+.panel-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+
+.panel-type {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.panel-name {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  color: #1c1c17;
+  margin-bottom: 14px;
+}
+
+.panel-desc {
+  font-size: 0.875rem;
+  line-height: 1.68;
+  color: #544246;
+  margin-bottom: 22px;
+}
+
+.conn-heading {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-bottom: 10px;
+  display: none;
+}
+
+.conn-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.conn-tag {
+  font-size: 0.7rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.12s;
+  background: transparent;
+}
+.conn-tag:hover { opacity: 0.65; transform: translateY(-1px); }
+
+.node-label {
+  font-size: 10px;
+  font-family: 'Work Sans', sans-serif;
+  fill: #544246;
+  pointer-events: none;
+  user-select: none;
+}
+</style>
 </head>
 <body>
-  <h1>jdong08 — ongoing</h1>
-  <div class="projects">
-    <a href="conversation-tracker.html">
-      <div class="label">tool</div>
-      <div class="name">people i talk to</div>
-    </a>
-    <a href="powder-post.html">
-      <div class="label">tool</div>
-      <div class="name">powder post</div>
-    </a>
-    <a href="client-dash.html">
-      <div class="label">tool</div>
-      <div class="name">client dash</div>
-    </a>
+
+<header>
+  <div>
+    <span class="brand">jdong08</span>
+    <span class="brand-sub">AI OS</span>
   </div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#9a3a5a"></div>
+      <span>Agent</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#53643a"></div>
+      <span>Skill</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#765700"></div>
+      <span>Integration</span>
+    </div>
+  </div>
+</header>
+
+<svg id="graph-svg"></svg>
+
+<div id="panel">
+  <button class="panel-close" onclick="closePanel()">✕</button>
+  <div class="panel-type" id="panel-type"></div>
+  <div class="panel-name" id="panel-name"></div>
+  <div class="panel-desc" id="panel-desc"></div>
+  <div class="conn-heading" id="conn-heading">Connected to</div>
+  <div class="conn-list" id="conn-list"></div>
+</div>
+
+<div class="hint">hover to explore · click to open · scroll to zoom</div>
+
+<script>
+const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700' };
+const RADIUS = { agent: 10, skill: 8, mcp: 8 };
+
+const nodes = [
+  { id: 'cassandra',      label: 'Cassandra',      type: 'agent', desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.' },
+  { id: 'cosimo',         label: 'Cosimo',         type: 'agent', desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.' },
+  { id: 'niccolo',        label: 'Niccolò',        type: 'agent', desc: 'Career strategist — positioning, negotiation, interview coaching.' },
+  { id: 'marco',          label: 'Marco',          type: 'agent', desc: 'Travel planning — logistics, geography, sabbatical recon.' },
+  { id: 'flitwick',       label: 'Flitwick',       type: 'agent', desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.' },
+  { id: 'prof-j',         label: 'Prof. Jiang',    type: 'agent', desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.' },
+  { id: 'confucius',      label: 'Confucius',      type: 'agent', desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.' },
+  { id: 'la-signora',     label: 'La Signora',     type: 'agent', desc: 'Italian language — conversation practice, grammar, immersion toward fluency.' },
+  { id: 'leonardo',       label: 'Leonardo',       type: 'agent', desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.' },
+  { id: 'lian',           label: 'Lian',           type: 'agent', desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.' },
+  { id: 'bo',             label: 'Bo',             type: 'agent', desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.' },
+  { id: 'ada',            label: 'Ada',            type: 'agent', desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.' },
+  { id: 'minerva',        label: 'Minerva',        type: 'agent', desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.' },
+  { id: 'amelie',         label: 'Amélie',         type: 'agent', desc: 'UX delight — intentional moments after UI/UX changes. Precision, not decoration.' },
+  { id: 'nadia',          label: 'Nadia',          type: 'agent', desc: 'Peer — think out loud, vent, process without it becoming a session.' },
+  { id: 'work-researcher',label: 'Researcher',     type: 'agent', desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.' },
+  { id: 'copilot-expert', label: 'Copilot Expert', type: 'agent', desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.' },
+  { id: 'sox-expert',     label: 'SOX Expert',     type: 'agent', desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.' },
+  { id: 'loop-closer',    label: 'loop-closer',    type: 'agent', desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.' },
+  { id: 'zhengming',      label: 'Zhengming',      type: 'agent', desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.' },
+  { id: 'week-review',    label: '/week-review',   type: 'skill', desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.' },
+  { id: 'closing-shift',  label: '/closing-shift', type: 'skill', desc: 'Daily wrap — day brief, loop maintenance, learning journal, tomorrow\'s anchor.' },
+  { id: 'feedback-skill', label: '/feedback',      type: 'skill', desc: 'Session debrief — longitudinal pattern tracking via Minerva.' },
+  { id: 'board-skill',    label: '/board',         type: 'skill', desc: 'Board of Directors — multi-domain decisions requiring multiple specialists simultaneously.' },
+  { id: 'ecosystem-audit',label: '/ecosystem-audit',type:'skill', desc: 'Full health audit — agents, skills, MCPs, costs, gaps. Routes to Minerva.' },
+  { id: 'research-skill', label: '/research',      type: 'skill', desc: 'RIPER deep research — personal topics to structured markdown notes and optional PDF.' },
+  { id: 'challenge-skill',label: '/challenge',     type: 'skill', desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.' },
+  { id: 'translate-skill',label: '/translate',     type: 'skill', desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.' },
+  { id: 'curriculum-skill',label:'/curriculum',    type: 'skill', desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.' },
+  { id: 'ai-study-brief', label: '/ai-study-brief',type: 'skill', desc: 'AI learning prioritization — what to study next given active certifications.' },
+  { id: 'gmail-mcp',      label: 'Gmail',          type: 'mcp',   desc: 'Email triage, drafting replies, thread search and labeling.' },
+  { id: 'gcal-mcp',       label: 'Calendar',       type: 'mcp',   desc: 'Scheduling, finding free windows, RSVPs, calendar management.' },
+  { id: 'drive-mcp',      label: 'Drive',          type: 'mcp',   desc: 'File search and organization across Google Drive.' },
+  { id: 'playwright-mcp', label: 'Playwright',     type: 'mcp',   desc: 'Browser automation — research, testing, web scraping.' },
+  { id: 'nimbalyst-mcp',  label: 'Nimbalyst',      type: 'mcp',   desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.' },
+];
+
+const links = [
+  { source: 'cassandra',       target: 'cosimo' },
+  { source: 'cassandra',       target: 'niccolo' },
+  { source: 'cassandra',       target: 'nadia' },
+  { source: 'confucius',       target: 'cassandra' },
+  { source: 'minerva',         target: 'ada' },
+  { source: 'lian',            target: 'nadia' },
+  { source: 'zhengming',       target: 'ada' },
+  { source: 'week-review',     target: 'prof-j' },
+  { source: 'week-review',     target: 'cassandra' },
+  { source: 'week-review',     target: 'minerva' },
+  { source: 'feedback-skill',  target: 'minerva' },
+  { source: 'ecosystem-audit', target: 'minerva' },
+  { source: 'board-skill',     target: 'cassandra' },
+  { source: 'board-skill',     target: 'cosimo' },
+  { source: 'board-skill',     target: 'niccolo' },
+  { source: 'board-skill',     target: 'flitwick' },
+  { source: 'board-skill',     target: 'prof-j' },
+  { source: 'ai-study-brief',  target: 'flitwick' },
+  { source: 'translate-skill', target: 'nadia' },
+  { source: 'translate-skill', target: 'lian' },
+  { source: 'curriculum-skill',target: 'bo' },
+  { source: 'closing-shift',   target: 'loop-closer' },
+  { source: 'challenge-skill', target: 'cassandra' },
+  { source: 'challenge-skill', target: 'minerva' },
+  { source: 'research-skill',  target: 'work-researcher' },
+  { source: 'gmail-mcp',       target: 'work-researcher' },
+  { source: 'drive-mcp',       target: 'work-researcher' },
+  { source: 'playwright-mcp',  target: 'work-researcher' },
+  { source: 'playwright-mcp',  target: 'marco' },
+  { source: 'nimbalyst-mcp',   target: 'minerva' },
+  { source: 'nimbalyst-mcp',   target: 'ada' },
+  { source: 'nimbalyst-mcp',   target: 'amelie' },
+  { source: 'drive-mcp',       target: 'loop-closer' },
+  { source: 'gmail-mcp',       target: 'loop-closer' },
+  { source: 'flitwick',        target: 'playwright-mcp' },
+  { source: 'marco',           target: 'gcal-mcp' },
+];
+
+// Build adjacency map
+const adj = {};
+nodes.forEach(n => adj[n.id] = []);
+links.forEach(l => {
+  const s = l.source, t = l.target;
+  if (!adj[s].includes(t)) adj[s].push(t);
+  if (!adj[t].includes(s)) adj[t].push(s);
+});
+const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+// D3
+let W = window.innerWidth, H = window.innerHeight;
+
+const svg = d3.select('#graph-svg').attr('width', W).attr('height', H);
+const g = svg.append('g');
+
+svg.call(d3.zoom().scaleExtent([0.2, 6]).on('zoom', e => g.attr('transform', e.transform)));
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
+  .force('charge', d3.forceManyBody().strength(-300))
+  .force('center', d3.forceCenter(W / 2, H / 2))
+  .force('collision', d3.forceCollide().radius(d => (RADIUS[d.type] || 10) + 22));
+
+const link = g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke', '#dac0c5')
+  .attr('stroke-width', 1.2)
+  .attr('stroke-opacity', 0.45);
+
+const node = g.append('g').selectAll('g').data(nodes).join('g')
+  .attr('cursor', 'pointer')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+  );
+
+node.append('circle')
+  .attr('r', d => RADIUS[d.type] || 10)
+  .attr('fill', d => COLORS[d.type])
+  .attr('fill-opacity', 0.82)
+  .attr('stroke', '#fcf9f0')
+  .attr('stroke-width', 2.5);
+
+node.append('text')
+  .attr('class', 'node-label')
+  .attr('dy', d => (RADIUS[d.type] || 10) + 13)
+  .attr('text-anchor', 'middle')
+  .text(d => d.label);
+
+node
+  .on('mouseover', (e, d) => {
+    const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+    node.select('circle')
+      .attr('fill-opacity', n => nbrs.has(n.id) ? 1 : 0.1)
+      .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+    node.select('text')
+      .attr('fill-opacity', n => nbrs.has(n.id) ? 1 : 0.15)
+      .attr('font-weight', n => n.id === d.id ? '600' : '400');
+    link
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.04)
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
+  })
+  .on('mouseout', () => {
+    node.select('circle').attr('fill-opacity', 0.82).attr('r', d => RADIUS[d.type] || 10);
+    node.select('text').attr('fill-opacity', 1).attr('font-weight', '400');
+    link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.2);
+  })
+  .on('click', (e, d) => { e.stopPropagation(); openPanel(d); });
+
+svg.on('click', closePanel);
+
+sim.on('tick', () => {
+  link
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// Panel
+let selected = null;
+function openPanel(d) {
+  selected = d.id;
+  document.getElementById('panel-type').textContent = d.type.toUpperCase();
+  document.getElementById('panel-type').style.color = COLORS[d.type];
+  document.getElementById('panel-name').textContent = d.label;
+  document.getElementById('panel-desc').textContent = d.desc;
+
+  const connIds = adj[d.id] || [];
+  const heading = document.getElementById('conn-heading');
+  const list = document.getElementById('conn-list');
+  list.innerHTML = '';
+  if (connIds.length) {
+    heading.style.display = 'block';
+    connIds.forEach(id => {
+      const n = nodeMap[id]; if (!n) return;
+      const tag = document.createElement('button');
+      tag.className = 'conn-tag';
+      tag.textContent = n.label;
+      tag.style.color = COLORS[n.type];
+      tag.style.borderColor = COLORS[n.type] + '55';
+      tag.style.background = COLORS[n.type] + '10';
+      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); };
+      list.appendChild(tag);
+    });
+  } else {
+    heading.style.display = 'none';
+  }
+
+  // Highlight selected node ring
+  node.select('circle')
+    .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
+    .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
+
+  document.getElementById('panel').classList.add('visible');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('visible');
+  node.select('circle').attr('stroke', '#fcf9f0').attr('stroke-width', 2.5);
+  selected = null;
+}
+window.closePanel = closePanel;
+
+window.addEventListener('resize', () => {
+  W = window.innerWidth; H = window.innerHeight;
+  svg.attr('width', W).attr('height', H);
+  sim.force('center', d3.forceCenter(W/2, H/2)).alpha(0.3).restart();
+});
+</script>
 </body>
 </html>
