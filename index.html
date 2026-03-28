@@ -136,6 +136,7 @@ header {
   height: 100vh;
   z-index: 1;
   cursor: grab;
+  touch-action: none;
 }
 #graph-svg:active { cursor: grabbing; }
 
@@ -161,7 +162,7 @@ header {
   padding: 18px 22px 28px 24px;
   z-index: 20;
   transform: translateX(100%);
-  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   overflow-y: auto;
 }
 #panel.visible { transform: translateX(0); }
@@ -1129,20 +1130,23 @@ node
 
 svg.on('click', () => { closePanel(); });
 
-// ── Mobile tap — native addEventListener bypasses D3 zoom's stopImmediatePropagation ──
-// D3's .on() handlers are blocked by zoom; native DOM listeners on the same element are not.
+// ── Mobile tap fix ──
+// touch-action: none on SVG prevents browser from claiming touch gestures (the root cause
+// of why the previous implementation failed). preventDefault() on touchend kills the
+// synthetic click that would immediately re-close the panel via svg.on('click', closePanel).
 let _tapT = 0, _tapX = 0, _tapY = 0;
 
 svg.node().addEventListener('touchstart', (e) => {
-  if (e.touches.length > 1) return; // ignore pinch/multi-touch
+  if (e.touches.length > 1) { _tapT = 0; return; } // ignore pinch/multi-touch
   _tapT = Date.now();
   _tapX = e.touches[0].clientX;
   _tapY = e.touches[0].clientY;
 }, { passive: true });
 
+svg.node().addEventListener('touchcancel', () => { _tapT = 0; }, { passive: true });
+
 svg.node().addEventListener('touchend', (e) => {
-  // preventDefault MUST come first — stops browser from synthesizing a click event
-  // that would immediately re-close the panel via svg.on('click', closePanel)
+  // preventDefault kills the synthetic click that would re-close the panel
   e.preventDefault();
 
   if (e.changedTouches.length !== 1 || _tapT === 0) return;
@@ -1150,7 +1154,7 @@ svg.node().addEventListener('touchend', (e) => {
   const dt = Date.now() - _tapT;
   const dist = Math.hypot(t.clientX - _tapX, t.clientY - _tapY);
   _tapT = 0;
-  if (dt > 300 || dist > 12) return; // pan or long-press — not a tap
+  if (dt > 300 || dist > 15) return; // pan or long-press — not a tap
 
   // Convert client coords → SVG node space (accounting for zoom/pan)
   const rect = svg.node().getBoundingClientRect();
@@ -1163,12 +1167,12 @@ svg.node().addEventListener('touchend', (e) => {
   nodes.forEach(n => {
     if (hiddenTypes.has(n.type)) return;
     const d = Math.hypot(n.x - sx, n.y - sy);
-    const r = Math.max((RADIUS[n.type] || 10) + 8, 20);
+    const r = Math.max((RADIUS[n.type] || 10) + 8, 22);
     if (d < r && d < best) { hit = n; best = d; }
   });
 
   if (hit) {
-    (hit.type === 'output' || hit.type === 'doc') ? openLightbox(hit) : openPanel(hit);
+    if (hit.type === 'output') { openLightbox(hit); } else { openPanel(hit); panToNodeMobile(hit); }
   } else {
     closePanel(); // tap on empty space closes panel
   }
@@ -1236,6 +1240,14 @@ function panToNode(d) {
   const tx = W / 2 - t.k * d.x;
   const ty = H / 2 - t.k * d.y;
   svg.transition().duration(720).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
+}
+
+function panToNodeMobile(d) {
+  const t = d3.zoomTransform(svg.node());
+  const tx = W / 2 - t.k * d.x;
+  const ty = H * 0.28 - t.k * d.y; // upper third — keeps node visible above 42vh panel
+  svg.transition().duration(400).ease(d3.easeCubicOut)
     .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
 }
 
