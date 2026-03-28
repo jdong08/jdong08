@@ -1114,7 +1114,8 @@ let W = window.innerWidth, H = window.innerHeight;
 const svg = d3.select('#graph-svg').attr('width', W).attr('height', H);
 const g = svg.append('g');
 
-const zoom = d3.zoom().scaleExtent([0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const zoom = d3.zoom().scaleExtent(isMobile ? [0.4, 4] : [0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
 svg.call(zoom);
 
 // Seed nodes near center — prevents violent scatter from random corner positions at startup
@@ -1210,30 +1211,34 @@ node
 
 svg.on('click', (e) => { if (e.target === svg.node()) closePanel(); });
 
-// ── Mobile background-tap-to-close ──
-// Uses pointer events in capture phase (fires before D3's bubble-phase listeners).
-// Node tap-to-open: D3 .clickDistance(10) fires synthetic click → node.on('click') → openPanel().
-let _bgTap = null;
-svg.node().addEventListener('pointerdown', (e) => {
-  if (e.pointerType !== 'touch') return;
-  if (!e.isPrimary) { _bgTap = null; return; } // second finger (pinch) — cancel
-  _bgTap = { t: Date.now(), x: e.clientX, y: e.clientY };
-}, { capture: true, passive: true });
-svg.node().addEventListener('pointercancel', () => { _bgTap = null; }, { capture: true, passive: true });
-svg.node().addEventListener('pointerup', (e) => {
-  if (e.pointerType !== 'touch' || !e.isPrimary || !_bgTap) return;
-  const dt = Date.now() - _bgTap.t;
-  const dist = Math.hypot(e.clientX - _bgTap.x, e.clientY - _bgTap.y);
-  _bgTap = null;
-  if (dt > 300 || dist > 15) return;
-  // Only close if background was tapped (not a node — D3 drag handles node taps)
-  const rect = svg.node().getBoundingClientRect();
-  const tr = d3.zoomTransform(svg.node());
-  const sx = (e.clientX - rect.left - tr.x) / tr.k;
-  const sy = (e.clientY - rect.top  - tr.y) / tr.k;
-  const hitNode = nodes.some(n => !hiddenTypes.has(n.type) && Math.hypot(n.x - sx, n.y - sy) < Math.max((RADIUS[n.type] || 10) + 18, 26));
-  if (!hitNode) closePanel();
-}, { capture: true, passive: true });
+// ── Mobile touch fallback for node tap ──
+// D3 .clickDistance(10) fires a synthetic click on short taps — works on most browsers.
+// On some Android versions the synthetic click doesn't fire, so we add a touchend fallback.
+// Guard: if D3's click already fired (via _clickFired flag), skip the fallback.
+let _clickFired = false;
+const _origNodeClick = node.on('click');
+node.on('click', function(e, d) {
+  _clickFired = true;
+  _origNodeClick.call(this, e, d);
+});
+node.each(function(d) {
+  let _touchStart = null;
+  this.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) { _touchStart = null; return; }
+    _clickFired = false;
+    _touchStart = { t: Date.now(), x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  this.addEventListener('touchend', (e) => {
+    if (_clickFired || !_touchStart) return;
+    const dt = Date.now() - _touchStart.t;
+    const dist = e.changedTouches[0] ? Math.hypot(e.changedTouches[0].clientX - _touchStart.x, e.changedTouches[0].clientY - _touchStart.y) : 999;
+    _touchStart = null;
+    if (dt > 300 || dist > 15) return;
+    // This is a genuine tap on the node — D3's click didn't fire
+    if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
+    else { openPanel(d); panToNodeMobile(d); }
+  }, { passive: true });
+});
 
 sim.on('tick', () => {
   link
