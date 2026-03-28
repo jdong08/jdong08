@@ -158,7 +158,7 @@ header {
   position: fixed;
   top: 53px;
   right: 0;
-  width: 292px;
+  width: min(292px, 85vw);
   height: calc(100vh - 53px);
   height: calc(100dvh - 53px);
   background: rgba(252, 249, 240, 0.95);
@@ -188,7 +188,7 @@ header {
 @media (max-width: 600px) {
   #panel {
     top: auto; bottom: 0; right: 0; left: 0;
-    width: 100%; height: 42vh;
+    width: 100%; height: 42vh; height: 42dvh;
     min-height: 100px; max-height: calc(100vh - 56px); max-height: calc(100dvh - 56px);
     border-left: none;
     border-top: 1px solid rgba(218, 192, 197, 0.45);
@@ -515,7 +515,12 @@ header {
     overflow-y: auto;
   }
   .lightbox-meta { flex: none; width: 100%; }
-  .lightbox-img-wrap { width: 100%; max-height: 220px; border-radius: 8px; }
+  .lightbox-img-wrap { width: 100%; max-height: 35vh; border-radius: 8px; }
+}
+@media (max-width: 600px) and (orientation: landscape) {
+  .lightbox-card { flex-direction: row; max-height: calc(100dvh - 32px); }
+  .lightbox-meta { flex: 0 0 45%; }
+  .lightbox-img-wrap { max-height: none; }
 }
 
 /* ── Hint ── */
@@ -644,7 +649,7 @@ header {
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100;
   align-items: center; justify-content: center; }
 .modal-bg.open { display: flex; }
-.modal-box { background: #faf7f4; border-radius: 20px; padding: 32px 28px; width: 270px;
+.modal-box { background: #faf7f4; border-radius: 20px; padding: 32px 28px; width: min(270px, 80vw);
   box-shadow: 0 24px 64px rgba(20,10,5,0.22); display: flex; flex-direction: column;
   align-items: center; gap: 16px; }
 .modal-icon { font-size: 26px; opacity: 0.45; }
@@ -1512,10 +1517,14 @@ if ('ontouchstart' in window) {
   document.getElementById('hint').textContent = 'tap to explore · tap to open · pinch to zoom';
 }
 
+let _resizeTimer;
 window.addEventListener('resize', () => {
-  W = window.innerWidth; H = window.innerHeight;
-  svg.attr('width', W).attr('height', H);
-  sim.force('center', d3.forceCenter(W/2, H/2)).alpha(0.2).restart();
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    W = window.innerWidth; H = window.innerHeight;
+    svg.attr('width', W).attr('height', H);
+    sim.force('center', d3.forceCenter(W/2, H/2)).alpha(0.2).restart();
+  }, 250);
 });
 
 function snapToHeart() {
