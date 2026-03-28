@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>jdong08 — AI OS</title>
-<meta name="description" content="Tessa OS — an AI-native personal operating system. 20 specialist agents, 25 skills, 5 integrations."/>
+<meta name="description" content="Tessa OS — Jay's personal AI system. 20 specialist agents, 25 skills, 5 integrations."/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
@@ -28,6 +28,7 @@ body::before {
   z-index: 0;
 }
 
+/* ── Header ── */
 header {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -35,12 +36,15 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 28px;
-  background: rgba(252, 249, 240, 0.75);
+  padding: 16px 24px;
+  background: rgba(252, 249, 240, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(218, 192, 197, 0.25);
+  gap: 12px;
 }
+
+.header-left { display: flex; align-items: baseline; gap: 0; flex-shrink: 0; }
 
 .brand {
   font-family: 'Newsreader', serif;
@@ -48,9 +52,8 @@ header {
   font-size: 1.2rem;
   color: #9a3a5a;
 }
-
 .brand-sub {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -58,91 +61,83 @@ header {
   margin-left: 10px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Search */
+.search-input {
+  background: rgba(218, 192, 197, 0.12);
+  border: 1px solid rgba(218, 192, 197, 0.4);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.62rem;
+  font-family: 'Work Sans', sans-serif;
+  color: #544246;
+  width: 110px;
+  outline: none;
+  transition: width 0.22s, border-color 0.15s, background 0.15s;
+  letter-spacing: 0.04em;
+}
+.search-input:focus {
+  width: 150px;
+  border-color: rgba(154, 58, 90, 0.35);
+  background: rgba(255,255,255,0.75);
+}
+.search-input::placeholder {
+  color: #b0a0a4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.58rem;
+}
+
+/* Filter legend toggles */
 .legend {
   display: flex;
   align-items: center;
-  gap: 18px;
-  font-size: 0.65rem;
+  gap: 14px;
+  font-size: 0.62rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #877276;
 }
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+.legend-item:hover { opacity: 0.7; }
+.legend-item.inactive { opacity: 0.28; }
+.legend-item.inactive .legend-dot { background: #b0a0a4 !important; }
+.legend-item.inactive span { text-decoration: line-through; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-.legend-item { display: flex; align-items: center; gap: 6px; }
-
-.legend-dot {
-  width: 8px;
-  height: 8px;
+/* About button */
+.about-btn {
+  width: 22px; height: 22px;
   border-radius: 50%;
-}
-
-.hint {
-  position: fixed;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.65rem;
+  border: 1px solid rgba(218, 192, 197, 0.55);
+  background: transparent;
   color: #877276;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  z-index: 20;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-.projects-dock {
-  position: fixed;
-  bottom: 20px;
-  right: 24px;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  align-items: flex-end;
-}
-
-.projects-dock-label {
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #877276;
-  margin-bottom: 2px;
-  text-align: right;
-}
-
-.project-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: rgba(252, 249, 240, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(218, 192, 197, 0.5);
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: 0.72rem;
-  font-family: 'Work Sans', sans-serif;
-  color: #544246;
-  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-  white-space: nowrap;
-  box-shadow: 0 1px 6px rgba(28,28,23,0.06);
-}
-.project-link:hover {
-  background: rgba(255,255,255,0.96);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(28,28,23,0.10);
-  color: #9a3a5a;
-}
-.project-link-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #9a3a5a;
-  opacity: 0.6;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
   flex-shrink: 0;
+  font-family: 'Work Sans', sans-serif;
+}
+.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; }
+
+@media (max-width: 600px) {
+  .legend { display: none; }
+  .search-input { display: none; }
 }
 
+/* ── Graph ── */
 #graph-svg {
   position: fixed;
   top: 0; left: 0;
@@ -153,17 +148,26 @@ header {
 }
 #graph-svg:active { cursor: grabbing; }
 
+.node-label {
+  font-size: 10px;
+  font-family: 'Work Sans', sans-serif;
+  fill: #544246;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Detail Panel ── */
 #panel {
   position: fixed;
-  top: 57px;
+  top: 53px;
   right: 0;
-  width: 288px;
-  height: calc(100vh - 57px);
-  background: rgba(252, 249, 240, 0.94);
+  width: 292px;
+  height: calc(100vh - 53px);
+  background: rgba(252, 249, 240, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(218, 192, 197, 0.45);
-  padding: 28px 22px 28px 24px;
+  border-left: 1px solid rgba(218, 192, 197, 0.4);
+  padding: 18px 22px 28px 24px;
   z-index: 20;
   transform: translateX(100%);
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -174,140 +178,334 @@ header {
 @media (max-width: 600px) {
   #panel {
     top: auto; bottom: 0; right: 0; left: 0;
-    width: 100%; height: 62vh;
+    width: 100%; height: 68vh;
     border-left: none;
     border-top: 1px solid rgba(218, 192, 197, 0.45);
     border-radius: 16px 16px 0 0;
     transform: translateY(100%);
   }
   #panel.visible { transform: translateY(0); }
-  .legend { display: none; }
 }
 
-.panel-close {
-  position: absolute;
-  top: 14px; right: 14px;
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.panel-btn {
   width: 26px; height: 26px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
   border-radius: 50%;
-  color: #877276;
-  font-size: 0.9rem;
-  background: transparent;
   border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  background: transparent;
+  color: #877276;
   transition: background 0.15s, color 0.15s;
+  font-family: 'Work Sans', sans-serif;
 }
-.panel-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.panel-btn:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.panel-btn.pinned { color: #9a3a5a; background: rgba(154,58,90,0.1); }
 
 .panel-type {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
-
 .panel-name {
   font-family: 'Newsreader', serif;
   font-style: italic;
-  font-size: 1.9rem;
+  font-size: 1.85rem;
   line-height: 1.1;
   color: #1c1c17;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
-
 .panel-desc {
-  font-size: 0.875rem;
-  line-height: 1.68;
+  font-size: 0.85rem;
+  line-height: 1.65;
   color: #544246;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
-
+.panel-example-wrap {
+  background: rgba(154, 58, 90, 0.04);
+  border-left: 2px solid rgba(154, 58, 90, 0.18);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+  display: none;
+}
+.panel-example-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9a3a5a;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.panel-example {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #544246;
+  font-style: italic;
+}
 .conn-heading {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #877276;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   display: none;
 }
-
-.conn-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
+.conn-list { display: flex; flex-wrap: wrap; gap: 5px; }
 .conn-tag {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   padding: 3px 9px;
   border-radius: 999px;
   border: 1px solid;
   cursor: pointer;
   transition: opacity 0.12s, transform 0.12s;
   background: transparent;
+  font-family: 'Work Sans', sans-serif;
 }
 .conn-tag:hover { opacity: 0.65; transform: translateY(-1px); }
 
-.node-label {
-  font-size: 10px;
-  font-family: 'Work Sans', sans-serif;
-  fill: #544246;
+/* ── About Overlay ── */
+.about-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 23, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
   pointer-events: none;
-  user-select: none;
+  transition: opacity 0.2s;
 }
+.about-overlay.visible { opacity: 1; pointer-events: all; }
+.about-card {
+  background: #fcf9f0;
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  max-width: 440px;
+  width: calc(100% - 40px);
+  box-shadow: 0 24px 48px rgba(28,28,23,0.18);
+  position: relative;
+}
+.about-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none;
+  cursor: pointer;
+  color: #877276; font-size: 0.85rem;
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.about-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.about-title {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.6rem;
+  color: #9a3a5a;
+  margin-bottom: 16px;
+}
+.about-body {
+  font-size: 0.875rem;
+  line-height: 1.72;
+  color: #544246;
+  margin-bottom: 18px;
+}
+.about-body p + p { margin-top: 10px; }
+.about-footer {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+}
+
+/* ── Hint ── */
+.hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  color: #877276;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Projects Dock ── */
+.projects-dock {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
+}
+.projects-list.open { max-height: 160px; opacity: 1; }
+.project-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: rgba(252, 249, 240, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(218, 192, 197, 0.5);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+  box-shadow: 0 1px 6px rgba(28,28,23,0.06);
+}
+.project-link:hover {
+  background: rgba(255,255,255,0.96);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(28,28,23,0.10);
+}
+.project-link:hover .project-name { color: #9a3a5a; }
+.project-name {
+  font-size: 0.72rem;
+  font-family: 'Work Sans', sans-serif;
+  color: #544246;
+  transition: color 0.15s;
+}
+.project-date {
+  font-size: 0.58rem;
+  color: #b0a0a4;
+  letter-spacing: 0.04em;
+  font-family: 'Work Sans', sans-serif;
+}
+.projects-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: rgba(252, 249, 240, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(218, 192, 197, 0.5);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  font-family: 'Work Sans', sans-serif;
+  transition: color 0.15s;
+  box-shadow: 0 1px 6px rgba(28,28,23,0.06);
+  white-space: nowrap;
+  border: none;
+  border: 1px solid rgba(218, 192, 197, 0.5);
+}
+.projects-toggle:hover { color: #9a3a5a; }
+.toggle-arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
+.projects-toggle.open .toggle-arrow { transform: rotate(180deg); }
 </style>
 </head>
 <body>
 
 <header>
-  <div>
+  <div class="header-left">
     <span class="brand">jdong08</span>
     <span class="brand-sub">AI OS</span>
   </div>
-  <div class="legend">
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#9a3a5a"></div>
-      <span>Agent</span>
+  <div class="header-right">
+    <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
+    <div class="legend">
+      <div class="legend-item" data-type="agent" onclick="toggleType('agent')">
+        <div class="legend-dot" style="background:#9a3a5a"></div>
+        <span>Agent</span>
+      </div>
+      <div class="legend-item" data-type="skill" onclick="toggleType('skill')">
+        <div class="legend-dot" style="background:#53643a"></div>
+        <span>Skill</span>
+      </div>
+      <div class="legend-item" data-type="mcp" onclick="toggleType('mcp')">
+        <div class="legend-dot" style="background:#765700"></div>
+        <span>Integration</span>
+      </div>
     </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#53643a"></div>
-      <span>Skill</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#765700"></div>
-      <span>Integration</span>
-    </div>
+    <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
 </header>
 
 <svg id="graph-svg"></svg>
 
 <div id="panel">
-  <button class="panel-close" onclick="closePanel()">✕</button>
+  <div class="panel-actions">
+    <button class="panel-btn" id="pin-btn" onclick="togglePin()" title="Pin highlight">⊙</button>
+    <button class="panel-btn" onclick="closePanel()" title="Close">✕</button>
+  </div>
   <div class="panel-type" id="panel-type"></div>
   <div class="panel-name" id="panel-name"></div>
   <div class="panel-desc" id="panel-desc"></div>
+  <div class="panel-example-wrap" id="panel-example-wrap">
+    <div class="panel-example-label">In practice</div>
+    <div class="panel-example" id="panel-example"></div>
+  </div>
   <div class="conn-heading" id="conn-heading">Connected to</div>
   <div class="conn-list" id="conn-list"></div>
 </div>
 
-<div class="hint">hover to explore · click to open · scroll to zoom</div>
+<div class="about-overlay" id="about-overlay" onclick="closeAbout()">
+  <div class="about-card" onclick="event.stopPropagation()">
+    <button class="about-close" onclick="closeAbout()">✕</button>
+    <div class="about-title">Tessa OS</div>
+    <div class="about-body">
+      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 20 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+      <p>25 workflows handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
+      <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor she works in.</p>
+      <p>Everything in this graph is something Jay built and uses daily.</p>
+    </div>
+    <div class="about-footer">Click any node to explore.</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">hover to explore · click to open · scroll to zoom</div>
 
 <div class="projects-dock">
-  <div class="projects-dock-label">Projects</div>
-  <a class="project-link" href="conversation-tracker.html">
-    <span class="project-link-dot"></span>
-    people i talk to
-  </a>
-  <a class="project-link" href="powder-post.html">
-    <span class="project-link-dot"></span>
-    powder post
-  </a>
-  <a class="project-link" href="client-dash.html">
-    <span class="project-link-dot"></span>
-    client dash
-  </a>
+  <div class="projects-list" id="projects-list">
+    <a class="project-link" href="conversation-tracker.html">
+      <span class="project-name">people i talk to</span>
+      <span class="project-date">Feb 2026</span>
+    </a>
+    <a class="project-link" href="powder-post.html">
+      <span class="project-name">powder post</span>
+      <span class="project-date">Feb 2026</span>
+    </a>
+    <a class="project-link" href="client-dash.html">
+      <span class="project-name">client dash</span>
+      <span class="project-date">Feb 2026</span>
+    </a>
+  </div>
+  <button class="projects-toggle" id="projects-toggle" onclick="toggleProjects()">
+    Projects <span class="toggle-arrow">▾</span>
+  </button>
 </div>
 
 <script>
@@ -315,41 +513,111 @@ const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700' };
 const RADIUS = { agent: 10, skill: 8, mcp: 8 };
 
 const nodes = [
-  { id: 'cassandra',      label: 'Cassandra',      type: 'agent', desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.' },
-  { id: 'cosimo',         label: 'Cosimo',         type: 'agent', desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.' },
-  { id: 'niccolo',        label: 'Niccolò',        type: 'agent', desc: 'Career strategist — positioning, negotiation, interview coaching.' },
-  { id: 'marco',          label: 'Marco',          type: 'agent', desc: 'Travel planning — logistics, geography, sabbatical recon.' },
-  { id: 'flitwick',       label: 'Flitwick',       type: 'agent', desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.' },
-  { id: 'prof-j',         label: 'Prof. Jiang',    type: 'agent', desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.' },
-  { id: 'confucius',      label: 'Confucius',      type: 'agent', desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.' },
-  { id: 'la-signora',     label: 'La Signora',     type: 'agent', desc: 'Italian language — conversation practice, grammar, immersion toward fluency.' },
-  { id: 'leonardo',       label: 'Leonardo',       type: 'agent', desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.' },
-  { id: 'lian',           label: 'Lian',           type: 'agent', desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.' },
-  { id: 'bo',             label: 'Bo',             type: 'agent', desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.' },
-  { id: 'ada',            label: 'Ada',            type: 'agent', desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.' },
-  { id: 'minerva',        label: 'Minerva',        type: 'agent', desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.' },
-  { id: 'amelie',         label: 'Amélie',         type: 'agent', desc: 'UX delight — intentional moments after UI/UX changes. Precision, not decoration.' },
-  { id: 'nadia',          label: 'Nadia',          type: 'agent', desc: 'Peer — think out loud, vent, process without it becoming a session.' },
-  { id: 'work-researcher',label: 'Researcher',     type: 'agent', desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.' },
-  { id: 'copilot-expert', label: 'Copilot Expert', type: 'agent', desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.' },
-  { id: 'sox-expert',     label: 'SOX Expert',     type: 'agent', desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.' },
-  { id: 'loop-closer',    label: 'loop-closer',    type: 'agent', desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.' },
-  { id: 'zhengming',      label: 'Zhengming',      type: 'agent', desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.' },
-  { id: 'week-review',    label: '/week-review',   type: 'skill', desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.' },
-  { id: 'closing-shift',  label: '/closing-shift', type: 'skill', desc: 'Daily wrap — day brief, loop maintenance, learning journal, tomorrow\'s anchor.' },
-  { id: 'feedback-skill', label: '/feedback',      type: 'skill', desc: 'Session debrief — longitudinal pattern tracking via Minerva.' },
-  { id: 'board-skill',    label: '/board',         type: 'skill', desc: 'Board of Directors — multi-domain decisions requiring multiple specialists simultaneously.' },
-  { id: 'ecosystem-audit',label: '/ecosystem-audit',type:'skill', desc: 'Full health audit — agents, skills, MCPs, costs, gaps. Routes to Minerva.' },
-  { id: 'research-skill', label: '/research',      type: 'skill', desc: 'RIPER deep research — personal topics to structured markdown notes and optional PDF.' },
-  { id: 'challenge-skill',label: '/challenge',     type: 'skill', desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.' },
-  { id: 'translate-skill',label: '/translate',     type: 'skill', desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.' },
-  { id: 'curriculum-skill',label:'/curriculum',    type: 'skill', desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.' },
-  { id: 'ai-study-brief', label: '/ai-study-brief',type: 'skill', desc: 'AI learning prioritization — what to study next given active certifications.' },
-  { id: 'gmail-mcp',      label: 'Gmail',          type: 'mcp',   desc: 'Email triage, drafting replies, thread search and labeling.' },
-  { id: 'gcal-mcp',       label: 'Calendar',       type: 'mcp',   desc: 'Scheduling, finding free windows, RSVPs, calendar management.' },
-  { id: 'drive-mcp',      label: 'Drive',          type: 'mcp',   desc: 'File search and organization across Google Drive.' },
-  { id: 'playwright-mcp', label: 'Playwright',     type: 'mcp',   desc: 'Browser automation — research, testing, web scraping.' },
-  { id: 'nimbalyst-mcp',  label: 'Nimbalyst',      type: 'mcp',   desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.' },
+  { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
+    desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.',
+    example: 'When Jay is facing a big life decision — a new job, where to live — Cassandra helps her think it through clearly, without letting fear or wishful thinking take over.' },
+  { id: 'cosimo',          label: 'Cosimo',          type: 'agent',
+    desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.',
+    example: 'When Jay wants to know if she can afford to take a sabbatical, or how long her savings would last, Cosimo runs the numbers.' },
+  { id: 'niccolo',         label: 'Niccolò',         type: 'agent',
+    desc: 'Career strategist — positioning, negotiation, interview coaching.',
+    example: 'When Jay is preparing for an interview or figuring out how to negotiate her salary, Niccolò helps her decide what to say and how to say it.' },
+  { id: 'marco',           label: 'Marco',           type: 'agent',
+    desc: 'Travel planning — logistics, geography, sabbatical recon.',
+    example: 'When Jay is planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what Conan needs, where to stay.' },
+  { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
+    desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
+    example: 'When Jay wants to understand what\'s happening in AI — new models, what different companies are doing — Flitwick explains it the way a knowledgeable friend would.' },
+  { id: 'prof-j',          label: 'Prof. Jiang',     type: 'agent',
+    desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.',
+    example: 'Prof. Jiang helps Jay understand why things are happening in the world — what history says about the present, and what\'s likely to come next.' },
+  { id: 'confucius',       label: 'Confucius',       type: 'agent',
+    desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.',
+    example: 'When Jay is wrestling with an ethical question — or asking what really matters — Confucius helps her think it through with philosophical depth.' },
+  { id: 'la-signora',      label: 'La Signora',      type: 'agent',
+    desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
+    example: 'Jay practices Italian every day to speak with her husband\'s family. La Signora is her conversation partner — correcting her, pushing her further, making it feel real.' },
+  { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
+    desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
+    example: 'Leonardo helps Jay think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
+  { id: 'lian',            label: 'Lian',            type: 'agent',
+    desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
+    example: 'When Jay needs to communicate with her parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
+  { id: 'bo',              label: 'Bo',              type: 'agent',
+    desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
+    example: 'When Jay wants to learn something new — a certification, a language, a skill — Bo designs the plan: what to study, in what order, with what materials.' },
+  { id: 'ada',             label: 'Ada',             type: 'agent',
+    desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.',
+    example: 'Before Jay builds anything new, Ada reviews the plan and finds the gaps — the things that weren\'t thought through yet.' },
+  { id: 'minerva',         label: 'Minerva',         type: 'agent',
+    desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.',
+    example: 'Minerva is the strategic advisor for the whole system — deciding what to build, what to fix, what to leave alone.' },
+  { id: 'amelie',          label: 'Amélie',          type: 'agent',
+    desc: 'UX delight — intentional moments after UI/UX changes. Precision, not decoration.',
+    example: 'After any design change, Amélie looks for the small detail that makes something feel alive — not just correct, but delightful.' },
+  { id: 'nadia',           label: 'Nadia',           type: 'agent',
+    desc: 'Peer — think out loud, vent, process without it becoming a session.',
+    example: 'Nadia is the friend Jay calls when she needs to think out loud — no agenda, no decisions, just company.' },
+  { id: 'work-researcher', label: 'Researcher',      type: 'agent',
+    desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.',
+    example: 'When Jay needs to produce a professional research report for a client or for work, Researcher does the research and formats it into a polished document.' },
+  { id: 'copilot-expert',  label: 'Copilot Expert',  type: 'agent',
+    desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.',
+    example: 'When Jay\'s clients use Microsoft\'s AI tools, Copilot Expert translates what Jay knows into their environment.' },
+  { id: 'sox-expert',      label: 'SOX Expert',      type: 'agent',
+    desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.',
+    example: 'Helps Jay think through financial controls and audit questions — the specialized work she does at Protiviti.' },
+  { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
+    desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
+    example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
+  { id: 'zhengming',       label: 'Zhengming',       type: 'agent',
+    desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.',
+    example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
+  { id: 'week-review',     label: '/week-review',    type: 'skill',
+    desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
+    example: 'Every Sunday, Jay reviews her week — what worked, what\'s still open, what comes next. At the end, it sends her a short letter with a challenge for the coming week.' },
+  { id: 'closing-shift',   label: '/closing-shift',  type: 'skill',
+    desc: 'Daily wrap — day brief, loop maintenance, learning journal, tomorrow\'s anchor.',
+    example: 'At the end of each day, Jay closes out — a brief review of what happened, what\'s left open, and what to focus on tomorrow.' },
+  { id: 'feedback-skill',  label: '/feedback',       type: 'skill',
+    desc: 'Session debrief — longitudinal pattern tracking via Minerva.',
+    example: 'After a significant work session, this reviews what went well and what could have been better — building a record over time so patterns become visible.' },
+  { id: 'board-skill',     label: '/board',          type: 'skill',
+    desc: 'Board of Directors — multi-domain decisions requiring multiple specialists simultaneously.',
+    example: 'When Jay faces a decision too big for one perspective, the full board of advisors weighs in at once — life, money, career, philosophy, all in one conversation.' },
+  { id: 'ecosystem-audit', label: '/ecosystem-audit',type: 'skill',
+    desc: 'Full health audit — agents, skills, MCPs, costs, gaps. Routes to Minerva.',
+    example: 'A health check for the whole system — are all the pieces working? Is anything broken, redundant, or missing?' },
+  { id: 'research-skill',  label: '/research',       type: 'skill',
+    desc: 'RIPER deep research — personal topics to structured markdown notes and optional PDF.',
+    example: 'Deep research on any topic — produces organized notes and an optional formatted report.' },
+  { id: 'challenge-skill', label: '/challenge',      type: 'skill',
+    desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.',
+    example: 'When Jay thinks she\'s made up her mind, this argues the strongest case against her position — so she knows exactly what she\'s deciding.' },
+  { id: 'translate-skill', label: '/translate',      type: 'skill',
+    desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
+    example: 'When Jay wants to share something with her parents in Chinese, this translates the document and makes sure it sounds like it came from Jay — the way a daughter would actually say it.' },
+  { id: 'curriculum-skill',label: '/curriculum',     type: 'skill',
+    desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.',
+    example: 'Designs a complete learning plan: what to study, what materials to use, how to fit it into a schedule.' },
+  { id: 'ai-study-brief',  label: '/ai-study-brief', type: 'skill',
+    desc: 'AI learning prioritization — what to study next given active certifications.',
+    example: 'Before an AI learning session, this tells Jay what\'s most important to focus on given what she\'s currently working toward.' },
+  { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
+    desc: 'Email triage, drafting replies, thread search and labeling.',
+    example: 'Connected to Jay\'s email — can search, draft replies, and organize her inbox.' },
+  { id: 'gcal-mcp',        label: 'Calendar',        type: 'mcp',
+    desc: 'Scheduling, finding free windows, RSVPs, calendar management.',
+    example: 'Connected to Jay\'s calendar — can schedule, find free time, and manage her appointments.' },
+  { id: 'drive-mcp',       label: 'Drive',           type: 'mcp',
+    desc: 'File search and organization across Google Drive.',
+    example: 'Connected to Google Drive — can find and organize her files.' },
+  { id: 'playwright-mcp',  label: 'Playwright',      type: 'mcp',
+    desc: 'Browser automation — research, testing, web scraping.',
+    example: 'Can open a web browser and interact with websites — used for research, testing, and web-based tasks.' },
+  { id: 'nimbalyst-mcp',   label: 'Nimbalyst',       type: 'mcp',
+    desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.',
+    example: 'Connected to the editor Jay works in — can create charts, diagrams, commit code, and track sessions.' },
 ];
 
 const links = [
@@ -401,13 +669,18 @@ links.forEach(l => {
 });
 const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 
+// State
+let pinnedNode = null;
+const hiddenTypes = new Set();
+let currentNode = null;
+
 // D3
 let W = window.innerWidth, H = window.innerHeight;
-
 const svg = d3.select('#graph-svg').attr('width', W).attr('height', H);
 const g = svg.append('g');
 
-svg.call(d3.zoom().scaleExtent([0.2, 6]).on('zoom', e => g.attr('transform', e.transform)));
+const zoom = d3.zoom().scaleExtent([0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
 
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
@@ -443,25 +716,25 @@ node.append('text')
 
 node
   .on('mouseover', (e, d) => {
+    if (pinnedNode) return;
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
     node.select('circle')
-      .attr('fill-opacity', n => nbrs.has(n.id) ? 1 : 0.1)
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.1))
       .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
     node.select('text')
-      .attr('fill-opacity', n => nbrs.has(n.id) ? 1 : 0.15)
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.15))
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
     link
       .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.04)
       .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
   })
   .on('mouseout', () => {
-    node.select('circle').attr('fill-opacity', 0.82).attr('r', d => RADIUS[d.type] || 10);
-    node.select('text').attr('fill-opacity', 1).attr('font-weight', '400');
-    link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.2);
+    if (pinnedNode) return;
+    resetHighlight();
   })
   .on('click', (e, d) => { e.stopPropagation(); openPanel(d); });
 
-svg.on('click', closePanel);
+svg.on('click', () => { closePanel(); });
 
 sim.on('tick', () => {
   link
@@ -470,14 +743,55 @@ sim.on('tick', () => {
   node.attr('transform', d => `translate(${d.x},${d.y})`);
 });
 
-// Panel
-let selected = null;
+// Auto-fit when simulation settles
+sim.on('end', fitAll);
+
+// ── Functions ──
+
+function resetHighlight() {
+  node.select('circle')
+    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 0.82)
+    .attr('r', d => RADIUS[d.type] || 10)
+    .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
+    .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 3 : 2.5);
+  node.select('text')
+    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+    .attr('font-weight', '400');
+  link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.2);
+}
+
+function fitAll() {
+  const pad = 80;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  nodes.forEach(n => {
+    if (n.x == null) return;
+    minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+    minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+  });
+  if (!isFinite(minX)) return;
+  const bw = maxX - minX + pad * 2;
+  const bh = maxY - minY + pad * 2;
+  const scale = Math.min(W / bw, H / bh, 1.2);
+  const tx = (W - scale * (minX + maxX)) / 2;
+  const ty = (H - scale * (minY + maxY)) / 2;
+  svg.transition().duration(900).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
 function openPanel(d) {
-  selected = d.id;
+  currentNode = d;
   document.getElementById('panel-type').textContent = d.type.toUpperCase();
   document.getElementById('panel-type').style.color = COLORS[d.type];
   document.getElementById('panel-name').textContent = d.label;
   document.getElementById('panel-desc').textContent = d.desc;
+
+  const exWrap = document.getElementById('panel-example-wrap');
+  if (d.example) {
+    document.getElementById('panel-example').textContent = d.example;
+    exWrap.style.display = 'block';
+  } else {
+    exWrap.style.display = 'none';
+  }
 
   const connIds = adj[d.id] || [];
   const heading = document.getElementById('conn-heading');
@@ -500,26 +814,127 @@ function openPanel(d) {
     heading.style.display = 'none';
   }
 
-  // Highlight selected node ring
+  // Apply ring to selected node
   node.select('circle')
     .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
     .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
+
+  // Reset pin button
+  const pinBtn = document.getElementById('pin-btn');
+  if (pinnedNode !== d.id) {
+    pinnedNode = null;
+    pinBtn.classList.remove('pinned');
+    pinBtn.textContent = '⊙';
+    resetHighlight();
+  }
 
   document.getElementById('panel').classList.add('visible');
 }
 
 function closePanel() {
   document.getElementById('panel').classList.remove('visible');
-  node.select('circle').attr('stroke', '#fcf9f0').attr('stroke-width', 2.5);
-  selected = null;
+  currentNode = null;
+  pinnedNode = null;
+  document.getElementById('pin-btn').classList.remove('pinned');
+  document.getElementById('pin-btn').textContent = '⊙';
+  resetHighlight();
 }
-window.closePanel = closePanel;
+
+function togglePin() {
+  if (!currentNode) return;
+  const pinBtn = document.getElementById('pin-btn');
+  if (pinnedNode === currentNode.id) {
+    pinnedNode = null;
+    pinBtn.classList.remove('pinned');
+    pinBtn.textContent = '⊙';
+    resetHighlight();
+  } else {
+    pinnedNode = currentNode.id;
+    pinBtn.classList.add('pinned');
+    pinBtn.textContent = '◉';
+    // Freeze the neighborhood highlight
+    const d = currentNode;
+    const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+    node.select('circle')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.1))
+      .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+    node.select('text')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.15))
+      .attr('font-weight', n => n.id === d.id ? '600' : '400');
+    link
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.04)
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
+  }
+}
+
+function toggleType(type) {
+  const el = document.querySelector(`.legend-item[data-type="${type}"]`);
+  if (hiddenTypes.has(type)) {
+    hiddenTypes.delete(type);
+    el && el.classList.remove('inactive');
+  } else {
+    hiddenTypes.add(type);
+    el && el.classList.add('inactive');
+    if (currentNode && currentNode.type === type) closePanel();
+  }
+  node.attr('opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+      .attr('pointer-events', d => hiddenTypes.has(d.type) ? 'none' : 'all');
+  link.attr('opacity', l => {
+    const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+    const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+    return (hiddenTypes.has(st) || hiddenTypes.has(tt)) ? 0 : 1;
+  });
+}
+
+function applySearch(q) {
+  const query = q.toLowerCase().trim();
+  if (!query) { resetHighlight(); return; }
+  node.select('circle')
+    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.08)
+    .attr('r', n => n.label.toLowerCase().includes(query) ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+  node.select('text')
+    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.1)
+    .attr('font-weight', n => n.label.toLowerCase().includes(query) ? '600' : '400');
+  link.attr('stroke-opacity', 0.04);
+}
+
+function toggleAbout() {
+  document.getElementById('about-overlay').classList.toggle('visible');
+}
+function closeAbout() {
+  document.getElementById('about-overlay').classList.remove('visible');
+}
+
+function toggleProjects() {
+  const list = document.getElementById('projects-list');
+  const toggle = document.getElementById('projects-toggle');
+  list.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePanel(); closeAbout(); }
+});
+
+// Touch hint
+if ('ontouchstart' in window) {
+  document.getElementById('hint').textContent = 'tap to explore · tap to open · pinch to zoom';
+}
 
 window.addEventListener('resize', () => {
   W = window.innerWidth; H = window.innerHeight;
   svg.attr('width', W).attr('height', H);
   sim.force('center', d3.forceCenter(W/2, H/2)).alpha(0.3).restart();
 });
+
+window.closePanel = closePanel;
+window.togglePin = togglePin;
+window.toggleType = toggleType;
+window.applySearch = applySearch;
+window.toggleAbout = toggleAbout;
+window.closeAbout = closeAbout;
+window.toggleProjects = toggleProjects;
 </script>
 </body>
 </html>
