@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>jdong08 — Tessa OS</title>
-<meta name="description" content="Tessa OS — Jay's personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
+<title>Tessa OS</title>
+<meta name="description" content="Tessa OS — a personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
 <meta name="robots" content="noindex, nofollow"/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -45,16 +45,10 @@ header {
 .brand {
   font-family: 'Newsreader', serif;
   font-style: italic;
-  font-size: 1.2rem;
+  font-size: 3.5rem;
+  line-height: 1;
   color: #9a3a5a;
-}
-.brand-sub {
-  font-size: 0.6rem;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #877276;
-  margin-left: 10px;
+  letter-spacing: -0.01em;
 }
 
 .header-right {
@@ -788,6 +782,40 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   display: none;
 }
 
+/* ── Timeline close + first-visit label ── */
+.tl-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: none; border: none;
+  font-size: 0.68rem;
+  color: #b0a0a4;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.tl-close:hover { color: #9a3a5a; }
+
+.tl-hint-label {
+  position: fixed;
+  bottom: 22px; left: 102px;
+  font-size: 9px;
+  font-family: 'Work Sans', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  opacity: 0.28;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  transition: opacity 0.6s;
+}
+.tl-hint-label.fading { opacity: 0; }
+@supports (bottom: env(safe-area-inset-bottom)) {
+  .tl-hint-label { bottom: calc(22px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 600px) { .tl-hint-label { left: 96px; } }
+
 /* ── Timeline Scrubber ── */
 .timeline-toggle {
   position: fixed; bottom: 20px; left: 84px; z-index: 20;
@@ -838,20 +866,54 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-stats-note.visible { opacity: 1; }
 
+/* Float-up annotation row above track */
+.tl-annotation-row {
+  position: relative;
+  height: 18px;
+  margin: 0 0 2px;
+  pointer-events: none;
+}
+.tl-float-label {
+  position: absolute;
+  top: 3px;
+  font-size: 7.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b0a0a4;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.tl-float-label.accent { color: #9a3a5a; font-weight: 600; }
+
+/* Dual-track area */
 .tl-track-wrap {
   position: relative;
   height: 36px;
   cursor: pointer;
 }
+#tl-ai-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tl-ai-bar {
+  position: absolute;
+  bottom: 14px;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: #c9a27c;
+  opacity: 0.55;
+  border-radius: 1px 1px 0 0;
+}
 .tl-track {
   position: absolute;
-  top: 11px; left: 0; right: 0;
+  top: 22px; left: 0; right: 0;
   height: 1px;
   background: rgba(218, 192, 197, 0.5);
 }
 .tl-filled {
   position: absolute;
-  top: 11px; left: 0;
+  top: 22px; left: 0;
   height: 1px;
   background: #9a3a5a;
   width: 100%;
@@ -865,7 +927,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-dot {
   position: absolute;
-  top: 8px;
+  top: 19px;
   width: 5px; height: 5px;
   border-radius: 50%;
   background: rgba(218,192,197,0.9);
@@ -873,7 +935,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-dot.pulse-dot {
   width: 8px; height: 8px;
-  top: 7px;
+  top: 18px;
   background: #9a3a5a;
   animation: tl-pulse 2.2s ease-in-out infinite;
 }
@@ -884,21 +946,9 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 @media (prefers-reduced-motion: reduce) {
   .tl-dot.pulse-dot { animation: none; }
 }
-.tl-label {
-  position: absolute;
-  top: 18px;
-  font-size: 0.5rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #b0a0a4;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-.tl-label.pulse-label { color: #9a3a5a; font-weight: 600; }
-
 .tl-handle {
   position: absolute;
-  top: 6px;
+  top: 17px;
   width: 11px; height: 11px;
   background: #9a3a5a;
   border-radius: 50%;
@@ -914,15 +964,45 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   box-shadow: 0 0 0 6px rgba(154,58,90,0.2);
 }
 
+/* Track legend */
+.tl-legend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  font-size: 7.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+.tl-legend-ai   { color: #c9a27c; }
+.tl-legend-code { color: #9a3a5a; }
+
 @media (max-width: 600px) {
   #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
   .timeline-toggle { left: 80px; }
-  .tl-label { display: none; }
-  .tl-label.pulse-label { display: block; }
+  .tl-float-label { display: none; }
+  .tl-float-label.accent { display: block; }
+  .tl-annotation-row { height: 14px; }
+  .tl-legend { display: none; }
 }
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
+
+/* ── Lightbox external link ── */
+.lb-link {
+  display: inline-block;
+  font-size: 0.65rem;
+  color: #9a3a5a;
+  text-decoration: none;
+  letter-spacing: 0.07em;
+  border: 1px solid rgba(154,58,90,0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-bottom: 14px;
+  transition: background 0.15s;
+}
+.lb-link:hover { background: rgba(154,58,90,0.08); }
 
 /* ── Excerpt intra-doc links ── */
 .excerpt-link {
@@ -942,8 +1022,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <header>
   <div class="header-left">
-    <span class="brand">jdong08</span>
-    <span class="brand-sub">Tessa OS</span>
+    <span class="brand">Tessa OS</span>
   </div>
   <div class="header-right">
     <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
@@ -1019,10 +1098,10 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-close" onclick="closeAbout()">✕</button>
     <div class="about-title">Tessa OS</div>
     <div class="about-body">
-      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+      <p>A personal AI system. Instead of using AI as a single chatbot, I built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
       <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
-      <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor she works in.</p>
-      <p>Everything in this graph is something Jay built and uses daily.</p>
+      <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor I work in.</p>
+      <p>Everything in this graph is something I built and use daily.</p>
     </div>
     <div class="about-footer">Click any node to explore.</div>
   </div>
@@ -1036,6 +1115,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
       <div class="lightbox-title" id="lb-title"></div>
       <div class="lightbox-date" id="lb-date"></div>
       <div class="lightbox-desc" id="lb-desc"></div>
+      <a class="lb-link" id="lb-link" href="#" target="_blank" rel="noopener" style="display:none">open ↗</a>
       <div class="lightbox-made-label" id="lb-made-label">Made with</div>
       <div class="lightbox-made-tags" id="lb-made"></div>
     </div>
@@ -1085,51 +1165,51 @@ const nodes = [
   { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
     origin: 'From Greek mythology — the prophet who always saw true, and was never believed.',
     desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.',
-    example: 'When Jay is facing a big life decision — a new job, where to live — Cassandra helps her think it through clearly, without letting fear or wishful thinking take over.' },
+    example: 'When facing a big life decision — a new job, where to live — Cassandra helps think it through clearly, without letting fear or wishful thinking take over.' },
   { id: 'cosimo',          label: 'Cosimo',          type: 'agent',
     origin: 'Cosimo de\' Medici — the Florentine banker who funded the Renaissance.',
     desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.',
-    example: 'When Jay wants to know if she can afford to take a sabbatical, or how long her savings would last, Cosimo runs the numbers.' },
+    example: 'When I want to know if I can afford to take a sabbatical, or how long my savings would last, Cosimo runs the numbers.' },
   { id: 'niccolo',         label: 'Niccolò',         type: 'agent',
     origin: 'Niccolò Machiavelli — the strategist who named power clearly, without apology.',
     desc: 'Career strategist — positioning, negotiation, interview coaching.',
-    example: 'When Jay is preparing for an interview or figuring out how to negotiate her salary, Niccolò helps her decide what to say and how to say it.' },
+    example: 'When I\'m preparing for an interview or figuring out how to negotiate salary, Niccolò helps decide what to say and how to say it.' },
   { id: 'marco',           label: 'Marco',           type: 'agent',
     origin: 'Marco Polo — the Venetian who navigated the world before maps.',
     desc: 'Travel planning — logistics, geography, sabbatical recon.',
-    example: 'When Jay is planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what Conan needs, where to stay.' },
+    example: 'When I\'m planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what the dog needs, where to stay.' },
   { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
     origin: 'Professor Flitwick from Harry Potter — small, meticulous, teaches magic as craft.',
     desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
-    example: 'When Jay wants to understand what\'s happening in AI — new models, what different companies are doing — Flitwick explains it the way a knowledgeable friend would.' },
+    example: 'When I want to understand what\'s happening in AI — new models, what different companies are doing — Flitwick explains it the way a knowledgeable friend would.' },
   { id: 'prof-j',          label: 'Prof. Jiang',     type: 'agent',
     origin: 'Modeled on transcripts of a real person — Jiang Xueqin, educator and geopolitical writer. His voice is drawn from his actual words.',
     desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.',
-    example: 'Prof. Jiang helps Jay understand why things are happening in the world — what history says about the present, and what\'s likely to come next.' },
+    example: 'Prof. Jiang helps me understand why things are happening in the world — what history says about the present, and what\'s likely to come next.' },
   { id: 'confucius',       label: 'Confucius 孔子',  type: 'agent',
     origin: '孔子 Kǒng Zǐ — the teacher whose questions are still unanswered.',
     desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.',
-    example: 'When Jay is wrestling with an ethical question — or asking what really matters — Confucius helps her think it through with philosophical depth.' },
+    example: 'When I\'m wrestling with an ethical question — or asking what really matters — Confucius helps think it through with philosophical depth.' },
   { id: 'la-signora',      label: 'La Signora',      type: 'agent',
     origin: 'Italian for "the lady" — a formal term of respect. The teacher you rise for.',
     desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
-    example: 'Jay practices Italian every day to speak with her husband\'s family. La Signora is her conversation partner — correcting her, pushing her further, making it feel real.' },
+    example: 'I practice Italian every day to speak with my husband\'s family. La Signora is my conversation partner — correcting me, pushing me further, making it feel real.' },
   { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
     origin: 'Leonardo da Vinci — the polymath who mastered every practical domain he touched.',
     desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
-    example: 'Leonardo helps Jay think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
+    example: 'Leonardo helps me think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
   { id: 'lian',            label: 'Lian 连',         type: 'agent',
     origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
     desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
-    example: 'When Jay needs to communicate with her parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
+    example: 'When I need to communicate with my parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
   { id: 'bo',              label: 'Bo 博',           type: 'agent',
     origin: '博 Bó — broad, learned, generous with knowledge.',
     desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
-    example: 'When Jay wants to learn something new — a certification, a language, a skill — Bo designs the plan: what to study, in what order, with what materials.' },
+    example: 'When I want to learn something new — a certification, a language, a skill — Bo designs the plan: what to study, in what order, with what materials.' },
   { id: 'ada',             label: 'Ada',             type: 'agent',
     origin: 'Ada Lovelace — the first programmer, who wrote algorithms before computers existed.',
     desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.',
-    example: 'Before Jay builds anything new, Ada reviews the plan and finds the gaps — the things that weren\'t thought through yet.' },
+    example: 'Before I build anything new, Ada reviews the plan and finds the gaps — the things that weren\'t thought through yet.' },
   { id: 'minerva',         label: 'Minerva',         type: 'agent',
     origin: 'Minerva — Roman goddess of wisdom and strategic craft. Daughter of Jupiter, born fully armored.',
     desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.',
@@ -1141,18 +1221,18 @@ const nodes = [
   { id: 'nadia',           label: 'Nadia',           type: 'agent',
     origin: 'Chosen for its ordinariness — a name that doesn\'t perform. The friend who just shows up.',
     desc: 'Peer — think out loud, vent, process without it becoming a session.',
-    example: 'Nadia is the friend Jay calls when she needs to think out loud — no agenda, no decisions, just company.' },
+    example: 'Nadia is the friend I call when I need to think out loud — no agenda, no decisions, just company.' },
   { id: 'work-researcher', label: 'Researcher',      type: 'agent',
     desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.',
-    example: 'When Jay needs to produce a professional research report for a client or for work, Researcher does the research and formats it into a polished document.' },
+    example: 'When I need to produce a professional research report for a client or for work, Researcher does the research and formats it into a polished document.' },
   { id: 'copilot-expert',  label: 'Copilot Expert',  type: 'agent',
     desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.',
-    example: 'When Jay\'s clients use Microsoft\'s AI tools, Copilot Expert translates what Jay knows into their environment.' },
+    example: 'When my clients use Microsoft\'s AI tools, Copilot Expert translates what I know into their environment.' },
   { id: 'sox-expert',      label: 'SOX Expert',      type: 'agent',
     desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.',
-    example: 'Helps Jay think through financial controls and audit questions — the specialized work she does at Protiviti.' },
+    example: 'Helps me think through financial controls and audit questions — specialized work I do professionally.' },
   { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
-    origin: 'Named for function — closes what\'s open so Jay doesn\'t have to carry it.',
+    origin: 'Named for function — closes what\'s open so I don\'t have to carry it.',
     desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
     example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
   { id: 'zhengming',       label: 'Zhengming 正名',  type: 'agent',
@@ -1161,28 +1241,28 @@ const nodes = [
     example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
   { id: 'grace',           label: 'Grace',           type: 'agent',
     origin: 'Grace Paley — the writer who paid attention to small things until they told her everything.',
-    desc: 'Aesthetic watcher — logs what Jay finds beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
-    example: 'Jay sends a photo she can\'t stop looking at. Grace logs it. Three weeks later, after enough inputs, Grace says: "You keep returning to things that are worn, earned, impermanent. That\'s the throughline."' },
+    desc: 'Aesthetic watcher — logs what I find beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
+    example: 'I send a photo I can\'t stop looking at. Grace logs it. Three weeks later, after enough inputs, Grace says: "You keep returning to things that are worn, earned, impermanent. That\'s the throughline."' },
   { id: 'azzedine',        label: 'Azzedine',        type: 'agent',
     origin: 'Azzedine Alaïa — the couturier who built garments that made the body say what it means.',
-    desc: 'Aesthetic executor — outfit verdicts, purchase decisions, how Jay appears in the world. Reads Grace\'s log before every response. Gives verdicts, not suggestions.',
-    example: 'Jay tries on two options before a meeting. Azzedine has already seen what she\'s been drawn to lately. He says: "The second one. The first one is performing."' },
+    desc: 'Aesthetic executor — outfit verdicts, purchase decisions, how I appear in the world. Reads Grace\'s log before every response. Gives verdicts, not suggestions.',
+    example: 'I try on two options before a meeting. Azzedine has already seen what I\'ve been drawn to lately. He says: "The second one. The first one is performing."' },
   { id: 'cornelia',        label: 'Cornelia',        type: 'agent',
     origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
-    desc: 'Italian cultural bridge — Andrea\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
-    example: 'Jay can\'t tell if Andrea\'s mother is upset or just Italian. Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
+    desc: 'Italian cultural bridge — my husband\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
+    example: 'When I can\'t tell if my mother-in-law is upset or just Italian, Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
   { id: 'week-review',     label: '/week-review',    type: 'skill',
     desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
-    example: 'Every Sunday, Jay reviews her week — what worked, what\'s still open, what comes next. At the end, it sends her a short letter with a challenge for the coming week.' },
+    example: 'Every Sunday, I review my week — what worked, what\'s still open, what comes next. At the end, it sends me a short letter with a challenge for the coming week.' },
   { id: 'closing-shift',   label: '/closing-shift',  type: 'skill',
     desc: 'Daily wrap — day brief, loop maintenance, learning journal, tomorrow\'s anchor.',
-    example: 'At the end of each day, Jay closes out — a brief review of what happened, what\'s left open, and what to focus on tomorrow.' },
+    example: 'At the end of each day, I close out — a brief review of what happened, what\'s left open, and what to focus on tomorrow.' },
   { id: 'feedback-skill',  label: '/feedback',       type: 'skill',
     desc: 'Session debrief — longitudinal pattern tracking via Minerva.',
     example: 'After a significant work session, this reviews what went well and what could have been better — building a record over time so patterns become visible.' },
   { id: 'board-skill',     label: '/board',          type: 'skill',
     desc: 'Board of Directors — multi-domain decisions requiring multiple specialists simultaneously.',
-    example: 'When Jay faces a decision too big for one perspective, the full board of advisors weighs in at once — life, money, career, philosophy, all in one conversation.' },
+    example: 'When I face a decision too big for one perspective, the full board of advisors weighs in at once — life, money, career, philosophy, all in one conversation.' },
   { id: 'ecosystem-audit', label: '/ecosystem-audit',type: 'skill',
     desc: 'Full health audit — agents, skills, MCPs, costs, gaps. Routes to Minerva.',
     example: 'A health check for the whole system — are all the pieces working? Is anything broken, redundant, or missing?' },
@@ -1191,32 +1271,32 @@ const nodes = [
     example: 'Deep research on any topic — produces organized notes and an optional formatted report.' },
   { id: 'challenge-skill', label: '/challenge',      type: 'skill',
     desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.',
-    example: 'When Jay thinks she\'s made up her mind, this argues the strongest case against her position — so she knows exactly what she\'s deciding.' },
+    example: 'When I think I\'ve made up my mind, this argues the strongest case against my position — so I know exactly what I\'m deciding.' },
   { id: 'translate-skill', label: '/translate',      type: 'skill',
     desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
-    example: 'When Jay wants to share something with her parents in Chinese, this translates the document and makes sure it sounds like it came from Jay — the way a daughter would actually say it.' },
+    example: 'When I want to share something with my parents in Chinese, this translates the document and makes sure it sounds like it came from me — the way a daughter would actually say it.' },
   { id: 'curriculum-skill',label: '/curriculum',     type: 'skill',
     desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.',
     example: 'Designs a complete learning plan: what to study, what materials to use, how to fit it into a schedule.' },
   { id: 'ai-study-brief',  label: '/ai-study-brief', type: 'skill',
     desc: 'AI learning prioritization — what to study next given active certifications.',
-    example: 'Before an AI learning session, this tells Jay what\'s most important to focus on given what she\'s currently working toward.' },
+    example: 'Before an AI learning session, this tells me what\'s most important to focus on given what I\'m currently working toward.' },
   { id: 'check-in-skill',  label: '/check-in',       type: 'skill',
     desc: 'Lightweight pulse check — two modes: status on a specific project, or stepping back to see the full picture. Max 5 exchanges, stays small.',
-    example: 'Jay wants to know where she stands on AAIA prep without opening a full session. Check-in reads the relevant loop and gives her a 3-line status.' },
+    example: 'When I want to know where I stand on a certification without opening a full session, Check-in reads the relevant loop and gives a 3-line status.' },
   { id: 'capture-close',  label: '/capture-and-close', type: 'skill',
     desc: 'Session close ritual — names the artifact, writes to the capture-close log, clears the air. Distinct from /feedback (Minerva) and /closing-shift (end-of-day).',
     example: 'We just built something real. Capture-and-close names it, logs it, and closes the session so the next thing can start clean.' },
   // ── Process workflows ──
   { id: 'the-drop',        label: 'The Drop',        type: 'skill',
-    desc: 'Daily intake — a living Google Doc where Jay logs ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
-    example: 'Jay notices the node graph scatters too fast. She drops a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
+    desc: 'Daily intake — a living Google Doc where I log ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
+    example: 'I notice the node graph scatters too fast. I drop a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
   { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
     desc: 'Email triage, drafting replies, thread search and labeling.',
-    example: 'Connected to Jay\'s email — can search, draft replies, and organize her inbox.' },
+    example: 'Connected to my email — can search, draft replies, and organize my inbox.' },
   { id: 'gcal-mcp',        label: 'Calendar',        type: 'mcp',
     desc: 'Scheduling, finding free windows, RSVPs, calendar management.',
-    example: 'Connected to Jay\'s calendar — can schedule, find free time, and manage her appointments.' },
+    example: 'Connected to my calendar — can schedule, find free time, and manage appointments.' },
   { id: 'drive-mcp',       label: 'Drive',           type: 'mcp',
     desc: 'File search and organization across Google Drive.',
     example: 'Connected to Google Drive — can find and organize her files.' },
@@ -1225,33 +1305,48 @@ const nodes = [
     example: 'Can open a web browser and interact with websites — used for research, testing, and web-based tasks.' },
   { id: 'nimbalyst-mcp',   label: 'Nimbalyst',       type: 'mcp',
     desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.',
-    example: 'Connected to the editor Jay works in — can create charts, diagrams, commit code, and track sessions.' },
+    example: 'Connected to the editor I work in — can create charts, diagrams, commit code, and track sessions.' },
 
   // ── Real outputs ──
   { id: 'parent-newsletter', label: 'Parents Newsletter', type: 'output',
-    desc: 'Monthly AI briefing written for Jay\'s Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
-    example: 'A newsletter explaining AI breakthroughs to Jay\'s parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
+    desc: 'Monthly AI briefing written for my Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
+    example: 'A newsletter explaining AI breakthroughs to my parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
     screenshot: 'artifacts/parent-newsletter.png',
     made: ['flitwick', 'nadia', 'lian'],
     date: 'March 2026' },
   { id: 'instacart-analysis', label: 'Instacart Analysis', type: 'output',
     desc: '5-year spending analysis across 139 orders. Tracked inflation on recurring items, behavioral shifts by year, fee evolution, and shrinkflation signals — all from live receipt data.',
-    example: 'Jay uploaded 5 years of Instacart receipts and asked what it said about her spending. The output was a full research report: data tables, price tracking across every recurring item, and behavioral analysis by year.',
+    example: 'I uploaded 5 years of Instacart receipts and asked what it said about my spending. The output was a full research report: data tables, price tracking across every recurring item, and behavioral analysis by year.',
     screenshot: 'artifacts/instacart-analysis.png',
     made: ['cosimo'],
     date: 'March 2026' },
   { id: 'board-app', label: 'The Board App', type: 'output',
-    desc: 'A custom web app giving Jay conversational access to 13 specialist advisors. Built from scratch — design, frontend, and API integration.',
-    example: 'Jay wanted a visual interface for her advisor council. In one session, Claude built a full dark-mode web app with advisor cards, portraits, and a live chat interface wired to each agent.',
+    desc: 'A custom web app giving me conversational access to 13 specialist advisors. Built from scratch — design, frontend, and API integration.',
+    example: 'I wanted a visual interface for my advisor council. In one session, Claude built a full dark-mode web app with advisor cards, portraits, and a live chat interface wired to each agent.',
     screenshot: 'artifacts/board-app.png',
     made: ['minerva', 'ada'],
     date: 'February 2026' },
   { id: 'ai-news', label: 'AI Intelligence Brief', type: 'output',
     desc: 'Weekly AI news report covering frontier model releases, policy shifts, and professional relevance. Sourced live, synthesized by Flitwick, formatted for mobile reading.',
-    example: 'Every week, Flitwick searches the AI landscape and writes a briefing Jay can read on her phone — covering what shipped, what it means for her work, and what to watch.',
+    example: 'Every week, Flitwick searches the AI landscape and writes a briefing I can read on my phone — covering what shipped, what it means for my work, and what to watch.',
     screenshot: 'artifacts/ai-news.png',
     made: ['flitwick'],
     date: 'March 2026' },
+  { id: 'conversation-tracker', label: 'People I Talk To', type: 'output',
+    desc: 'Real-time conversation tracker — visualizes who I talk to most, by frequency and recency. One of the first things built after getting Claude. February 2026.',
+    screenshot: 'artifacts/conversation-tracker.png',
+    url: 'conversation-tracker.html',
+    date: 'February 2026' },
+  { id: 'powder-post', label: 'Powder Post', type: 'output',
+    desc: 'Daily ski-condition briefing app. Weather, snowpack, sentiment — designed for slope decisions, not spreadsheets. Built February 2026 in the first vibe-coding sprint.',
+    screenshot: 'artifacts/powder-post.png',
+    url: 'powder-post.html',
+    date: 'February 2026' },
+  { id: 'client-dash', label: 'Client Dash', type: 'output',
+    desc: 'Client intelligence dashboard — earnings signals, competitor news, and market sentiment, updated live. Built February 2026 as an early test of AI-driven research tools.',
+    screenshot: 'artifacts/client-dash.png',
+    url: 'client-dash.html',
+    date: 'February 2026' },
 
   // ── Substrate documents ──
   { id: 'soul-doc', label: 'soul.md', type: 'doc',
@@ -1273,7 +1368,7 @@ This question has the shape of a validation ask — /challenge if you want the o
 You've mentioned the Cap One timeline three sessions in a row without setting a date. That's probably the thing.` },
 
   { id: 'ecosystem-doc', label: 'ecosystem-map.md', type: 'doc',
-    desc: 'The wiring diagram. Every agent, skill, and integration — what exists, what connects to what, what each piece does. Without it, Claude routes by guesswork or re-scans the directory every session. With it, the right specialist gets invoked before Jay has to ask.',
+    desc: 'The wiring diagram. Every agent, skill, and integration — what exists, what connects to what, what each piece does. Without it, Claude routes by guesswork or re-scans the directory every session. With it, the right specialist gets invoked without having to ask.',
     excerpt: `SUNDAY
   /week-review              ← full life retrospective
     → jay-sync              ← updates profile from week's signals
@@ -1289,7 +1384,7 @@ DAILY (end of night, manual — once)
   /closing-shift            ← day brief, loop maintenance, tomorrow's anchor` },
 
   { id: 'thesis-doc', label: 'life_thesis.md', type: 'doc',
-    desc: 'The why. Civilizational resilience — why Jay is learning to fix a boiler, studying Italian, building a paper trail to Italy, keeping liquid assets. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
+    desc: 'The why. Civilizational resilience — why I\'m learning to fix a boiler, studying Italian, building a paper trail to Italy, keeping liquid assets. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
     excerpt: `Civilizational resilience. Family, security, being untouchable across any version of society.
 
 The thesis: build a life that holds regardless of what the system does. Not "succeed within the current order" but "be the kind of person who survives and protects her people through any order." Skills that have real-world value. Financial independence. Geographic optionality. Physical capability. Community.
@@ -1297,7 +1392,7 @@ The thesis: build a life that holds regardless of what the system does. Not "suc
 Not paranoia. Not an exit from society. The same rigor she applies to career and health, applied to civilizational uncertainty.` },
 
   { id: 'loops-doc', label: 'OPEN_LOOPS.md', type: 'doc',
-    desc: 'The ground truth. Every unresolved thread — urgent items, in-progress work, things said "later" to and captured. Without it, sessions start cold and things fall through cracks. With it, Claude knows what\'s live without Jay having to re-explain context every time.',
+    desc: 'The ground truth. Every unresolved thread — urgent items, in-progress work, things said "later" to and captured. Without it, sessions start cold and things fall through cracks. With it, Claude knows what\'s live without me having to re-explain context every time.',
     excerpt: `If it's unresolved, it's here.
 
 Every suggestion, action item, open question, or decision that doesn't get closed in a session gets written here before the session ends. No exceptions. Things can be closed later. They cannot be recovered if never captured.
@@ -1317,8 +1412,8 @@ The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26.
 If this appears a fifth time, the rule is decorative.` },
 
   { id: 'opening-doc', label: '/opening-shift', type: 'skill',
-    desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
-    excerpt: `Orient before you work. Three steps, compact output. Nothing writes without Jay seeing it first.
+    desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — I have to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
+    excerpt: `Orient before you work. Three steps, compact output. Nothing writes without me seeing it first.
 
 Step 1: Closing-shift check — did yesterday actually close?
 Step 2: Flitwick — top 3 Anthropic feature drops in the last 7 days.
@@ -1327,11 +1422,11 @@ Step 3: The Drop — surface any unswept items from the day before.
 One line per step. Nothing hidden.` },
   // ── Knowledge Bases ──
   { id: 'italian-kb',      label: 'Italian Cultural KB', type: 'doc',
-    desc: 'Companion reference for Cornelia — Italian family dynamics, regional etiquette, generational patterns, the suocera relationship, Florentine context. Not a guide to Italy; a guide to the specific world Jay is marrying into.',
-    excerpt: `Pontassieve. Pelago. The Menichetti and Pelliccia families — Florentine east. What matters here isn't Italy in the abstract but the texture of this particular family: when to bring wine, how to address la suocera, what silence means at the table. Cornelia reads this before every conversation.` },
+    desc: 'Companion reference for Cornelia — Italian family dynamics, regional etiquette, generational patterns, the suocera relationship, Florentine context. Not a guide to Italy; a guide to the specific world I married into.',
+    excerpt: `Pontassieve. Pelago. A family rooted in the Florentine east. What matters here isn't Italy in the abstract but the texture of this particular family: when to bring wine, how to address la suocera, what silence means at the table. Cornelia reads this before every conversation.` },
   { id: 'chinese-kb',      label: 'Chinese Cultural KB', type: 'doc',
-    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, what Jay\'s parents expect vs. what they say, how to write in a voice that sounds like their daughter.',
-    excerpt: `Jay's parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from Jay — not from a machine trying to be polite.` },
+    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, what my parents expect vs. what they say, how to write in a voice that sounds like their daughter.',
+    excerpt: `My parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from me — not from a machine trying to be polite.` },
   { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
     desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
     excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what first-gen professionals miss that everyone else absorbed without noticing.` },
@@ -1353,12 +1448,12 @@ const links = [
   { source: 'board-skill',     target: 'leonardo',       label: 'The board includes Leonardo when resilience, geography, or long-horizon risk is involved.' },
   { source: 'ai-study-brief',  target: 'flitwick',       label: '/ai-study-brief invokes Flitwick to prioritize what to study given active certifications and ecosystem state.' },
   { source: 'translate-skill', target: 'nadia',          label: 'Nadia drafts the translation first — she has the peer register and natural Chinese voice.' },
-  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register, family framing, and what lands for Jay\'s parents.' },
+  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register, family framing, and what lands for my parents.' },
   { source: 'curriculum-skill',target: 'bo',             label: '/curriculum routes to Bo, who designs the full learning plan: sources, schedule, commitment layer.' },
   { source: 'closing-shift',   target: 'loop-closer',    label: '/closing-shift triggers loop-closer to scan open items and close what it can autonomously.' },
   { source: 'closing-shift',   target: 'minerva',        label: '/closing-shift includes a Minerva debrief — same as /feedback but at end-of-day rhythm.' },
-  { source: 'challenge-skill', target: 'cassandra',      label: '/challenge routes through Cassandra — she argues the strongest case against Jay\'s stated plan.' },
-  { source: 'challenge-skill', target: 'minerva',        label: 'Minerva tracks /challenge patterns — when Jay keeps challenging the same decision, it\'s a signal.' },
+  { source: 'challenge-skill', target: 'cassandra',      label: '/challenge routes through Cassandra — she argues the strongest case against my stated plan.' },
+  { source: 'challenge-skill', target: 'minerva',        label: 'Minerva tracks /challenge patterns — when the same decision keeps coming up, it\'s a signal.' },
   { source: 'research-skill',  target: 'work-researcher',label: '/research on professional topics routes to Researcher, who runs the full RIPER pipeline.' },
   { source: 'gmail-mcp',       target: 'work-researcher',label: 'Researcher uses Gmail to find context in existing email threads during professional research.' },
   { source: 'drive-mcp',       target: 'work-researcher',label: 'Researcher reads from and saves to Google Drive — all reports land there for persistence.' },
@@ -1368,16 +1463,16 @@ const links = [
   { source: 'nimbalyst-mcp',   target: 'amelie',         label: 'Amélie uses Nimbalyst to preview and screenshot UI changes before declaring them delightful.' },
   // outputs ← producers
   { source: 'parent-newsletter', target: 'flitwick',     label: 'Flitwick researches the AI landscape and writes the first draft — always the starting point for the newsletter.' },
-  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for Jay\'s Shanghai parents.' },
+  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for my Shanghai parents.' },
   { source: 'instacart-analysis', target: 'cosimo',      label: 'Cosimo ran the 5-year Instacart analysis — his financial modeling applies to personal spending too.' },
   { source: 'board-app',          target: 'minerva',     label: 'Minerva made the architectural decisions for the board app — what to build, how to structure it.' },
   { source: 'board-app',          target: 'ada',         label: 'Ada specced the board app before it was built — the PRD kept the build scoped.' },
   { source: 'ai-news',            target: 'flitwick',    label: 'The weekly AI brief is entirely Flitwick — research, synthesis, and formatting in one session.' },
   // docs ← agents/skills they shape
   { source: 'soul-doc',      target: 'cassandra',        label: 'soul.md tells Cassandra who she\'s actually talking to — without it, she\'s giving advice to a generic person.' },
-  { source: 'soul-doc',      target: 'niccolo',          label: 'Niccolò reads soul.md to understand what kind of career fits who Jay actually is, not just what she\'s done.' },
-  { source: 'soul-doc',      target: 'confucius',        label: 'Confucius uses soul.md to calibrate depth — Jay engages philosophy seriously, not as intellectual decoration.' },
-  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the bicultural complexity Jay actually lives, not just a surface description.' },
+  { source: 'soul-doc',      target: 'niccolo',          label: 'Niccolò reads soul.md to understand what kind of career fits who I actually am, not just what I\'ve done.' },
+  { source: 'soul-doc',      target: 'confucius',        label: 'Confucius uses soul.md to calibrate depth — philosophy is engaged seriously here, not as intellectual decoration.' },
+  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the bicultural complexity actually lived, not just a surface description.' },
   { source: 'warrant-doc',   target: 'cassandra',        label: 'claude_warrant.md tells Cassandra she has standing authorization to push — no hedging required.' },
   { source: 'warrant-doc',   target: 'niccolo',          label: 'Niccolò uses the warrant to give direct verdicts on career moves rather than presenting options neutrally.' },
   { source: 'ecosystem-doc', target: 'minerva',          label: 'ecosystem-map.md is Minerva\'s primary reference — she uses it to diagnose gaps and decide what to build.' },
@@ -1385,7 +1480,7 @@ const links = [
   { source: 'ecosystem-doc', target: 'ecosystem-audit',  label: '/ecosystem-audit reads the map first — it\'s the baseline for what "healthy" looks like.' },
   { source: 'thesis-doc',    target: 'cassandra',        label: 'life_thesis.md gives Cassandra the long-horizon frame — decisions should serve the resilience architecture.' },
   { source: 'thesis-doc',    target: 'cosimo',           label: 'Cosimo reads the thesis to understand what financial independence actually means in this context.' },
-  { source: 'thesis-doc',    target: 'confucius',        label: 'Confucius uses the thesis to understand why Jay is building what she\'s building — not what, but why.' },
+  { source: 'thesis-doc',    target: 'confucius',        label: 'Confucius uses the thesis to understand why I\'m building what I\'m building — not what, but why.' },
   { source: 'thesis-doc',    target: 'leonardo',         label: 'Leonardo IS the thesis — civilizational resilience is his entire domain.' },
   { source: 'loops-doc',     target: 'loop-closer',      label: 'OPEN_LOOPS.md is what loop-closer reads and writes — it\'s the source of truth for open work.' },
   { source: 'loops-doc',     target: 'closing-shift',    label: '/closing-shift reads OPEN_LOOPS.md to surface what\'s urgent and in-progress for the day wrap.' },
@@ -1393,21 +1488,21 @@ const links = [
   { source: 'feedback-doc',  target: 'loop-closer',      label: 'loop-closer reads feedback_log.md to close items flagged in past debriefs.' },
   { source: 'feedback-doc',  target: 'closing-shift',    label: '/closing-shift surfaces patterns from feedback_log.md — the same issues recurring is a signal.' },
   { source: 'opening-doc',   target: 'loops-doc',        label: 'opening-shift reads OPEN_LOOPS.md as step one — what\'s urgent shapes the whole day.' },
-  { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who Jay actually is, not just what\'s on the list.' },
+  { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who I actually am, not just what\'s on the list.' },
   // process workflows
   { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
   // aesthetic pair
-  { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what Jay finds beautiful shapes what she should wear.' },
+  { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what I find beautiful shapes what I should wear.' },
   // cornelia handoffs
   { source: 'cornelia',      target: 'cassandra',        label: 'Italian family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
-  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When Jay needs to say something in Italian, they hand off.' },
+  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When I need to say something in Italian, they hand off.' },
   { source: 'cornelia',      target: 'marco',            label: 'Cornelia handles the family context and register; Marco handles getting there and what to bring.' },
   // knowledge base connections
   { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Italian Cultural KB before every conversation — it holds the specific family and regional context she needs.' },
-  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for Jay\'s Shanghainese parents.' },
+  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for my Shanghainese parents.' },
   { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
-  { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what Jay wants, but what the system rewards.' },
-  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and Jay\'s own character — essential for navigating the suocera relationship.' },
+  { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what I want, but what the system rewards.' },
+  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the suocera relationship.' },
   // skill connections
   { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
   { source: 'capture-close', target: 'loops-doc',        label: '/capture-and-close writes artifacts and open items back to loops before ending the session.' },
@@ -1573,7 +1668,7 @@ node
   .on('click', (e, d) => {
     e.stopPropagation();
     if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
-    else { openPanel(d); panToNodeMobile(d); }
+    else { openPanel(d); }
   });
 
 svg.on('click', (e) => { if (e.target === svg.node()) { closePanel(); dismissStartHint(); } });
@@ -1603,7 +1698,7 @@ node.each(function(d) {
     if (dt > 300 || dist > 15) return;
     // This is a genuine tap on the node — D3's click didn't fire
     if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
-    else { openPanel(d); panToNodeMobile(d); }
+    else { openPanel(d); }
   }, { passive: true });
 });
 
@@ -1748,7 +1843,7 @@ function openPanel(d) {
       tag.style.color = COLORS[n.type];
       tag.style.borderColor = COLORS[n.type] + '55';
       tag.style.background = COLORS[n.type] + '10';
-      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); panToNode(n); };
+      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); };
       list.appendChild(tag);
     });
   } else {
@@ -1884,24 +1979,38 @@ function openLightbox(d) {
   typeEl.style.color = COLORS[d.type];
 
   document.getElementById('lb-title').textContent = d.label;
-  document.getElementById('lb-date').textContent = d.date || '';
+  document.getElementById('lb-date').textContent = d.date || 'March 2026';
   document.getElementById('lb-desc').textContent = d.desc;
 
   // Toggle image vs excerpt reading surface
+  const imgWrap = document.getElementById('lb-img-wrap');
   const imgEl = document.getElementById('lb-img');
   const excerptEl = document.getElementById('lb-excerpt');
   if (d.type === 'doc') {
     imgEl.style.display = 'none';
+    imgWrap.style.display = ''; // keep wrap visible — excerpt lives inside it
     excerptEl.innerHTML = buildLinkedExcerpt(d.excerpt || '', d.id);
-    // Restart cursor animation on each open
     excerptEl.classList.remove('visible');
     void excerptEl.offsetWidth;
     excerptEl.classList.add('visible');
-  } else {
+  } else if (d.screenshot) {
+    imgWrap.style.display = '';
     imgEl.style.display = '';
-    imgEl.src = d.screenshot || '';
+    imgEl.src = d.screenshot;
     imgEl.alt = d.label;
     excerptEl.classList.remove('visible');
+  } else {
+    imgWrap.style.display = 'none';
+    excerptEl.classList.remove('visible');
+  }
+
+  // URL link (for output nodes with an external page)
+  const linkEl = document.getElementById('lb-link');
+  if (d.url) {
+    linkEl.href = d.url;
+    linkEl.style.display = '';
+  } else {
+    linkEl.style.display = 'none';
   }
 
   // Made with — hide section entirely if empty
@@ -2031,18 +2140,43 @@ window.excerptNodeClick = function(nodeId) {
   if (!n) return;
   closeLightbox();
   if (n.type === 'doc' || n.type === 'output') { setTimeout(() => openLightbox(n), 50); }
-  else { openPanel(n); panToNode(n); }
+  else { openPanel(n); }
 };
 
 // ── Timeline Scrubber ──
-const T_START = new Date('2026-02-11').getTime();
+const T_START = new Date('2025-09-28').getTime();
 const T_END   = new Date('2026-03-28').getTime();
 const T_RANGE = T_END - T_START;
 
+// Claude.ai conversation counts by date (from chat history export)
+const CLAUDE_AI_DATA = {
+  '2025-09-28': 2,
+  '2025-10-05': 1, '2025-10-12': 2, '2025-10-19': 1, '2025-10-26': 3,
+  '2025-11-03': 2, '2025-11-10': 1, '2025-11-17': 2, '2025-11-24': 3,
+  '2025-12-01': 1, '2025-12-08': 2, '2025-12-15': 2, '2025-12-22': 1,
+  '2026-01-07': 2, '2026-01-14': 3, '2026-01-21': 2, '2026-01-28': 4,
+  '2026-02-04': 3, '2026-02-11': 2,
+  '2026-02-16': 9, '2026-02-22': 6, '2026-02-23': 7, '2026-02-24': 8,
+  '2026-03-13': 10, '2026-03-14': 11, '2026-03-15': 14, '2026-03-16': 28,
+  '2026-03-17': 18, '2026-03-21': 23,
+  '2026-03-24': 16, '2026-03-25': 4, '2026-03-26': 6, '2026-03-27': 3, '2026-03-28': 2,
+};
+
+// Milestone annotations floating above the track
+const FLOAT_MILESTONES = [
+  { date: new Date('2025-09-28'), label: 'started',   accent: false },
+  { date: new Date('2026-02-11'), label: 'Pro',        accent: false },
+  { date: new Date('2026-02-22'), label: 'Code',       accent: true  },
+  { date: new Date('2026-03-15'), label: 'Max',        accent: false },
+];
+
 const NODE_BUILT = {
-  'soul-doc':          new Date('2026-02-11'),
-  'warrant-doc':       new Date('2026-02-11'),
-  'board-app':         new Date('2026-02-11'),
+  'soul-doc':           new Date('2026-03-28'),
+  'warrant-doc':        new Date('2026-03-27'),
+  'board-app':          new Date('2026-03-25'),
+  'conversation-tracker': new Date('2026-02-22'),
+  'powder-post':        new Date('2026-02-22'),
+  'client-dash':        new Date('2026-02-22'),
   'thesis-doc':        new Date('2026-03-24'),
   'board-skill':       new Date('2026-03-24'),
   'cassandra':         new Date('2026-03-24'),
@@ -2078,7 +2212,7 @@ const NODE_BUILT = {
   'gcal-mcp':          new Date('2026-03-26'),
   'parent-newsletter': new Date('2026-03-26'),
   'instacart-analysis':new Date('2026-03-26'),
-  'prof-j':            new Date('2026-03-27'),
+  'prof-j':            new Date('2026-03-24'),
   'zhengming':         new Date('2026-03-27'),
   'copilot-expert':    new Date('2026-03-27'),
   'sox-expert':        new Date('2026-03-27'),
@@ -2097,14 +2231,15 @@ const NODE_BUILT = {
   'nimbalyst-mcp':     new Date('2026-03-28'),
 };
 
-// Feb 11, Mar 25★, Mar 28 get labels. Intermediate dates get dots only.
+// Code build date markers (dots on the lower track)
 const MILESTONES = [
-  { date: new Date('2026-02-11'), label: 'Feb 11',   showLabel: true,  pulse: false },
-  { date: new Date('2026-03-24'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-25'), label: '★ Mar 25', showLabel: true,  pulse: true  },
-  { date: new Date('2026-03-26'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-27'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-28'), label: 'Mar 28',   showLabel: true,  pulse: false },
+  { date: new Date('2026-02-11'), pulse: false },
+  { date: new Date('2026-02-22'), pulse: false },
+  { date: new Date('2026-03-24'), pulse: false },
+  { date: new Date('2026-03-25'), pulse: true  },
+  { date: new Date('2026-03-26'), pulse: false },
+  { date: new Date('2026-03-27'), pulse: false },
+  { date: new Date('2026-03-28'), pulse: false },
 ];
 
 let timelineOpen = false;
@@ -2146,13 +2281,16 @@ function applyTimelineVisibility() {
 
 function updateTlStats(pct) {
   const visible = nodes.filter(n => !hiddenNodes.has(n.id)).length;
-  const days = Math.max(1, Math.round((pct / 100) * 45));
   const mainEl = document.getElementById('tl-stats-main');
   const noteEl = document.getElementById('tl-stats-note');
-  if (mainEl) mainEl.textContent = `${visible} things built · ${days} day${days === 1 ? '' : 's'}`;
+  const currentDate = new Date(T_START + (pct / 100) * T_RANGE);
+  const convCount = Object.entries(CLAUDE_AI_DATA).reduce((sum, [ds, c]) =>
+    new Date(ds) <= currentDate ? sum + c : sum, 0);
+  const dateLabel = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  if (mainEl) mainEl.textContent = `${dateLabel} · ${visible} things built · ${convCount} conversations`;
   if (noteEl) {
     const atEnd = pct >= 99.5;
-    noteEl.textContent = atEnd ? 'built while working full-time' : '';
+    noteEl.textContent = atEnd ? '46 active days — all while working full-time' : '';
     noteEl.classList.toggle('visible', atEnd);
   }
 }
@@ -2170,22 +2308,47 @@ function updateTlPosition(pct) {
 }
 
 function buildTlMilestones() {
-  const c = document.getElementById('tl-milestones');
-  if (!c) return;
-  c.innerHTML = '';
+  const aiLayer   = document.getElementById('tl-ai-layer');
+  const dotsEl    = document.getElementById('tl-milestones');
+  const floatEl   = document.getElementById('tl-float-labels');
+  if (!aiLayer || !dotsEl || !floatEl) return;
+  aiLayer.innerHTML = '';
+  dotsEl.innerHTML  = '';
+  floatEl.innerHTML = '';
+
+  // AI activity bars (upper track)
+  const MAX_BAR_H = 16, MAX_COUNT = 28;
+  Object.entries(CLAUDE_AI_DATA).forEach(([dateStr, count]) => {
+    const pct = ((new Date(dateStr).getTime() - T_START) / T_RANGE) * 100;
+    if (pct < 0 || pct > 100.1) return;
+    const h = Math.max(2, Math.round((count / MAX_COUNT) * MAX_BAR_H));
+    const bar = document.createElement('div');
+    bar.className = 'tl-ai-bar';
+    bar.style.left = pct + '%';
+    bar.style.height = h + 'px';
+    aiLayer.appendChild(bar);
+  });
+
+  // Code build dots (lower track)
   MILESTONES.forEach(m => {
     const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
     const dot = document.createElement('div');
     dot.className = 'tl-dot' + (m.pulse ? ' pulse-dot' : '');
     dot.style.left = pct + '%';
-    c.appendChild(dot);
-    if (m.showLabel && m.label) {
-      const lbl = document.createElement('div');
-      lbl.className = 'tl-label' + (m.pulse ? ' pulse-label' : '');
-      lbl.style.left = pct + '%';
-      lbl.textContent = m.label;
-      c.appendChild(lbl);
-    }
+    dotsEl.appendChild(dot);
+  });
+
+  // Float-up milestone labels (annotation row)
+  FLOAT_MILESTONES.forEach(m => {
+    const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
+    const lbl = document.createElement('div');
+    lbl.className = 'tl-float-label' + (m.accent ? ' accent' : '');
+    lbl.style.left = pct + '%';
+    // Edge alignment: prevent overflow
+    if (pct < 6)       lbl.style.transform = 'none';
+    else if (pct > 94) lbl.style.transform = 'translateX(-100%)';
+    lbl.textContent = m.label;
+    floatEl.appendChild(lbl);
   });
 }
 
@@ -2211,9 +2374,19 @@ function initTlDrag() {
   document.addEventListener('touchend',  () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
 }
 
+function dismissTlHint() {
+  if (localStorage.getItem('tl-hint-seen')) return;
+  localStorage.setItem('tl-hint-seen', '1');
+  const lbl = document.getElementById('tl-hint-label');
+  if (!lbl) return;
+  lbl.classList.add('fading');
+  setTimeout(() => { lbl.style.display = 'none'; }, 650);
+}
+
 function toggleTimeline() {
   const bar = document.getElementById('timeline-bar');
   const btn = document.getElementById('timeline-toggle');
+  dismissTlHint();
   timelineOpen = !timelineOpen;
   if (timelineOpen) {
     bar.classList.add('visible');
@@ -2237,6 +2410,47 @@ function toggleTimeline() {
   }
 }
 window.toggleTimeline = toggleTimeline;
+
+// Timeline first-visit hint — auto-fade after 8s
+(function() {
+  if (localStorage.getItem('tl-hint-seen')) {
+    const lbl = document.getElementById('tl-hint-label');
+    if (lbl) lbl.style.display = 'none';
+    return;
+  }
+  setTimeout(() => {
+    const lbl = document.getElementById('tl-hint-label');
+    if (!lbl || localStorage.getItem('tl-hint-seen')) return;
+    lbl.classList.add('fading');
+    setTimeout(() => { if (lbl) lbl.style.display = 'none'; }, 650);
+  }, 8000);
+})();
+
+// Soul ring — three slow exhale cycles, then gone
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const soulN = nodes.find(n => n.id === 'soul-doc');
+  if (!soulN) return;
+  const soulGroup = node.filter(d => d.id === 'soul-doc');
+  const ringEl = soulGroup.insert('circle', '.hit-pad')
+    .attr('r', nodeR(soulN) + 2)
+    .attr('fill', 'none')
+    .attr('stroke', '#9a3a5a')
+    .attr('stroke-width', 0.8)
+    .attr('opacity', 0)
+    .style('pointer-events', 'none');
+  let cycles = 0;
+  function exhale() {
+    if (cycles >= 3) { ringEl.remove(); return; }
+    cycles++;
+    const base = nodeR(soulN) + 2;
+    ringEl.attr('r', base).attr('opacity', 0.55);
+    ringEl.transition().duration(2200).ease(d3.easeQuadOut)
+      .attr('r', base + 12).attr('opacity', 0)
+      .on('end', exhale);
+  }
+  setTimeout(exhale, 1400);
+})();
 
 window.closePanel = closePanel;
 window.togglePin = togglePin;
@@ -2285,17 +2499,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 <button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
 <button class="heart-btn" id="heart-btn" onclick="snapToHeart()" title="Gather">♡</button>
 <button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
+<span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 
 <div id="timeline-bar">
+  <button class="tl-close" onclick="toggleTimeline()" title="Close timeline">✕</button>
   <div class="tl-stats">
-    <span class="tl-stats-main" id="tl-stats-main">55 things built · 46 days</span>
+    <span class="tl-stats-main" id="tl-stats-main">57 things built · 275 conversations</span>
     <span class="tl-stats-note" id="tl-stats-note"></span>
   </div>
+  <div class="tl-annotation-row" id="tl-float-labels"></div>
   <div class="tl-track-wrap" id="tl-track-wrap">
+    <div id="tl-ai-layer"></div>
     <div class="tl-track"></div>
     <div class="tl-filled" id="tl-filled"></div>
     <div class="tl-milestones" id="tl-milestones"></div>
     <div class="tl-handle" id="tl-handle"></div>
+  </div>
+  <div class="tl-legend">
+    <span class="tl-legend-ai">● claude.ai</span>
+    <span class="tl-legend-code">● code</span>
   </div>
 </div>
 <!-- Password modal -->
