@@ -1955,7 +1955,7 @@ function openLightbox(d) {
   const excerptEl = document.getElementById('lb-excerpt');
   if (d.type === 'doc') {
     imgEl.style.display = 'none';
-    imgWrap.style.display = 'none';
+    imgWrap.style.display = ''; // keep wrap visible — excerpt lives inside it
     excerptEl.innerHTML = buildLinkedExcerpt(d.excerpt || '', d.id);
     excerptEl.classList.remove('visible');
     void excerptEl.offsetWidth;
@@ -2006,7 +2006,6 @@ function openLightbox(d) {
 }
 function closeLightbox() {
   document.getElementById('lightbox-overlay').classList.remove('visible');
-  document.getElementById('lb-img-wrap').style.display = '';
   currentNode = null;
   resetHighlight();
 }
