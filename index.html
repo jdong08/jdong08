@@ -2174,7 +2174,7 @@ const FLOAT_MILESTONES = [
 const NODE_BUILT = {
   'soul-doc':           new Date('2026-02-11'),
   'warrant-doc':        new Date('2026-02-11'),
-  'board-app':          new Date('2026-02-22'),
+  'board-app':          new Date('2026-03-25'),
   'conversation-tracker': new Date('2026-02-22'),
   'powder-post':        new Date('2026-02-22'),
   'client-dash':        new Date('2026-02-22'),
@@ -2213,7 +2213,7 @@ const NODE_BUILT = {
   'gcal-mcp':          new Date('2026-03-26'),
   'parent-newsletter': new Date('2026-03-26'),
   'instacart-analysis':new Date('2026-03-26'),
-  'prof-j':            new Date('2026-03-27'),
+  'prof-j':            new Date('2026-03-24'),
   'zhengming':         new Date('2026-03-27'),
   'copilot-expert':    new Date('2026-03-27'),
   'sox-expert':        new Date('2026-03-27'),
@@ -2284,7 +2284,10 @@ function updateTlStats(pct) {
   const visible = nodes.filter(n => !hiddenNodes.has(n.id)).length;
   const mainEl = document.getElementById('tl-stats-main');
   const noteEl = document.getElementById('tl-stats-note');
-  if (mainEl) mainEl.textContent = `${visible} things built · 275 conversations`;
+  const currentDate = new Date(T_START + (pct / 100) * T_RANGE);
+  const convCount = Object.entries(CLAUDE_AI_DATA).reduce((sum, [ds, c]) =>
+    new Date(ds) <= currentDate ? sum + c : sum, 0);
+  if (mainEl) mainEl.textContent = `${visible} things built · ${convCount} conversations`;
   if (noteEl) {
     const atEnd = pct >= 99.5;
     noteEl.textContent = atEnd ? '46 active days — all while working full-time' : '';
