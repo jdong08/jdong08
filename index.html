@@ -858,6 +858,10 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
         <div class="legend-dot" style="background:#3d6b7a"></div>
         <span>Output</span>
       </div>
+      <div class="legend-item" data-type="doc" onclick="toggleType('doc')">
+        <div class="legend-dot" style="background:#6b4f7a"></div>
+        <span>Document</span>
+      </div>
     </div>
     <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
@@ -877,6 +881,9 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   </div>
   <div class="mobile-legend-item" data-type="output" onclick="toggleType('output'); this.classList.toggle('inactive')">
     <div class="mobile-legend-dot" style="background:#3d6b7a"></div>Output
+  </div>
+  <div class="mobile-legend-item" data-type="doc" onclick="toggleType('doc'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#6b4f7a"></div>Doc
   </div>
 </div>
 
@@ -906,8 +913,8 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-close" onclick="closeAbout()">✕</button>
     <div class="about-title">Tessa OS</div>
     <div class="about-body">
-      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 24 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
-      <p>25 workflows handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
+      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+      <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
       <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor she works in.</p>
       <p>Everything in this graph is something Jay built and uses daily.</p>
     </div>
@@ -1205,7 +1212,7 @@ The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26.
 
 If this appears a fifth time, the rule is decorative.` },
 
-  { id: 'opening-doc', label: 'opening-shift', type: 'doc',
+  { id: 'opening-doc', label: '/opening-shift', type: 'skill',
     desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
     excerpt: `Orient before you work. Three steps, compact output. Nothing writes without Jay seeing it first.
 
@@ -1295,6 +1302,7 @@ const links = [
   { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Italian Cultural KB before every conversation — it holds the specific family and regional context she needs.' },
   { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for Jay\'s Shanghainese parents.' },
   { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
+  { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what Jay wants, but what the system rewards.' },
   { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and Jay\'s own character — essential for navigating the suocera relationship.' },
   // skill connections
   { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
@@ -1503,7 +1511,7 @@ setTimeout(() => dismissStartHint(), 5500);
 function dismissStartHint() {
   if (!startHintAlive) return;
   startHintAlive = false;
-  startHintG.transition().duration(600).style('opacity', 0).on('end', function() { d3.select(this).remove(); });
+  startHintG.transition().duration(600).style('opacity', 0);
 }
 
 sim.on('tick', () => {
@@ -1815,8 +1823,18 @@ function toggleAbout() {
   document.getElementById('about-overlay').classList.toggle('visible');
   document.getElementById('first-visit-hint').classList.remove('visible');
 }
+let startHintReshown = false;
 function closeAbout() {
   document.getElementById('about-overlay').classList.remove('visible');
+  if (!startHintAlive && !startHintReshown && soulNode && soulNode.x != null) {
+    startHintReshown = true;
+    const r = nodeR(soulNode);
+    startHintRect.attr('x', -48).attr('y', -(r + 36)).attr('width', 96).attr('height', 24);
+    startHintG.select('text').attr('y', -(r + 24));
+    startHintG.attr('transform', `translate(${soulNode.x},${soulNode.y})`);
+    startHintG.transition().duration(400).style('opacity', 1);
+    setTimeout(() => startHintG.transition().duration(700).style('opacity', 0), 3000);
+  }
 }
 
 function toggleProjects() {
