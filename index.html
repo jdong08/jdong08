@@ -1179,7 +1179,7 @@ const nodes = [
   { id: 'cosimo',          label: 'Cosimo',          type: 'agent',
     origin: 'Cosimo de\' Medici — the Florentine banker who funded the Renaissance.',
     desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.',
-    example: 'When I want to know if I can afford to take a sabbatical, or how long my savings would last, Cosimo runs the numbers.' },
+    example: 'When I want to model a major financial scenario — savings runway, long-term projections — Cosimo runs the numbers.' },
   { id: 'niccolo',         label: 'Niccolò',         type: 'agent',
     origin: 'Niccolò Machiavelli — the strategist who named power clearly, without apology.',
     desc: 'Career strategist — positioning, negotiation, interview coaching.',
@@ -1203,7 +1203,7 @@ const nodes = [
   { id: 'la-signora',      label: 'La Signora',      type: 'agent',
     origin: 'Italian for "the lady" — a formal term of respect. The teacher you rise for.',
     desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
-    example: 'I practice Italian every day to speak with my husband\'s family. La Signora is my conversation partner — correcting me, pushing me further, making it feel real.' },
+    example: 'I practice Italian every day. La Signora is my conversation partner — correcting me, pushing me further, making it feel real.' },
   { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
     origin: 'Leonardo da Vinci — the polymath who mastered every practical domain he touched.',
     desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
@@ -1211,7 +1211,7 @@ const nodes = [
   { id: 'lian',            label: 'Lian 连',         type: 'agent',
     origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
     desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
-    example: 'When I need to communicate with my parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
+    example: 'When I want to reach my parents in their language — not just the words but the feeling — Lian helps me get it right, the way a bilingual childhood friend would.' },
   { id: 'bo',              label: 'Bo 博',           type: 'agent',
     origin: '博 Bó — broad, learned, generous with knowledge.',
     desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
@@ -1234,7 +1234,7 @@ const nodes = [
     example: 'Nadia is the friend I call when I need to think out loud — no agenda, no decisions, just company.' },
   { id: 'work-researcher', label: 'Researcher',      type: 'agent',
     desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.',
-    example: 'When I need to produce a professional research report for a client or for work, Researcher does the research and formats it into a polished document.' },
+    example: 'When I need to produce a polished research report, Researcher handles the pipeline from search to formatted document.' },
   { id: 'copilot-expert',  label: 'Copilot Expert',  type: 'agent',
     desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.',
     example: 'When my clients use Microsoft\'s AI tools, Copilot Expert translates what I know into their environment.' },
@@ -1259,8 +1259,8 @@ const nodes = [
     example: 'I try on two options before a meeting. Azzedine has already seen what I\'ve been drawn to lately. He says: "The second one. The first one is performing."' },
   { id: 'cornelia',        label: 'Cornelia',        type: 'agent',
     origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
-    desc: 'Italian cultural bridge — my husband\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
-    example: 'When I can\'t tell if my mother-in-law is upset or just Italian, Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
+    desc: 'Italian cultural bridge — navigating my husband\'s family, the codes embedded in Italian domestic life, bella figura, what behavior actually signals beneath the surface.',
+    example: 'When the room shifts and I can\'t read why, Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
   { id: 'week-review',     label: '/week-review',    type: 'skill',
     desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
     example: 'Every Sunday, I review my week — what worked, what\'s still open, what comes next. At the end, it sends me a short letter with a challenge for the coming week.' },
@@ -1309,7 +1309,7 @@ const nodes = [
     example: 'Connected to my calendar — can schedule, find free time, and manage appointments.' },
   { id: 'drive-mcp',       label: 'Drive',           type: 'mcp',
     desc: 'File search and organization across Google Drive.',
-    example: 'Connected to Google Drive — can find and organize her files.' },
+    example: 'Connected to Google Drive — can find and organize my files.' },
   { id: 'playwright-mcp',  label: 'Playwright',      type: 'mcp',
     desc: 'Browser automation — research, testing, web scraping.',
     example: 'Can open a web browser and interact with websites — used for research, testing, and web-based tasks.' },
@@ -1375,7 +1375,7 @@ Worth naming: this session doesn't have an exit condition yet.
 
 This question has the shape of a validation ask — /challenge if you want the other side.
 
-You've mentioned the Cap One timeline three sessions in a row without setting a date. That's probably the thing.` },
+You've circled this same decision three sessions in a row without moving. That's probably the thing.` },
 
   { id: 'ecosystem-doc', label: 'ecosystem-map.md', type: 'doc',
     desc: 'The wiring diagram. Every agent, skill, and integration — what exists, what connects to what, what each piece does. Without it, Claude routes by guesswork or re-scans the directory every session. With it, the right specialist gets invoked without having to ask.',
@@ -1394,12 +1394,12 @@ DAILY (end of night, manual — once)
   /closing-shift            ← day brief, loop maintenance, tomorrow's anchor` },
 
   { id: 'thesis-doc', label: 'life_thesis.md', type: 'doc',
-    desc: 'The why. Civilizational resilience — why I\'m learning to fix a boiler, studying Italian, building a paper trail to Italy, keeping liquid assets. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
-    excerpt: `Civilizational resilience. Family, security, being untouchable across any version of society.
+    desc: 'The why. Civilizational resilience — why I\'m learning to fix a boiler, studying Italian, keeping options open across geographies. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
+    excerpt: `Civilizational resilience. Family, security, real options regardless of how the world changes.
 
-The thesis: build a life that holds regardless of what the system does. Not "succeed within the current order" but "be the kind of person who survives and protects her people through any order." Skills that have real-world value. Financial independence. Geographic optionality. Physical capability. Community.
+The thesis: build a life that holds regardless of what the system does. Skills with real-world value. Financial independence. Geographic optionality. Physical capability. Community.
 
-Not paranoia. Not an exit from society. The same rigor she applies to career and health, applied to civilizational uncertainty.` },
+Not paranoia. Not an exit from society. The same rigor applied to career and health, applied to long-horizon uncertainty.` },
 
   { id: 'loops-doc', label: 'OPEN_LOOPS.md', type: 'doc',
     desc: 'The ground truth. Every unresolved thread — urgent items, in-progress work, things said "later" to and captured. Without it, sessions start cold and things fall through cracks. With it, Claude knows what\'s live without me having to re-explain context every time.',
@@ -1415,11 +1415,9 @@ Session start: scan URGENT + In Progress. Rest on demand.` },
     desc: 'The correction record. Minerva session debriefs and pattern tracking — what was flagged, what changed, what keeps recurring. Without it, the same mistakes repeat. With it, behavior actually evolves across sessions instead of resetting.',
     excerpt: `Written by Minerva at the close of each session.
 
-THIS IS THE FOURTH /FEEDBACK ENTRY TO NAME THE DIRECTION-NOT-DESTINATION PATTERN.
+Patterns get named. Behavior tracked across weeks, not just sessions. When the same issue surfaces repeatedly, it gets escalated from guideline to enforcement mechanism.
 
-The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26. Four entries. Three of them were after the rule was added to CLAUDE.md. The rule's presence is not sufficient. The enforcement mechanism must fire at session open — not mid-session, not not at all.
-
-If this appears a fifth time, the rule is decorative.` },
+The log is what makes the system self-correcting rather than just self-reporting.` },
 
   { id: 'opening-doc', label: '/opening-shift', type: 'skill',
     desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — I have to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
@@ -1432,10 +1430,10 @@ Step 3: The Drop — surface any unswept items from the day before.
 One line per step. Nothing hidden.` },
   // ── Knowledge Bases ──
   { id: 'italian-kb',      label: 'Italian Cultural KB', type: 'doc',
-    desc: 'Companion reference for Cornelia — Italian family dynamics, regional etiquette, generational patterns, the suocera relationship, Florentine context. Not a guide to Italy; a guide to the specific world I married into.',
-    excerpt: `Pontassieve. Pelago. A family rooted in the Florentine east. What matters here isn't Italy in the abstract but the texture of this particular family: when to bring wine, how to address la suocera, what silence means at the table. Cornelia reads this before every conversation.` },
+    desc: 'Companion reference for Cornelia — Italian family dynamics, regional character, generational patterns, the embedded codes of belonging. Not a guide to Italy; a guide to the specific world I married into.',
+    excerpt: `A Tuscan family, not a Florentine postcard. What matters here isn't Italy in the abstract but the texture of this particular family — when to bring wine, what's expected at the table, what being present actually requires. Cornelia reads this before every conversation.` },
   { id: 'chinese-kb',      label: 'Chinese Cultural KB', type: 'doc',
-    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, what my parents expect vs. what they say, how to write in a voice that sounds like their daughter.',
+    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, and how to calibrate tone so every translation sounds like it actually came from me.',
     excerpt: `My parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from me — not from a machine trying to be polite.` },
   { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
     desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
@@ -1482,7 +1480,7 @@ const links = [
   { source: 'soul-doc',      target: 'cassandra',        label: 'soul.md tells Cassandra who she\'s actually talking to — without it, she\'s giving advice to a generic person.' },
   { source: 'soul-doc',      target: 'niccolo',          label: 'Niccolò reads soul.md to understand what kind of career fits who I actually am, not just what I\'ve done.' },
   { source: 'soul-doc',      target: 'confucius',        label: 'Confucius uses soul.md to calibrate depth — philosophy is engaged seriously here, not as intellectual decoration.' },
-  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the bicultural complexity actually lived, not just a surface description.' },
+  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the full picture of who I am across two cultures, not just a surface description.' },
   { source: 'warrant-doc',   target: 'cassandra',        label: 'claude_warrant.md tells Cassandra she has standing authorization to push — no hedging required.' },
   { source: 'warrant-doc',   target: 'niccolo',          label: 'Niccolò uses the warrant to give direct verdicts on career moves rather than presenting options neutrally.' },
   { source: 'ecosystem-doc', target: 'minerva',          label: 'ecosystem-map.md is Minerva\'s primary reference — she uses it to diagnose gaps and decide what to build.' },
@@ -1512,7 +1510,7 @@ const links = [
   { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for my Shanghainese parents.' },
   { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
   { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what I want, but what the system rewards.' },
-  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the suocera relationship.' },
+  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the family relationship well.' },
   // skill connections
   { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
   { source: 'capture-close', target: 'loops-doc',        label: '/capture-and-close writes artifacts and open items back to loops before ending the session.' },
