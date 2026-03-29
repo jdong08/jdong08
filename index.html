@@ -1047,10 +1047,6 @@ const nodes = [
   { id: 'the-drop',        label: 'The Drop',        type: 'skill',
     desc: 'Daily intake — a living Google Doc where Jay logs ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
     example: 'Jay notices the node graph scatters too fast. She drops a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
-  { id: 'telegram-log',    label: 'Telegram Log',    type: 'skill',
-    desc: 'Async message log — Jay sends herself voice notes and quick thoughts via Telegram throughout the day. Reviewed during opening-shift alongside The Drop.',
-    example: 'Jay has a thought while walking. She voice-memos it to herself on Telegram. It surfaces the next morning alongside everything else.' },
-
   { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
     desc: 'Email triage, drafting replies, thread search and labeling.',
     example: 'Connected to Jay\'s email — can search, draft replies, and organize her inbox.' },
@@ -1229,7 +1225,6 @@ const links = [
   { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who Jay actually is, not just what\'s on the list.' },
   // process workflows
   { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
-  { source: 'telegram-log',  target: 'opening-doc',      label: 'The Telegram log is Step 4 of opening-shift — voice notes and async thoughts from the day before.' },
 ];
 
 // Build adjacency map
