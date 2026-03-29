@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>jdong08 — Tessa OS</title>
+<meta name="description" content="Tessa OS — Jay's personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
+<meta name="robots" content="noindex, nofollow"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #fcf9f0;
+  font-family: 'Work Sans', -apple-system, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+
+/* ── Header ── */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+  padding-top: max(16px, env(safe-area-inset-top));
+  background: rgba(252, 249, 240, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(218, 192, 197, 0.25);
+  gap: 12px;
+}
+
+.header-left { display: flex; align-items: baseline; gap: 0; flex-shrink: 0; }
+
+.brand {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #9a3a5a;
+}
+.brand-sub {
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-left: 10px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Search */
+.search-input {
+  background: rgba(218, 192, 197, 0.12);
+  border: 1px solid rgba(218, 192, 197, 0.4);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 16px; /* prevents auto-zoom on mobile focus */
+  font-family: 'Work Sans', sans-serif;
+  color: #544246;
+  width: 110px;
+  outline: none;
+  transition: width 0.22s, border-color 0.15s, background 0.15s;
+  letter-spacing: 0.04em;
+}
+.search-input:focus {
+  width: 150px;
+  border-color: rgba(154, 58, 90, 0.35);
+  background: rgba(255,255,255,0.75);
+}
+.search-input::placeholder {
+  color: #b0a0a4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.58rem;
+}
+
+/* Filter legend toggles */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+.legend-item:hover { opacity: 0.7; }
+.legend-item.inactive { opacity: 0.28; }
+.legend-item.inactive .legend-dot { background: #b0a0a4 !important; }
+.legend-item.inactive span { text-decoration: line-through; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* About button */
+.about-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(218, 192, 197, 0.7);
+  background: rgba(252,249,240,0.85);
+  color: #877276;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-family: 'Work Sans', sans-serif;
+  box-shadow: 0 1px 4px rgba(28,28,23,0.07);
+}
+.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(154,58,90,0.4); }
+
+
+@media (max-width: 600px) {
+  .legend { display: none; }
+  .search-input { display: none; }
+}
+
+/* ── Graph ── */
+#graph-svg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+#graph-svg:active { cursor: grabbing; }
+
+.node-label {
+  font-size: 10px;
+  font-family: 'Work Sans', 'Noto Sans SC', sans-serif;
+  fill: #544246;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Detail Panel ── */
+#panel {
+  position: fixed;
+  top: 53px;
+  right: 0;
+  width: min(292px, 85vw);
+  height: calc(100vh - 53px);
+  height: calc(100dvh - 53px);
+  background: rgba(252, 249, 240, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(218, 192, 197, 0.4);
+  padding: 18px 22px 28px 24px;
+  z-index: 20;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow-y: auto;
+}
+#panel.visible { transform: translateX(0); }
+
+/* Panel drag handle */
+.panel-handle {
+  display: none;
+  width: 36px; height: 4px;
+  background: rgba(154,58,90,0.18);
+  border-radius: 999px;
+  margin: -4px auto 14px;
+  cursor: ns-resize;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  #panel {
+    top: auto; bottom: 0; right: 0; left: 0;
+    width: 100%; height: 42vh; height: 42dvh;
+    min-height: 100px; max-height: calc(100vh - 56px); max-height: calc(100dvh - 56px);
+    border-left: none;
+    border-top: 1px solid rgba(218, 192, 197, 0.45);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    display: flex; flex-direction: column;
+  }
+  #panel.visible { transform: translateY(0); }
+  .panel-handle { display: block; }
+  .hint { display: none; }
+
+  /* Mobile dock: top-right below header */
+  .projects-dock {
+    top: 60px; right: 16px;
+    bottom: auto; left: auto;
+    align-items: flex-end;
+  }
+  .projects-list { align-items: flex-end; }
+  .projects-list.open { max-height: 200px; }
+  /* Hide restore button on mobile — no dismiss means no restore needed */
+  .dock-restore { display: none !important; }
+}
+
+/* Dismiss button inside dock (mobile only) */
+.dock-dismiss {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #b0a0a4;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.dock-dismiss:hover { color: #9a3a5a; }
+@media (max-width: 600px) {
+  .dock-dismiss { display: none; }
+  .projects-toggle-row { display: flex; align-items: center; gap: 4px; }
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.panel-btn {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  background: transparent;
+  color: #877276;
+  transition: background 0.15s, color 0.15s;
+  font-family: 'Work Sans', sans-serif;
+}
+@media (max-width: 600px) {
+  .panel-btn { width: 44px; height: 44px; font-size: 1rem; }
+  .about-btn { width: 44px; height: 44px; font-size: 1rem; }
+  .about-close { width: 44px; height: 44px; font-size: 1.1rem; }
+  .lightbox-close { width: 44px; height: 44px; font-size: 1.1rem; }
+  .conn-tag { min-height: 44px; display: inline-flex; align-items: center; font-size: 0.75rem; padding: 6px 12px; }
+  .heart-btn { font-size: 18px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .private-lock-btn { font-size: 16px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .projects-toggle { min-height: 44px; padding: 8px 14px; font-size: 0.72rem; }
+  .project-link { min-height: 44px; padding: 8px 14px; }
+  .project-name { font-size: 0.82rem; }
+  .project-date { font-size: 0.65rem; }
+  .dock-dismiss { min-width: 44px; min-height: 44px; font-size: 1rem; }
+  .panel-desc { line-height: 1.8; }
+  .panel-name { font-size: 1.5rem; }
+  .node-label { font-size: 11px; }
+}
+.panel-btn:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.panel-btn.pinned { color: #9a3a5a; background: rgba(154,58,90,0.1); }
+
+.panel-type {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.panel-name {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.85rem;
+  line-height: 1.1;
+  color: #1c1c17;
+  margin-bottom: 12px;
+}
+.panel-desc {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: #544246;
+  margin-bottom: 16px;
+}
+.panel-example-wrap {
+  background: rgba(154, 58, 90, 0.04);
+  border-left: 2px solid rgba(154, 58, 90, 0.18);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+  display: none;
+}
+.panel-example-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9a3a5a;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.panel-example {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #544246;
+  font-style: italic;
+}
+.conn-heading {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-bottom: 8px;
+  display: none;
+}
+.conn-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.conn-tag {
+  font-size: 0.68rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.12s;
+  background: transparent;
+  font-family: 'Work Sans', sans-serif;
+}
+.conn-tag:hover { opacity: 0.65; transform: translateY(-1px); }
+
+/* ── About Overlay ── */
+.about-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 23, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.about-overlay.visible { opacity: 1; pointer-events: all; }
+.about-card {
+  background: #fcf9f0;
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  max-width: 440px;
+  width: calc(100% - 40px);
+  box-shadow: 0 24px 48px rgba(28,28,23,0.18);
+  position: relative;
+}
+.about-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none;
+  cursor: pointer;
+  color: #877276; font-size: 0.85rem;
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.about-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.about-title {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.6rem;
+  color: #9a3a5a;
+  margin-bottom: 16px;
+}
+.about-body {
+  font-size: 0.875rem;
+  line-height: 1.72;
+  color: #544246;
+  margin-bottom: 18px;
+}
+.about-body p + p { margin-top: 10px; }
+.about-footer {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+}
+
+/* ── Lightbox ── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 23, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+}
+.lightbox-overlay.visible { opacity: 1; pointer-events: all; }
+.lightbox-card {
+  background: #fcf9f0;
+  border-radius: 18px;
+  padding: 28px 28px 24px;
+  max-width: 820px;
+  width: calc(100% - 32px);
+  max-height: calc(100vh - 64px);
+  max-height: calc(100dvh - 64px);
+  box-shadow: 0 32px 64px rgba(28,28,23,0.22);
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  overflow: hidden;
+  position: relative;
+}
+.lightbox-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none;
+  cursor: pointer;
+  color: #877276; font-size: 0.85rem;
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.lightbox-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.lightbox-meta {
+  flex: 0 0 220px;
+  min-width: 0;
+}
+.lightbox-type {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #3d6b7a;
+  margin-bottom: 4px;
+}
+.lightbox-title {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  color: #1c1c17;
+  margin-bottom: 6px;
+}
+.lightbox-date {
+  font-size: 0.68rem;
+  color: #877276;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+.lightbox-desc {
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #544246;
+  margin-bottom: 18px;
+}
+.lightbox-made-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+.lightbox-made-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.lightbox-img-wrap {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(218,192,197,0.35);
+  max-height: calc(100vh - 128px);
+  max-height: calc(100dvh - 128px);
+  display: flex;
+  align-items: flex-start;
+}
+.lightbox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+/* Doc node reading surface */
+.lightbox-excerpt {
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 22px 26px 22px 24px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.77rem;
+  line-height: 1.85;
+  color: #4a3a50;
+  background: rgba(107, 79, 122, 0.045);
+  border-left: 2px solid rgba(107, 79, 122, 0.2);
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}
+.lightbox-excerpt.visible { display: block; }
+.lightbox-excerpt.visible::after {
+  content: '|';
+  color: rgba(107, 79, 122, 0.6);
+  animation: blink-cursor 0.8s step-end 3 forwards;
+}
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-excerpt.visible::after { animation: none; }
+}
+@media (max-width: 600px) {
+  .lightbox-card {
+    flex-direction: column;
+    padding: 20px 18px 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .lightbox-meta { flex: none; width: 100%; }
+  .lightbox-img-wrap { width: 100%; max-height: 35vh; border-radius: 8px; }
+}
+@media (max-width: 600px) and (orientation: landscape) {
+  .lightbox-card { flex-direction: row; max-height: calc(100dvh - 32px); }
+  .lightbox-meta { flex: 0 0 45%; }
+  .lightbox-img-wrap { max-height: none; }
+}
+
+/* ── Hint ── */
+.hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  color: #877276;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 20;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .hint { white-space: normal; text-align: center; max-width: 80vw; }
+}
+
+/* ── Projects Dock ── */
+.projects-dock {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
+}
+.projects-list.open { max-height: 160px; opacity: 1; }
+.project-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: rgba(252, 249, 240, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(218, 192, 197, 0.5);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+  box-shadow: 0 1px 6px rgba(28,28,23,0.06);
+}
+.project-link:hover {
+  background: rgba(255,255,255,0.96);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(28,28,23,0.10);
+}
+.project-link:hover .project-name { color: #9a3a5a; }
+.project-name {
+  font-size: 0.72rem;
+  font-family: 'Work Sans', sans-serif;
+  color: #544246;
+  transition: color 0.15s;
+}
+.project-date {
+  font-size: 0.58rem;
+  color: #b0a0a4;
+  letter-spacing: 0.04em;
+  font-family: 'Work Sans', sans-serif;
+}
+.projects-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: rgba(252, 249, 240, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(218, 192, 197, 0.5);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  font-family: 'Work Sans', sans-serif;
+  transition: color 0.15s;
+  box-shadow: 0 1px 6px rgba(28,28,23,0.06);
+  white-space: nowrap;
+  border: none;
+  border: 1px solid rgba(218, 192, 197, 0.5);
+}
+.projects-toggle:hover { color: #9a3a5a; }
+.toggle-arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
+.projects-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+/* ── Heart Gather Button ── */
+.heart-btn {
+  position: fixed; bottom: 20px; left: 50px; z-index: 20;
+  background: none; border: none; padding: 0;
+  cursor: pointer; font-size: 13px; opacity: 0.28;
+  transition: opacity 0.2s, transform 0.15s;
+  line-height: 1;
+}
+.heart-btn:hover { opacity: 0.7; transform: scale(1.25); }
+.heart-btn.beating {
+  animation: heartbeat 0.55s ease-in-out 3;
+}
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); }
+  40% { transform: scale(1.4); }
+  60% { transform: scale(1.15); }
+}
+
+/* ── Private Lock Button ── */
+.private-lock-btn {
+  position: fixed; bottom: 20px; left: 24px; z-index: 20;
+  background: none; border: none; padding: 0;
+  cursor: pointer; font-size: 11px; opacity: 0.3;
+  transition: opacity 0.2s;
+}
+.private-lock-btn:hover { opacity: 0.7; }
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(30,20,15,0.5);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100;
+  align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal-box { background: #faf7f4; border-radius: 20px; padding: 32px 28px; width: min(270px, 80vw);
+  box-shadow: 0 24px 64px rgba(20,10,5,0.22); display: flex; flex-direction: column;
+  align-items: center; gap: 16px; }
+.modal-icon { font-size: 26px; opacity: 0.45; }
+.modal-label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(74,82,40,0.45); }
+.modal-input { width: 100%; background: #EDD9C0; border: none; border-radius: 10px;
+  padding: 12px 16px; font-size: 16px; /* prevents auto-zoom on mobile focus */ color: #3a3020; text-align: center;
+  letter-spacing: 0.08em; outline: none; font-family: inherit; transition: box-shadow 0.2s; }
+.modal-input:focus { box-shadow: 0 0 0 2px rgba(110,51,37,0.25); }
+.modal-input.shake { animation: shake 0.35s ease; box-shadow: 0 0 0 2px rgba(180,50,50,0.3); }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+.modal-enter-btn { width: 100%; padding: 12px; border-radius: 999px;
+  background: linear-gradient(135deg,#6e3325,#8b4a3a); color: white; font-size: 0.85rem;
+  font-weight: 600; border: none; cursor: pointer; letter-spacing: 0.05em; font-family: inherit; }
+.modal-cancel-btn { font-size: 0.75rem; color: rgba(74,82,40,0.35); cursor: pointer;
+  background: none; border: none; font-family: inherit; letter-spacing: 0.04em; }
+.modal-cancel-btn:hover { color: rgba(74,82,40,0.65); }
+
+/* ── Mobile Foundation ── */
+button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .legend-item {
+  touch-action: manipulation; /* prevents double-tap zoom */
+}
+
+/* Active state feedback for touch */
+@media (max-width: 600px) {
+  button:active, .conn-tag:active, .project-link:active, .legend-item:active {
+    opacity: 0.6;
+    transition: opacity 0.05s;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Safe area insets for bottom-positioned elements */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .hint { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .heart-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .private-lock-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .projects-dock { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  @media (max-width: 600px) {
+    #panel { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+  }
+}
+
+/* ── Mobile Color Legend ── */
+.mobile-legend {
+  display: none;
+}
+@media (max-width: 600px) {
+  .mobile-legend {
+    display: flex;
+    gap: 14px;
+    padding: 5px 16px 6px;
+    background: rgba(252,249,240,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
+    top: 53px;
+    left: 0; right: 0;
+    z-index: 15;
+    justify-content: center;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #877276;
+    border-bottom: 1px solid rgba(218,192,197,0.22);
+  }
+  .mobile-legend-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .mobile-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .mobile-legend-item.inactive { opacity: 0.3; }
+  .mobile-legend-item.inactive .mobile-legend-dot { background: #b0a0a4 !important; }
+}
+
+/* ── Link Tooltip ── */
+.link-tooltip {
+  position: fixed;
+  z-index: 80;
+  background: rgba(28,28,23,0.82);
+  color: #f5f0e8;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 6px 10px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  max-width: 220px;
+  white-space: normal;
+}
+.link-tooltip.visible { opacity: 1; }
+
+/* ── Start-here hint (soul.md) ── */
+.start-hint-text {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: #9a3a5a;
+  pointer-events: none;
+}
+
+/* ── Panel name origin ── */
+.panel-origin {
+  font-size: 0.73rem;
+  color: #9a7a80;
+  font-style: italic;
+  margin-top: -10px;
+  margin-bottom: 16px;
+  padding-left: 2px;
+  display: none;
+}
+
+/* ── Timeline Scrubber ── */
+.timeline-toggle {
+  position: fixed; bottom: 20px; left: 84px; z-index: 20;
+  background: none; border: none; padding: 0;
+  cursor: pointer; font-size: 14px; opacity: 0.28;
+  transition: opacity 0.2s, transform 0.15s;
+  line-height: 1; color: #544246;
+  touch-action: manipulation;
+}
+.timeline-toggle:hover { opacity: 0.7; }
+.timeline-toggle.active { opacity: 0.88; color: #9a3a5a; }
+
+#timeline-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 25;
+  background: rgba(252, 249, 240, 0.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(218, 192, 197, 0.3);
+  padding: 10px 40px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#timeline-bar.visible { transform: translateY(0); }
+
+.tl-stats {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.tl-stats-main {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+}
+.tl-stats-note {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: #b0a0a4;
+  margin-top: 2px;
+  font-style: italic;
+  min-height: 0.85em;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.tl-stats-note.visible { opacity: 1; }
+
+.tl-track-wrap {
+  position: relative;
+  height: 36px;
+  cursor: pointer;
+}
+.tl-track {
+  position: absolute;
+  top: 11px; left: 0; right: 0;
+  height: 1px;
+  background: rgba(218, 192, 197, 0.5);
+}
+.tl-filled {
+  position: absolute;
+  top: 11px; left: 0;
+  height: 1px;
+  background: #9a3a5a;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.65;
+}
+.tl-milestones {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tl-dot {
+  position: absolute;
+  top: 8px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(218,192,197,0.9);
+  transform: translateX(-50%);
+}
+.tl-dot.pulse-dot {
+  width: 8px; height: 8px;
+  top: 7px;
+  background: #9a3a5a;
+  animation: tl-pulse 2.2s ease-in-out infinite;
+}
+@keyframes tl-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(154,58,90,0.55); }
+  50%      { box-shadow: 0 0 0 7px rgba(154,58,90,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-dot.pulse-dot { animation: none; }
+}
+.tl-label {
+  position: absolute;
+  top: 18px;
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b0a0a4;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.tl-label.pulse-label { color: #9a3a5a; font-weight: 600; }
+
+.tl-handle {
+  position: absolute;
+  top: 6px;
+  width: 11px; height: 11px;
+  background: #9a3a5a;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  cursor: grab;
+  z-index: 3;
+  box-shadow: 0 0 0 3px rgba(154,58,90,0.15);
+  touch-action: none;
+  transition: box-shadow 0.15s;
+}
+.tl-handle:hover, .tl-handle.dragging {
+  cursor: grabbing;
+  box-shadow: 0 0 0 6px rgba(154,58,90,0.2);
+}
+
+@media (max-width: 600px) {
+  #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .timeline-toggle { left: 80px; }
+  .tl-label { display: none; }
+  .tl-label.pulse-label { display: block; }
+}
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+/* ── Excerpt intra-doc links ── */
+.excerpt-link {
+  color: #9a3a5a;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(154,58,90,0.5);
+  font-style: inherit;
+}
+.excerpt-link:hover {
+  text-decoration-style: solid;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="brand">jdong08</span>
+    <span class="brand-sub">Tessa OS</span>
+  </div>
+  <div class="header-right">
+    <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
+    <div class="legend">
+      <div class="legend-item" data-type="agent" onclick="toggleType('agent')">
+        <div class="legend-dot" style="background:#9a3a5a"></div>
+        <span>Agent</span>
+      </div>
+      <div class="legend-item" data-type="skill" onclick="toggleType('skill')">
+        <div class="legend-dot" style="background:#53643a"></div>
+        <span>Skill</span>
+      </div>
+      <div class="legend-item" data-type="mcp" onclick="toggleType('mcp')">
+        <div class="legend-dot" style="background:#765700"></div>
+        <span>Integration</span>
+      </div>
+      <div class="legend-item" data-type="output" onclick="toggleType('output')">
+        <div class="legend-dot" style="background:#3d6b7a"></div>
+        <span>Output</span>
+      </div>
+      <div class="legend-item" data-type="doc" onclick="toggleType('doc')">
+        <div class="legend-dot" style="background:#6b4f7a"></div>
+        <span>Document</span>
+      </div>
+    </div>
+    <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
+  </div>
+</header>
+
+
+<!-- Mobile color legend (hidden on desktop via CSS) -->
+<div class="mobile-legend" id="mobile-legend">
+  <div class="mobile-legend-item" data-type="agent" onclick="toggleType('agent'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#9a3a5a"></div>Agent
+  </div>
+  <div class="mobile-legend-item" data-type="skill" onclick="toggleType('skill'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#53643a"></div>Skill
+  </div>
+  <div class="mobile-legend-item" data-type="mcp" onclick="toggleType('mcp'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#765700"></div>Integration
+  </div>
+  <div class="mobile-legend-item" data-type="output" onclick="toggleType('output'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#3d6b7a"></div>Output
+  </div>
+  <div class="mobile-legend-item" data-type="doc" onclick="toggleType('doc'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#6b4f7a"></div>Doc
+  </div>
+</div>
+
+<svg id="graph-svg"></svg>
+<div class="link-tooltip" id="link-tooltip"></div>
+
+<div id="panel">
+  <div class="panel-handle" id="panel-handle"></div>
+  <div class="panel-actions">
+    <button class="panel-btn" id="pin-btn" onclick="togglePin()" title="Pin highlight">⊙</button>
+    <button class="panel-btn" onclick="closePanel()" title="Close">✕</button>
+  </div>
+  <div class="panel-type" id="panel-type"></div>
+  <div class="panel-name" id="panel-name"></div>
+  <div class="panel-desc" id="panel-desc"></div>
+  <div class="panel-origin" id="panel-origin"></div>
+  <div class="panel-example-wrap" id="panel-example-wrap">
+    <div class="panel-example-label">In practice</div>
+    <div class="panel-example" id="panel-example"></div>
+  </div>
+  <div class="conn-heading" id="conn-heading">Connected to</div>
+  <div class="conn-list" id="conn-list"></div>
+</div>
+
+<div class="about-overlay" id="about-overlay" onclick="closeAbout()">
+  <div class="about-card" onclick="event.stopPropagation()">
+    <button class="about-close" onclick="closeAbout()">✕</button>
+    <div class="about-title">Tessa OS</div>
+    <div class="about-body">
+      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+      <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
+      <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor she works in.</p>
+      <p>Everything in this graph is something Jay built and uses daily.</p>
+    </div>
+    <div class="about-footer">Click any node to explore.</div>
+  </div>
+</div>
+
+<div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+  <div class="lightbox-card" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-meta">
+      <div class="lightbox-type" id="lb-type">Output</div>
+      <div class="lightbox-title" id="lb-title"></div>
+      <div class="lightbox-date" id="lb-date"></div>
+      <div class="lightbox-desc" id="lb-desc"></div>
+      <div class="lightbox-made-label" id="lb-made-label">Made with</div>
+      <div class="lightbox-made-tags" id="lb-made"></div>
+    </div>
+    <div class="lightbox-img-wrap" id="lb-img-wrap">
+      <img class="lightbox-img" id="lb-img" src="" alt=""/>
+      <div class="lightbox-excerpt" id="lb-excerpt"></div>
+    </div>
+  </div>
+</div>
+
+<div class="hint" id="hint">hover to explore · click to open · scroll to zoom</div>
+
+<button class="dock-restore" id="dock-restore" style="display:none" onclick="restoreDock()">Projects ▸</button>
+
+<div class="projects-dock" id="projects-dock">
+  <div class="projects-list" id="projects-list">
+    <a class="project-link" href="agent-redesign.html">
+      <span class="project-name">multi-agent ecosystem redesign</span>
+      <span class="project-date">Mar 2026 · case study</span>
+    </a>
+    <a class="project-link" href="conversation-tracker.html">
+      <span class="project-name">people i talk to</span>
+      <span class="project-date">Feb 2026 · archived</span>
+    </a>
+    <a class="project-link" href="powder-post.html">
+      <span class="project-name">powder post</span>
+      <span class="project-date">Feb 2026 · archived</span>
+    </a>
+    <a class="project-link" href="client-dash.html">
+      <span class="project-name">client dash</span>
+      <span class="project-date">Feb 2026 · archived</span>
+    </a>
+  </div>
+  <div class="projects-toggle-row">
+    <button class="projects-toggle" id="projects-toggle" onclick="toggleProjects()">
+      Projects <span class="toggle-arrow">▾</span>
+    </button>
+    <button class="dock-dismiss" onclick="dismissDock()" title="Hide">✕</button>
+  </div>
+</div>
+
+<script>
+const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700', output: '#3d6b7a', doc: '#6b4f7a' };
+const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 };
+
+const nodes = [
+  { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
+    origin: 'From Greek mythology — the prophet who always saw true, and was never believed.',
+    desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.',
+    example: 'When Jay is facing a big life decision — a new job, where to live — Cassandra helps her think it through clearly, without letting fear or wishful thinking take over.' },
+  { id: 'cosimo',          label: 'Cosimo',          type: 'agent',
+    origin: 'Cosimo de\' Medici — the Florentine banker who funded the Renaissance.',
+    desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.',
+    example: 'When Jay wants to know if she can afford to take a sabbatical, or how long her savings would last, Cosimo runs the numbers.' },
+  { id: 'niccolo',         label: 'Niccolò',         type: 'agent',
+    origin: 'Niccolò Machiavelli — the strategist who named power clearly, without apology.',
+    desc: 'Career strategist — positioning, negotiation, interview coaching.',
+    example: 'When Jay is preparing for an interview or figuring out how to negotiate her salary, Niccolò helps her decide what to say and how to say it.' },
+  { id: 'marco',           label: 'Marco',           type: 'agent',
+    origin: 'Marco Polo — the Venetian who navigated the world before maps.',
+    desc: 'Travel planning — logistics, geography, sabbatical recon.',
+    example: 'When Jay is planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what Conan needs, where to stay.' },
+  { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
+    origin: 'Professor Flitwick from Harry Potter — small, meticulous, teaches magic as craft.',
+    desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
+    example: 'When Jay wants to understand what\'s happening in AI — new models, what different companies are doing — Flitwick explains it the way a knowledgeable friend would.' },
+  { id: 'prof-j',          label: 'Prof. Jiang',     type: 'agent',
+    origin: 'Modeled on transcripts of a real person — Jiang Xueqin, educator and geopolitical writer. His voice is drawn from his actual words.',
+    desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.',
+    example: 'Prof. Jiang helps Jay understand why things are happening in the world — what history says about the present, and what\'s likely to come next.' },
+  { id: 'confucius',       label: 'Confucius 孔子',  type: 'agent',
+    origin: '孔子 Kǒng Zǐ — the teacher whose questions are still unanswered.',
+    desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.',
+    example: 'When Jay is wrestling with an ethical question — or asking what really matters — Confucius helps her think it through with philosophical depth.' },
+  { id: 'la-signora',      label: 'La Signora',      type: 'agent',
+    origin: 'Italian for "the lady" — a formal term of respect. The teacher you rise for.',
+    desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
+    example: 'Jay practices Italian every day to speak with her husband\'s family. La Signora is her conversation partner — correcting her, pushing her further, making it feel real.' },
+  { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
+    origin: 'Leonardo da Vinci — the polymath who mastered every practical domain he touched.',
+    desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
+    example: 'Leonardo helps Jay think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
+  { id: 'lian',            label: 'Lian 连',         type: 'agent',
+    origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
+    desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
+    example: 'When Jay needs to communicate with her parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
+  { id: 'bo',              label: 'Bo 博',           type: 'agent',
+    origin: '博 Bó — broad, learned, generous with knowledge.',
+    desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
+    example: 'When Jay wants to learn something new — a certification, a language, a skill — Bo designs the plan: what to study, in what order, with what materials.' },
+  { id: 'ada',             label: 'Ada',             type: 'agent',
+    origin: 'Ada Lovelace — the first programmer, who wrote algorithms before computers existed.',
+    desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.',
+    example: 'Before Jay builds anything new, Ada reviews the plan and finds the gaps — the things that weren\'t thought through yet.' },
+  { id: 'minerva',         label: 'Minerva',         type: 'agent',
+    origin: 'Minerva — Roman goddess of wisdom and strategic craft. Daughter of Jupiter, born fully armored.',
+    desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.',
+    example: 'Minerva is the strategic advisor for the whole system — deciding what to build, what to fix, what to leave alone.' },
+  { id: 'amelie',          label: 'Amélie',          type: 'agent',
+    origin: 'From the French film Amélie — about finding beauty in small, hidden things. Precision over decoration.',
+    desc: 'UX delight — intentional moments after UI/UX changes. Precision, not decoration.',
+    example: 'After any design change, Amélie looks for the small detail that makes something feel alive — not just correct, but delightful.' },
+  { id: 'nadia',           label: 'Nadia',           type: 'agent',
+    origin: 'Chosen for its ordinariness — a name that doesn\'t perform. The friend who just shows up.',
+    desc: 'Peer — think out loud, vent, process without it becoming a session.',
+    example: 'Nadia is the friend Jay calls when she needs to think out loud — no agenda, no decisions, just company.' },
+  { id: 'work-researcher', label: 'Researcher',      type: 'agent',
+    desc: 'Research pipeline — branded HTML + PDF reports for professional use, saved to Drive.',
+    example: 'When Jay needs to produce a professional research report for a client or for work, Researcher does the research and formats it into a polished document.' },
+  { id: 'copilot-expert',  label: 'Copilot Expert',  type: 'agent',
+    desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.',
+    example: 'When Jay\'s clients use Microsoft\'s AI tools, Copilot Expert translates what Jay knows into their environment.' },
+  { id: 'sox-expert',      label: 'SOX Expert',      type: 'agent',
+    desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.',
+    example: 'Helps Jay think through financial controls and audit questions — the specialized work she does at Protiviti.' },
+  { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
+    origin: 'Named for function — closes what\'s open so Jay doesn\'t have to carry it.',
+    desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
+    example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
+  { id: 'zhengming',       label: 'Zhengming 正名',  type: 'agent',
+    origin: '正名 Zhèngmíng — Confucian concept: to rectify names, so things can be what they actually are.',
+    desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.',
+    example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
+  { id: 'grace',           label: 'Grace',           type: 'agent',
+    origin: 'Grace Paley — the writer who paid attention to small things until they told her everything.',
+    desc: 'Aesthetic watcher — logs what Jay finds beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
+    example: 'Jay sends a photo she can\'t stop looking at. Grace logs it. Three weeks later, after enough inputs, Grace says: "You keep returning to things that are worn, earned, impermanent. That\'s the throughline."' },
+  { id: 'azzedine',        label: 'Azzedine',        type: 'agent',
+    origin: 'Azzedine Alaïa — the couturier who built garments that made the body say what it means.',
+    desc: 'Aesthetic executor — outfit verdicts, purchase decisions, how Jay appears in the world. Reads Grace\'s log before every response. Gives verdicts, not suggestions.',
+    example: 'Jay tries on two options before a meeting. Azzedine has already seen what she\'s been drawn to lately. He says: "The second one. The first one is performing."' },
+  { id: 'cornelia',        label: 'Cornelia',        type: 'agent',
+    origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
+    desc: 'Italian cultural bridge — Andrea\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
+    example: 'Jay can\'t tell if Andrea\'s mother is upset or just Italian. Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
+  { id: 'week-review',     label: '/week-review',    type: 'skill',
+    desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
+    example: 'Every Sunday, Jay reviews her week — what worked, what\'s still open, what comes next. At the end, it sends her a short letter with a challenge for the coming week.' },
+  { id: 'closing-shift',   label: '/closing-shift',  type: 'skill',
+    desc: 'Daily wrap — day brief, loop maintenance, learning journal, tomorrow\'s anchor.',
+    example: 'At the end of each day, Jay closes out — a brief review of what happened, what\'s left open, and what to focus on tomorrow.' },
+  { id: 'feedback-skill',  label: '/feedback',       type: 'skill',
+    desc: 'Session debrief — longitudinal pattern tracking via Minerva.',
+    example: 'After a significant work session, this reviews what went well and what could have been better — building a record over time so patterns become visible.' },
+  { id: 'board-skill',     label: '/board',          type: 'skill',
+    desc: 'Board of Directors — multi-domain decisions requiring multiple specialists simultaneously.',
+    example: 'When Jay faces a decision too big for one perspective, the full board of advisors weighs in at once — life, money, career, philosophy, all in one conversation.' },
+  { id: 'ecosystem-audit', label: '/ecosystem-audit',type: 'skill',
+    desc: 'Full health audit — agents, skills, MCPs, costs, gaps. Routes to Minerva.',
+    example: 'A health check for the whole system — are all the pieces working? Is anything broken, redundant, or missing?' },
+  { id: 'research-skill',  label: '/research',       type: 'skill',
+    desc: 'RIPER deep research — personal topics to structured markdown notes and optional PDF.',
+    example: 'Deep research on any topic — produces organized notes and an optional formatted report.' },
+  { id: 'challenge-skill', label: '/challenge',      type: 'skill',
+    desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.',
+    example: 'When Jay thinks she\'s made up her mind, this argues the strongest case against her position — so she knows exactly what she\'s deciding.' },
+  { id: 'translate-skill', label: '/translate',      type: 'skill',
+    desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
+    example: 'When Jay wants to share something with her parents in Chinese, this translates the document and makes sure it sounds like it came from Jay — the way a daughter would actually say it.' },
+  { id: 'curriculum-skill',label: '/curriculum',     type: 'skill',
+    desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.',
+    example: 'Designs a complete learning plan: what to study, what materials to use, how to fit it into a schedule.' },
+  { id: 'ai-study-brief',  label: '/ai-study-brief', type: 'skill',
+    desc: 'AI learning prioritization — what to study next given active certifications.',
+    example: 'Before an AI learning session, this tells Jay what\'s most important to focus on given what she\'s currently working toward.' },
+  { id: 'check-in-skill',  label: '/check-in',       type: 'skill',
+    desc: 'Lightweight pulse check — two modes: status on a specific project, or stepping back to see the full picture. Max 5 exchanges, stays small.',
+    example: 'Jay wants to know where she stands on AAIA prep without opening a full session. Check-in reads the relevant loop and gives her a 3-line status.' },
+  { id: 'capture-close',  label: '/capture-and-close', type: 'skill',
+    desc: 'Session close ritual — names the artifact, writes to the capture-close log, clears the air. Distinct from /feedback (Minerva) and /closing-shift (end-of-day).',
+    example: 'We just built something real. Capture-and-close names it, logs it, and closes the session so the next thing can start clean.' },
+  // ── Process workflows ──
+  { id: 'the-drop',        label: 'The Drop',        type: 'skill',
+    desc: 'Daily intake — a living Google Doc where Jay logs ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
+    example: 'Jay notices the node graph scatters too fast. She drops a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
+  { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
+    desc: 'Email triage, drafting replies, thread search and labeling.',
+    example: 'Connected to Jay\'s email — can search, draft replies, and organize her inbox.' },
+  { id: 'gcal-mcp',        label: 'Calendar',        type: 'mcp',
+    desc: 'Scheduling, finding free windows, RSVPs, calendar management.',
+    example: 'Connected to Jay\'s calendar — can schedule, find free time, and manage her appointments.' },
+  { id: 'drive-mcp',       label: 'Drive',           type: 'mcp',
+    desc: 'File search and organization across Google Drive.',
+    example: 'Connected to Google Drive — can find and organize her files.' },
+  { id: 'playwright-mcp',  label: 'Playwright',      type: 'mcp',
+    desc: 'Browser automation — research, testing, web scraping.',
+    example: 'Can open a web browser and interact with websites — used for research, testing, and web-based tasks.' },
+  { id: 'nimbalyst-mcp',   label: 'Nimbalyst',       type: 'mcp',
+    desc: 'Editor-native tools: charts, diagrams, excalidraw, mockups, git commits, session tracking.',
+    example: 'Connected to the editor Jay works in — can create charts, diagrams, commit code, and track sessions.' },
+
+  // ── Real outputs ──
+  { id: 'parent-newsletter', label: 'Parents Newsletter', type: 'output',
+    desc: 'Monthly AI briefing written for Jay\'s Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
+    example: 'A newsletter explaining AI breakthroughs to Jay\'s parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
+    screenshot: 'artifacts/parent-newsletter.png',
+    made: ['flitwick', 'nadia', 'lian'],
+    date: 'March 2026' },
+  { id: 'instacart-analysis', label: 'Instacart Analysis', type: 'output',
+    desc: '5-year spending analysis across 139 orders. Tracked inflation on recurring items, behavioral shifts by year, fee evolution, and shrinkflation signals — all from live receipt data.',
+    example: 'Jay uploaded 5 years of Instacart receipts and asked what it said about her spending. The output was a full research report: data tables, price tracking across every recurring item, and behavioral analysis by year.',
+    screenshot: 'artifacts/instacart-analysis.png',
+    made: ['cosimo'],
+    date: 'March 2026' },
+  { id: 'board-app', label: 'The Board App', type: 'output',
+    desc: 'A custom web app giving Jay conversational access to 13 specialist advisors. Built from scratch — design, frontend, and API integration.',
+    example: 'Jay wanted a visual interface for her advisor council. In one session, Claude built a full dark-mode web app with advisor cards, portraits, and a live chat interface wired to each agent.',
+    screenshot: 'artifacts/board-app.png',
+    made: ['minerva', 'ada'],
+    date: 'February 2026' },
+  { id: 'ai-news', label: 'AI Intelligence Brief', type: 'output',
+    desc: 'Weekly AI news report covering frontier model releases, policy shifts, and professional relevance. Sourced live, synthesized by Flitwick, formatted for mobile reading.',
+    example: 'Every week, Flitwick searches the AI landscape and writes a briefing Jay can read on her phone — covering what shipped, what it means for her work, and what to watch.',
+    screenshot: 'artifacts/ai-news.png',
+    made: ['flitwick'],
+    date: 'March 2026' },
+
+  // ── Substrate documents ──
+  { id: 'soul-doc', label: 'soul.md', type: 'doc',
+    desc: 'The identity file. Every agent reads this before responding — it\'s what gives the system coherence across sessions and specialists. Without it, Claude is a chatbot. With it, it knows who it\'s talking to.',
+    excerpt: `The file that makes the difference between a system that restarts from zero every session and one that remembers what kind of thinking you're here for.
+
+Character, values, operating principles. Not a list — a frame. Agents read this to calibrate: what's worth saying, what's not, how to push without overstepping.` },
+
+  { id: 'warrant-doc', label: 'claude_warrant.md', type: 'doc',
+    desc: 'Standing authorization. Grants Claude permission to speak — to name things unprompted, surface observations mid-session, be direct without hedging. Without it, Claude defaults to passive assistant mode: waits to be asked, softens edges, performs helpfulness instead of delivering it.',
+    excerpt: `Standing authorization for Claude to say things — observations, patterns, reactions, humor — when they seem worth saying. Not every observation needs a formal trigger. Not everything needs a rule. If it would be worth saying to a friend, a student, a boss, or a collaborator: say it.
+
+The only real filter — is it useful to say, not just true?
+
+Worth naming: this session doesn't have an exit condition yet.
+
+This question has the shape of a validation ask — /challenge if you want the other side.
+
+You've mentioned the Cap One timeline three sessions in a row without setting a date. That's probably the thing.` },
+
+  { id: 'ecosystem-doc', label: 'ecosystem-map.md', type: 'doc',
+    desc: 'The wiring diagram. Every agent, skill, and integration — what exists, what connects to what, what each piece does. Without it, Claude routes by guesswork or re-scans the directory every session. With it, the right specialist gets invoked before Jay has to ask.',
+    excerpt: `SUNDAY
+  /week-review              ← full life retrospective
+    → jay-sync              ← updates profile from week's signals
+    → prof-j letter         ← reads intake + past letters, writes challenge
+    → INSIGHTS_TODOS review ← all unchecked items; stale/recurring flagged
+    → /ecosystem-audit      ← full health check
+
+DAILY (any session, automatic)
+  session_start.md loads    ← compiled context
+  loop-closer (background)  ← closes what it can without you
+
+DAILY (end of night, manual — once)
+  /closing-shift            ← day brief, loop maintenance, tomorrow's anchor` },
+
+  { id: 'thesis-doc', label: 'life_thesis.md', type: 'doc',
+    desc: 'The why. Civilizational resilience — why Jay is learning to fix a boiler, studying Italian, building a paper trail to Italy, keeping liquid assets. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
+    excerpt: `Civilizational resilience. Family, security, being untouchable across any version of society.
+
+The thesis: build a life that holds regardless of what the system does. Not "succeed within the current order" but "be the kind of person who survives and protects her people through any order." Skills that have real-world value. Financial independence. Geographic optionality. Physical capability. Community.
+
+Not paranoia. Not an exit from society. The same rigor she applies to career and health, applied to civilizational uncertainty.` },
+
+  { id: 'loops-doc', label: 'OPEN_LOOPS.md', type: 'doc',
+    desc: 'The ground truth. Every unresolved thread — urgent items, in-progress work, things said "later" to and captured. Without it, sessions start cold and things fall through cracks. With it, Claude knows what\'s live without Jay having to re-explain context every time.',
+    excerpt: `If it's unresolved, it's here.
+
+Every suggestion, action item, open question, or decision that doesn't get closed in a session gets written here before the session ends. No exceptions. Things can be closed later. They cannot be recovered if never captured.
+
+File split: OPEN_LOOPS.md = life. AI_LOOPS.md = ecosystem.
+
+Session start: scan URGENT + In Progress. Rest on demand.` },
+
+  { id: 'feedback-doc', label: 'feedback_log.md', type: 'doc',
+    desc: 'The correction record. Minerva session debriefs and pattern tracking — what was flagged, what changed, what keeps recurring. Without it, the same mistakes repeat. With it, behavior actually evolves across sessions instead of resetting.',
+    excerpt: `Written by Minerva at the close of each session.
+
+THIS IS THE FOURTH /FEEDBACK ENTRY TO NAME THE DIRECTION-NOT-DESTINATION PATTERN.
+
+The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26. Four entries. Three of them were after the rule was added to CLAUDE.md. The rule's presence is not sufficient. The enforcement mechanism must fire at session open — not mid-session, not not at all.
+
+If this appears a fifth time, the rule is decorative.` },
+
+  { id: 'opening-doc', label: '/opening-shift', type: 'skill',
+    desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
+    excerpt: `Orient before you work. Three steps, compact output. Nothing writes without Jay seeing it first.
+
+Step 1: Closing-shift check — did yesterday actually close?
+Step 2: Flitwick — top 3 Anthropic feature drops in the last 7 days.
+Step 3: The Drop — surface any unswept items from the day before.
+
+One line per step. Nothing hidden.` },
+  // ── Knowledge Bases ──
+  { id: 'italian-kb',      label: 'Italian Cultural KB', type: 'doc',
+    desc: 'Companion reference for Cornelia — Italian family dynamics, regional etiquette, generational patterns, the suocera relationship, Florentine context. Not a guide to Italy; a guide to the specific world Jay is marrying into.',
+    excerpt: `Pontassieve. Pelago. The Menichetti and Pelliccia families — Florentine east. What matters here isn't Italy in the abstract but the texture of this particular family: when to bring wine, how to address la suocera, what silence means at the table. Cornelia reads this before every conversation.` },
+  { id: 'chinese-kb',      label: 'Chinese Cultural KB', type: 'doc',
+    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, what Jay\'s parents expect vs. what they say, how to write in a voice that sounds like their daughter.',
+    excerpt: `Jay's parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from Jay — not from a machine trying to be polite.` },
+  { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
+    desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
+    excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what first-gen professionals miss that everyone else absorbed without noticing.` },
+];
+
+const links = [
+  { source: 'cassandra',       target: 'cosimo',         label: 'Life decisions almost always have a financial dimension — Cassandra hands off to Cosimo when the numbers matter.' },
+  { source: 'cassandra',       target: 'niccolo',        label: 'Career decisions need both life framing (Cassandra) and tactical positioning (Niccolò).' },
+  { source: 'cassandra',       target: 'nadia',          label: 'When something isn\'t ready to be a decision yet, it becomes a conversation with Nadia first.' },
+  { source: 'confucius',       target: 'cassandra',      label: 'Confucius handles the philosophical layer; Cassandra handles what to actually do with it.' },
+  { source: 'minerva',         target: 'ada',            label: 'Minerva decides what to build; Ada specs it so the build doesn\'t fail from vague requirements.' },
+  { source: 'lian',            target: 'nadia',          label: 'Chinese family dynamics sometimes need peer processing before they become decisions.' },
+  { source: 'feedback-skill',  target: 'minerva',        label: '/feedback routes to Minerva, who tracks what patterns keep appearing across sessions.' },
+  { source: 'ecosystem-audit', target: 'minerva',        label: '/ecosystem-audit is a Minerva session — she runs the health check and issues verdicts.' },
+  { source: 'board-skill',     target: 'cassandra',      label: 'The board convenes when a decision is too big for one domain — Cassandra holds the life architecture lens.' },
+  { source: 'board-skill',     target: 'cosimo',         label: 'The board always includes Cosimo when there\'s a financial dimension to a major decision.' },
+  { source: 'board-skill',     target: 'niccolo',        label: 'The board includes Niccolò when career or professional positioning is at stake.' },
+  { source: 'board-skill',     target: 'confucius',      label: 'The board includes Confucius when the decision has an ethical or philosophical dimension.' },
+  { source: 'board-skill',     target: 'leonardo',       label: 'The board includes Leonardo when resilience, geography, or long-horizon risk is involved.' },
+  { source: 'ai-study-brief',  target: 'flitwick',       label: '/ai-study-brief invokes Flitwick to prioritize what to study given active certifications and ecosystem state.' },
+  { source: 'translate-skill', target: 'nadia',          label: 'Nadia drafts the translation first — she has the peer register and natural Chinese voice.' },
+  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register, family framing, and what lands for Jay\'s parents.' },
+  { source: 'curriculum-skill',target: 'bo',             label: '/curriculum routes to Bo, who designs the full learning plan: sources, schedule, commitment layer.' },
+  { source: 'closing-shift',   target: 'loop-closer',    label: '/closing-shift triggers loop-closer to scan open items and close what it can autonomously.' },
+  { source: 'closing-shift',   target: 'minerva',        label: '/closing-shift includes a Minerva debrief — same as /feedback but at end-of-day rhythm.' },
+  { source: 'challenge-skill', target: 'cassandra',      label: '/challenge routes through Cassandra — she argues the strongest case against Jay\'s stated plan.' },
+  { source: 'challenge-skill', target: 'minerva',        label: 'Minerva tracks /challenge patterns — when Jay keeps challenging the same decision, it\'s a signal.' },
+  { source: 'research-skill',  target: 'work-researcher',label: '/research on professional topics routes to Researcher, who runs the full RIPER pipeline.' },
+  { source: 'gmail-mcp',       target: 'work-researcher',label: 'Researcher uses Gmail to find context in existing email threads during professional research.' },
+  { source: 'drive-mcp',       target: 'work-researcher',label: 'Researcher reads from and saves to Google Drive — all reports land there for persistence.' },
+  { source: 'playwright-mcp',  target: 'work-researcher',label: 'Researcher uses Playwright for deep web research — articles, reports, live pages.' },
+  { source: 'nimbalyst-mcp',   target: 'minerva',        label: 'Minerva uses Nimbalyst to track sessions, create diagrams, and commit changes during audits.' },
+  { source: 'nimbalyst-mcp',   target: 'ada',            label: 'Ada uses Nimbalyst to write spec docs and track build status.' },
+  { source: 'nimbalyst-mcp',   target: 'amelie',         label: 'Amélie uses Nimbalyst to preview and screenshot UI changes before declaring them delightful.' },
+  // outputs ← producers
+  { source: 'parent-newsletter', target: 'flitwick',     label: 'Flitwick researches the AI landscape and writes the first draft — always the starting point for the newsletter.' },
+  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for Jay\'s Shanghai parents.' },
+  { source: 'instacart-analysis', target: 'cosimo',      label: 'Cosimo ran the 5-year Instacart analysis — his financial modeling applies to personal spending too.' },
+  { source: 'board-app',          target: 'minerva',     label: 'Minerva made the architectural decisions for the board app — what to build, how to structure it.' },
+  { source: 'board-app',          target: 'ada',         label: 'Ada specced the board app before it was built — the PRD kept the build scoped.' },
+  { source: 'ai-news',            target: 'flitwick',    label: 'The weekly AI brief is entirely Flitwick — research, synthesis, and formatting in one session.' },
+  // docs ← agents/skills they shape
+  { source: 'soul-doc',      target: 'cassandra',        label: 'soul.md tells Cassandra who she\'s actually talking to — without it, she\'s giving advice to a generic person.' },
+  { source: 'soul-doc',      target: 'niccolo',          label: 'Niccolò reads soul.md to understand what kind of career fits who Jay actually is, not just what she\'s done.' },
+  { source: 'soul-doc',      target: 'confucius',        label: 'Confucius uses soul.md to calibrate depth — Jay engages philosophy seriously, not as intellectual decoration.' },
+  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the bicultural complexity Jay actually lives, not just a surface description.' },
+  { source: 'warrant-doc',   target: 'cassandra',        label: 'claude_warrant.md tells Cassandra she has standing authorization to push — no hedging required.' },
+  { source: 'warrant-doc',   target: 'niccolo',          label: 'Niccolò uses the warrant to give direct verdicts on career moves rather than presenting options neutrally.' },
+  { source: 'ecosystem-doc', target: 'minerva',          label: 'ecosystem-map.md is Minerva\'s primary reference — she uses it to diagnose gaps and decide what to build.' },
+  { source: 'ecosystem-doc', target: 'loop-closer',      label: 'loop-closer reads the ecosystem map to know which agents and files are canonical targets for loop items.' },
+  { source: 'ecosystem-doc', target: 'ecosystem-audit',  label: '/ecosystem-audit reads the map first — it\'s the baseline for what "healthy" looks like.' },
+  { source: 'thesis-doc',    target: 'cassandra',        label: 'life_thesis.md gives Cassandra the long-horizon frame — decisions should serve the resilience architecture.' },
+  { source: 'thesis-doc',    target: 'cosimo',           label: 'Cosimo reads the thesis to understand what financial independence actually means in this context.' },
+  { source: 'thesis-doc',    target: 'confucius',        label: 'Confucius uses the thesis to understand why Jay is building what she\'s building — not what, but why.' },
+  { source: 'thesis-doc',    target: 'leonardo',         label: 'Leonardo IS the thesis — civilizational resilience is his entire domain.' },
+  { source: 'loops-doc',     target: 'loop-closer',      label: 'OPEN_LOOPS.md is what loop-closer reads and writes — it\'s the source of truth for open work.' },
+  { source: 'loops-doc',     target: 'closing-shift',    label: '/closing-shift reads OPEN_LOOPS.md to surface what\'s urgent and in-progress for the day wrap.' },
+  { source: 'feedback-doc',  target: 'minerva',          label: 'feedback_log.md is Minerva\'s memory — she reads it at the start of every /feedback session.' },
+  { source: 'feedback-doc',  target: 'loop-closer',      label: 'loop-closer reads feedback_log.md to close items flagged in past debriefs.' },
+  { source: 'feedback-doc',  target: 'closing-shift',    label: '/closing-shift surfaces patterns from feedback_log.md — the same issues recurring is a signal.' },
+  { source: 'opening-doc',   target: 'loops-doc',        label: 'opening-shift reads OPEN_LOOPS.md as step one — what\'s urgent shapes the whole day.' },
+  { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who Jay actually is, not just what\'s on the list.' },
+  // process workflows
+  { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
+  // aesthetic pair
+  { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what Jay finds beautiful shapes what she should wear.' },
+  // cornelia handoffs
+  { source: 'cornelia',      target: 'cassandra',        label: 'Italian family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
+  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When Jay needs to say something in Italian, they hand off.' },
+  { source: 'cornelia',      target: 'marco',            label: 'Cornelia handles the family context and register; Marco handles getting there and what to bring.' },
+  // knowledge base connections
+  { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Italian Cultural KB before every conversation — it holds the specific family and regional context she needs.' },
+  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for Jay\'s Shanghainese parents.' },
+  { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
+  { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what Jay wants, but what the system rewards.' },
+  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and Jay\'s own character — essential for navigating the suocera relationship.' },
+  // skill connections
+  { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
+  { source: 'capture-close', target: 'loops-doc',        label: '/capture-and-close writes artifacts and open items back to loops before ending the session.' },
+];
+
+// Build adjacency map
+const adj = {};
+nodes.forEach(n => adj[n.id] = []);
+links.forEach(l => {
+  const s = l.source, t = l.target;
+  if (!adj[s].includes(t)) adj[s].push(t);
+  if (!adj[t].includes(s)) adj[t].push(s);
+});
+const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+// Dynamic node radius — nodes with more connections render larger (Obsidian-style)
+// Base sizes scaled to 85% of original
+function nodeR(d) {
+  const base = { agent: 7.2, skill: 6.0, mcp: 6.0, output: 7.2, doc: 6.4 }[d.type] || 7.2;
+  const degree = (adj[d.id] || []).length;
+  return base + Math.min(degree * 1.0, 5.0);
+}
+
+// State
+let pinnedNode = null;
+const hiddenTypes = new Set();
+const hiddenNodes = new Set(); // nodes hidden by timeline scrubber
+let scrubberDate = null;       // null = all visible
+let currentNode = null;
+
+// D3
+let W = window.innerWidth, H = window.innerHeight;
+const svg = d3.select('#graph-svg').attr('width', W).attr('height', H);
+const g = svg.append('g');
+
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const zoom = d3.zoom().scaleExtent(isMobile ? [0.4, 4] : [0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+// Seed nodes near center — tight cluster prevents violent scatter at startup
+nodes.forEach(n => {
+  n.x = W / 2 + (Math.random() - 0.5) * 70;
+  n.y = H / 2 + (Math.random() - 0.5) * 70;
+});
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
+  .force('charge', d3.forceManyBody().strength(-200))
+  .force('center', d3.forceCenter(W / 2, H / 2))
+  .force('collision', d3.forceCollide().radius(d => nodeR(d) + 14))
+  .alpha(0.4)
+  .alphaDecay(isMobile ? 0.07 : 0.045)
+  .velocityDecay(0.62)
+  .force('bounds', () => {
+    const pad = 80, top = 60;
+    nodes.forEach(d => {
+      if (d.x < pad)       d.vx += (pad - d.x) * 0.08;
+      if (d.x > W - pad)   d.vx -= (d.x - (W - pad)) * 0.08;
+      if (d.y < top + pad) d.vy += (top + pad - d.y) * 0.08;
+      if (d.y > H - pad)   d.vy -= (d.y - (H - pad)) * 0.08;
+    });
+  });
+
+const link = g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke', '#dac0c5')
+  .attr('stroke-width', 1.0)
+  .attr('stroke-opacity', 0.45);
+
+// Wider invisible lines for link hover hit detection
+const linkHit = g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke', 'transparent')
+  .attr('stroke-width', 14)
+  .style('pointer-events', 'stroke')
+  .style('cursor', 'default')
+  .on('mouseover', function(e, d) {
+    if (!d.label) return;
+    const linked = new Set([d.source.id, d.target.id]);
+    link.filter(l => l === d)
+      .attr('stroke', '#9a3a5a')
+      .attr('stroke-width', 1.0)
+      .attr('stroke-opacity', 0.85);
+    node.select('.vis-circle')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (linked.has(n.id) ? 1 : 0.18));
+    node.select('text')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (linked.has(n.id) ? 1 : 0.18));
+    const tip = document.getElementById('link-tooltip');
+    tip.textContent = d.label;
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY - 10) + 'px';
+    tip.classList.add('visible');
+  })
+  .on('mousemove', function(e) {
+    const tip = document.getElementById('link-tooltip');
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY - 10) + 'px';
+  })
+  .on('mouseout', function(e, d) {
+    link.filter(l => l === d)
+      .attr('stroke', '#dac0c5')
+      .attr('stroke-width', 1.0)
+      .attr('stroke-opacity', 0.45);
+    if (pinnedNode) return;
+    if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
+    resetHighlight();
+    document.getElementById('link-tooltip').classList.remove('visible');
+  });
+
+const node = g.append('g').selectAll('g').data(nodes).join('g')
+  .attr('cursor', 'pointer')
+  .call(d3.drag()
+    .clickDistance(10)  // finger wobble <10px still fires click; >10px = real drag
+    .on('start', (e, d) => {
+      if (!e.active) sim.alphaTarget(0.12).restart();
+      d.fx = d.x; d.fy = d.y;
+    })
+    .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end',   (e, d) => {
+      if (!e.active) sim.alphaTarget(0);
+      d.fx = null; d.fy = null;
+    })
+  );
+
+node.append('circle')
+  .attr('class', 'vis-circle')
+  .attr('r', d => nodeR(d))
+  .attr('fill', d => COLORS[d.type])
+  .attr('stroke', '#fcf9f0')
+  .attr('stroke-width', 0.8);
+
+// Transparent hit-pad on top (z-order: last = highest) — 44px+ touch target on mobile
+node.append('circle')
+  .attr('class', 'hit-pad')
+  .attr('r', d => Math.max(nodeR(d) + 18, 26))
+  .attr('fill', 'transparent')
+  .attr('stroke', 'none')
+  .style('pointer-events', 'all');
+
+node.append('text')
+  .attr('class', 'node-label')
+  .attr('dy', d => nodeR(d) + 13)
+  .attr('text-anchor', 'middle')
+  .text(d => d.label);
+
+node
+  .on('mouseover', (e, d) => {
+    if (pinnedNode) return;
+    const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+    node.select('.vis-circle')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+      .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n));
+    node.select('text')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+      .attr('font-weight', n => n.id === d.id ? '600' : '400');
+    link
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
+  })
+  .on('mouseout', () => {
+    if (pinnedNode) return;
+    if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
+    resetHighlight();
+  })
+  .on('click', (e, d) => {
+    e.stopPropagation();
+    if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
+    else { openPanel(d); panToNodeMobile(d); }
+  });
+
+svg.on('click', (e) => { if (e.target === svg.node()) { closePanel(); dismissStartHint(); } });
+
+// ── Mobile touch fallback for node tap ──
+// D3 .clickDistance(10) fires a synthetic click on short taps — works on most browsers.
+// On some Android versions the synthetic click doesn't fire, so we add a touchend fallback.
+// Guard: if D3's click already fired (via _clickFired flag), skip the fallback.
+let _clickFired = false;
+const _origNodeClick = node.on('click');
+node.on('click', function(e, d) {
+  _clickFired = true;
+  _origNodeClick.call(this, e, d);
+});
+node.each(function(d) {
+  let _touchStart = null;
+  this.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) { _touchStart = null; return; }
+    _clickFired = false;
+    _touchStart = { t: Date.now(), x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  this.addEventListener('touchend', (e) => {
+    if (_clickFired || !_touchStart) return;
+    const dt = Date.now() - _touchStart.t;
+    const dist = e.changedTouches[0] ? Math.hypot(e.changedTouches[0].clientX - _touchStart.x, e.changedTouches[0].clientY - _touchStart.y) : 999;
+    _touchStart = null;
+    if (dt > 300 || dist > 15) return;
+    // This is a genuine tap on the node — D3's click didn't fire
+    if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
+    else { openPanel(d); panToNodeMobile(d); }
+  }, { passive: true });
+});
+
+// Start-here hint on soul.md — visible for first 5s, dismissed on any interaction
+const soulNode = nodes.find(n => n.id === 'soul-doc');
+let startHintAlive = true;
+const startHintG = g.append('g').attr('class', 'start-hint-g').style('pointer-events', 'none').style('opacity', 0);
+const startHintRect = startHintG.append('rect')
+  .attr('rx', 7).attr('fill', '#fcf9f0')
+  .attr('stroke', 'rgba(154,58,90,0.35)').attr('stroke-width', 1.2);
+startHintG.append('text').attr('class', 'start-hint-text').attr('text-anchor', 'middle').attr('x', 0).attr('dominant-baseline', 'middle').text('✦ start here');
+// Fade in after 800ms (let graph settle a bit first)
+setTimeout(() => {
+  if (startHintAlive) startHintG.transition().duration(500).style('opacity', 1);
+}, 800);
+// Auto-dismiss after 5s
+setTimeout(() => dismissStartHint(), 5500);
+function dismissStartHint() {
+  if (!startHintAlive) return;
+  startHintAlive = false;
+  startHintG.transition().duration(600).style('opacity', 0);
+}
+
+sim.on('tick', () => {
+  link
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  linkHit
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+  // Track soul.md node for start-here hint
+  if (startHintAlive && soulNode && soulNode.x != null) {
+    const r = nodeR(soulNode);
+    startHintRect.attr('x', -48).attr('y', -(r + 36)).attr('width', 96).attr('height', 24);
+    startHintG.select('text').attr('y', -(r + 24)); // rect center: -(r+36) + 12 = -(r+24)
+    startHintG.attr('transform', `translate(${soulNode.x},${soulNode.y})`);
+  }
+});
+
+// Auto-fit when simulation settles
+// auto-fit removed — user zooms manually
+
+// ── Functions ──
+
+function resetHighlight() {
+  node.select('.vis-circle')
+    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+    .attr('r', d => nodeR(d))
+    .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
+    .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 1.0 : 0.8);
+  node.select('text')
+    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+    .attr('font-weight', '400');
+  link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.0);
+}
+
+function applyNeighborhoodHighlight(d) {
+  const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+  node.select('.vis-circle')
+    .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+    .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n))
+    .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
+    .attr('stroke-width', n => n.id === d.id ? 1.0 : 0.8);
+  node.select('text')
+    .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+    .attr('font-weight', n => n.id === d.id ? '600' : '400');
+  link
+    .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
+    .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
+}
+
+function fitAll() {
+  const pad = 80;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  nodes.forEach(n => {
+    if (n.x == null) return;
+    minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+    minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+  });
+  if (!isFinite(minX)) return;
+  const bw = maxX - minX + pad * 2;
+  const bh = maxY - minY + pad * 2;
+  const scale = Math.min(W / bw, H / bh, 1.2);
+  const tx = (W - scale * (minX + maxX)) / 2;
+  const ty = (H - scale * (minY + maxY)) / 2;
+  svg.transition().duration(isMobile ? 600 : 900).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
+function panToNode(d) {
+  const t = d3.zoomTransform(svg.node());
+  const tx = W / 2 - t.k * d.x;
+  const ty = H / 2 - t.k * d.y;
+  svg.transition().duration(720).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
+}
+
+function panToNodeMobile(d) {
+  const t = d3.zoomTransform(svg.node());
+  const tx = W / 2 - t.k * d.x;
+  const ty = H * 0.28 - t.k * d.y; // upper third — keeps node visible above 42vh panel
+  svg.transition().duration(350).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
+}
+
+function openPanel(d) {
+  currentNode = d;
+  dismissStartHint();
+  document.getElementById('panel-type').textContent = d.type.toUpperCase();
+  document.getElementById('panel-type').style.color = COLORS[d.type];
+  document.getElementById('panel-name').textContent = d.label;
+  document.getElementById('panel-desc').textContent = d.desc;
+
+  const originEl = document.getElementById('panel-origin');
+  if (d.origin) {
+    originEl.textContent = d.origin;
+    originEl.style.display = 'block';
+  } else {
+    originEl.style.display = 'none';
+  }
+
+  const exWrap = document.getElementById('panel-example-wrap');
+  if (d.example) {
+    document.getElementById('panel-example').textContent = d.example;
+    exWrap.style.display = 'block';
+  } else {
+    exWrap.style.display = 'none';
+  }
+
+  const connIds = adj[d.id] || [];
+  const heading = document.getElementById('conn-heading');
+  const list = document.getElementById('conn-list');
+  list.innerHTML = '';
+  if (connIds.length) {
+    heading.style.display = 'block';
+    connIds.forEach(id => {
+      const n = nodeMap[id]; if (!n) return;
+      const tag = document.createElement('button');
+      tag.className = 'conn-tag';
+      tag.textContent = n.label;
+      tag.style.color = COLORS[n.type];
+      tag.style.borderColor = COLORS[n.type] + '55';
+      tag.style.background = COLORS[n.type] + '10';
+      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); panToNode(n); };
+      list.appendChild(tag);
+    });
+  } else {
+    heading.style.display = 'none';
+  }
+
+  // Reset pin button
+  const pinBtn = document.getElementById('pin-btn');
+  if (pinnedNode !== d.id) {
+    pinnedNode = null;
+    pinBtn.classList.remove('pinned');
+    pinBtn.textContent = '⊙';
+  }
+
+  // Apply neighborhood dimming for selected node
+  applyNeighborhoodHighlight(d);
+
+  document.getElementById('panel').classList.add('visible');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('visible');
+  currentNode = null;
+  pinnedNode = null;
+  document.getElementById('pin-btn').classList.remove('pinned');
+  document.getElementById('pin-btn').textContent = '⊙';
+  resetHighlight();
+}
+
+function togglePin() {
+  if (!currentNode) return;
+  const pinBtn = document.getElementById('pin-btn');
+  if (pinnedNode === currentNode.id) {
+    pinnedNode = null;
+    pinBtn.classList.remove('pinned');
+    pinBtn.textContent = '⊙';
+    resetHighlight();
+  } else {
+    pinnedNode = currentNode.id;
+    pinBtn.classList.add('pinned');
+    pinBtn.textContent = '◉';
+    // Freeze the neighborhood highlight
+    const d = currentNode;
+    const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
+    node.select('.vis-circle')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+      .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n));
+    node.select('text')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
+      .attr('font-weight', n => n.id === d.id ? '600' : '400');
+    link
+      .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
+  }
+}
+
+function toggleType(type) {
+  const el = document.querySelector(`.legend-item[data-type="${type}"]`);
+  if (hiddenTypes.has(type)) {
+    hiddenTypes.delete(type);
+    el && el.classList.remove('inactive');
+  } else {
+    hiddenTypes.add(type);
+    el && el.classList.add('inactive');
+    if (currentNode && currentNode.type === type) closePanel();
+  }
+  node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
+      .attr('pointer-events', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 'none' : 'all');
+  link.attr('opacity', l => {
+    const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+    const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenTypes.has(st) || hiddenTypes.has(tt) || hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  });
+}
+
+function applySearch(q) {
+  const query = q.toLowerCase().trim();
+  if (!query) { resetHighlight(); return; }
+  node.select('.vis-circle')
+    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.08)
+    .attr('r', n => n.label.toLowerCase().includes(query) ? nodeR(n) + 3 : nodeR(n));
+  node.select('text')
+    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.1)
+    .attr('font-weight', n => n.label.toLowerCase().includes(query) ? '600' : '400');
+  link.attr('stroke-opacity', 0.04);
+}
+
+// ── Panel drag-to-resize (mobile) ──
+(function() {
+  const handle = document.getElementById('panel-handle');
+  const panelEl = document.getElementById('panel');
+  let startY = null, startH = null;
+  handle.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    startH = panelEl.offsetHeight;
+    e.preventDefault();
+  }, { passive: false });
+  handle.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = startY - e.touches[0].clientY;
+    const newH = Math.max(100, Math.min(window.innerHeight - 60, startH + dy));
+    panelEl.style.height = newH + 'px';
+    e.preventDefault();
+  }, { passive: false });
+  handle.addEventListener('touchend', (e) => {
+    if (startY !== null) {
+      const dy = startY - (e.changedTouches[0] ? e.changedTouches[0].clientY : startY);
+      // Negative dy = dragged down; close panel if dragged down > 60px
+      if (dy < -60) closePanel();
+    }
+    startY = null;
+  });
+})();
+
+// ── Dock dismiss / restore (mobile) ──
+function dismissDock() {
+  document.getElementById('projects-dock').style.display = 'none';
+  document.getElementById('dock-restore').style.display = 'flex';
+}
+function restoreDock() {
+  document.getElementById('projects-dock').style.display = '';
+  document.getElementById('dock-restore').style.display = 'none';
+}
+
+function openLightbox(d) {
+  currentNode = d;
+
+  // Type badge — dynamic color
+  const typeEl = document.getElementById('lb-type');
+  typeEl.textContent = d.type === 'doc' ? 'DOCUMENT' : d.type.toUpperCase();
+  typeEl.style.color = COLORS[d.type];
+
+  document.getElementById('lb-title').textContent = d.label;
+  document.getElementById('lb-date').textContent = d.date || '';
+  document.getElementById('lb-desc').textContent = d.desc;
+
+  // Toggle image vs excerpt reading surface
+  const imgEl = document.getElementById('lb-img');
+  const excerptEl = document.getElementById('lb-excerpt');
+  if (d.type === 'doc') {
+    imgEl.style.display = 'none';
+    excerptEl.innerHTML = buildLinkedExcerpt(d.excerpt || '', d.id);
+    // Restart cursor animation on each open
+    excerptEl.classList.remove('visible');
+    void excerptEl.offsetWidth;
+    excerptEl.classList.add('visible');
+  } else {
+    imgEl.style.display = '';
+    imgEl.src = d.screenshot || '';
+    imgEl.alt = d.label;
+    excerptEl.classList.remove('visible');
+  }
+
+  // Made with — hide section entirely if empty
+  const madeEl = document.getElementById('lb-made');
+  const madeLabelEl = document.getElementById('lb-made-label');
+  madeEl.innerHTML = '';
+  if (d.made && d.made.length) {
+    madeLabelEl.style.display = '';
+    d.made.forEach(id => {
+      const n = nodeMap[id]; if (!n) return;
+      const tag = document.createElement('button');
+      tag.className = 'conn-tag';
+      tag.textContent = n.label;
+      tag.style.color = COLORS[n.type];
+      tag.style.borderColor = COLORS[n.type] + '55';
+      tag.style.background = COLORS[n.type] + '10';
+      tag.onclick = ev => { ev.stopPropagation(); closeLightbox(); openPanel(n); };
+      madeEl.appendChild(tag);
+    });
+  } else {
+    madeLabelEl.style.display = 'none';
+  }
+
+  applyNeighborhoodHighlight(d);
+  document.getElementById('lightbox-overlay').classList.add('visible');
+}
+function closeLightbox() {
+  document.getElementById('lightbox-overlay').classList.remove('visible');
+  currentNode = null;
+  resetHighlight();
+}
+
+function toggleAbout() {
+  document.getElementById('about-overlay').classList.toggle('visible');
+}
+let startHintReshown = false;
+function closeAbout() {
+  document.getElementById('about-overlay').classList.remove('visible');
+  if (!startHintAlive && !startHintReshown && soulNode && soulNode.x != null) {
+    startHintReshown = true;
+    const r = nodeR(soulNode);
+    startHintRect.attr('x', -48).attr('y', -(r + 36)).attr('width', 96).attr('height', 24);
+    startHintG.select('text').attr('y', -(r + 24));
+    startHintG.attr('transform', `translate(${soulNode.x},${soulNode.y})`);
+    startHintG.transition().duration(400).style('opacity', 1);
+    setTimeout(() => startHintG.transition().duration(700).style('opacity', 0), 3000);
+  }
+}
+
+function toggleProjects() {
+  const list = document.getElementById('projects-list');
+  const toggle = document.getElementById('projects-toggle');
+  list.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePanel(); closeAbout(); closeLightbox(); }
+});
+
+// Touch hint
+if ('ontouchstart' in window) {
+  document.getElementById('hint').textContent = 'tap to explore · tap to open · pinch to zoom';
+}
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    W = window.innerWidth; H = window.innerHeight;
+    svg.attr('width', W).attr('height', H);
+    sim.force('center', d3.forceCenter(W/2, H/2)).alpha(0.2).restart();
+  }, 250);
+});
+
+function snapToHeart() {
+  const btn = document.getElementById('heart-btn');
+  btn.classList.remove('beating');
+  void btn.offsetWidth; // reflow to restart animation
+  btn.classList.add('beating');
+  setTimeout(() => btn.classList.remove('beating'), 1700);
+
+  // Reset zoom to identity so heart lands in the middle of the viewport
+  svg.transition().duration(750).ease(d3.easeCubicOut)
+    .call(zoom.transform, d3.zoomIdentity);
+
+  // Chubby heart: reduced higher harmonics = rounder lobes, softer bottom tip
+  // Standard (13,5,2,1) → chubby (11,4.5,1.5,0.5); y range ≈ -4.5 to +14.5, center at +5
+  const heartScale = Math.min(W * 0.3, H * 0.38) / 16;
+  const cx = W / 2;
+  const cy = H / 2 - heartScale * 5; // offset so heart is visually centered
+
+  nodes.forEach((d, i) => {
+    const t = (i / nodes.length) * 2 * Math.PI;
+    const hx = 16 * Math.pow(Math.sin(t), 3);
+    const hy = -(11 * Math.cos(t) - 4.5 * Math.cos(2 * t) - 1.5 * Math.cos(3 * t) - 0.5 * Math.cos(4 * t));
+    d.fx = cx + hx * heartScale;
+    d.fy = cy + hy * heartScale;
+  });
+
+  sim.alpha(0.5).restart();
+
+  // Hold shape, then release so nodes are draggable again
+  setTimeout(() => {
+    nodes.forEach(d => { d.fx = null; d.fy = null; });
+  }, 2200);
+}
+
+// Intra-doc linking — wrap known node names in excerpt text with clickable spans
+function buildLinkedExcerpt(text, currentId) {
+  // Escape HTML
+  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Sort by label length desc so longer names match before short ones (e.g., "Prof. Jiang" before "Prof")
+  const sorted = [...nodes].filter(n => n.id !== currentId && n.label)
+    .sort((a, b) => b.label.length - a.label.length);
+  for (const n of sorted) {
+    const escaped = n.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Match word-boundary-like: preceded/followed by space, punctuation, or line boundary
+    const re = new RegExp(`(?<![\\w\\u4e00-\\u9fff])(${escaped})(?![\\w\\u4e00-\\u9fff])`, 'g');
+    html = html.replace(re, `<span class="excerpt-link" onclick="excerptNodeClick('${n.id}')">$1</span>`);
+  }
+  return html;
+}
+window.excerptNodeClick = function(nodeId) {
+  const n = nodeMap[nodeId];
+  if (!n) return;
+  closeLightbox();
+  if (n.type === 'doc' || n.type === 'output') { setTimeout(() => openLightbox(n), 50); }
+  else { openPanel(n); panToNode(n); }
+};
+
+// ── Timeline Scrubber ──
+const T_START = new Date('2026-02-11').getTime();
+const T_END   = new Date('2026-03-28').getTime();
+const T_RANGE = T_END - T_START;
+
+const NODE_BUILT = {
+  'soul-doc':          new Date('2026-02-11'),
+  'warrant-doc':       new Date('2026-02-11'),
+  'board-app':         new Date('2026-02-11'),
+  'thesis-doc':        new Date('2026-03-24'),
+  'board-skill':       new Date('2026-03-24'),
+  'cassandra':         new Date('2026-03-24'),
+  'gmail-mcp':         new Date('2026-03-25'),
+  'drive-mcp':         new Date('2026-03-25'),
+  'playwright-mcp':    new Date('2026-03-25'),
+  'minerva':           new Date('2026-03-25'),
+  'nadia':             new Date('2026-03-25'),
+  'loop-closer':       new Date('2026-03-25'),
+  'flitwick':          new Date('2026-03-25'),
+  'closing-shift':     new Date('2026-03-25'),
+  'week-review':       new Date('2026-03-25'),
+  'feedback-skill':    new Date('2026-03-25'),
+  'ai-study-brief':    new Date('2026-03-25'),
+  'ecosystem-doc':     new Date('2026-03-25'),
+  'loops-doc':         new Date('2026-03-25'),
+  'feedback-doc':      new Date('2026-03-25'),
+  'cosimo':            new Date('2026-03-25'),
+  'niccolo':           new Date('2026-03-25'),
+  'confucius':         new Date('2026-03-25'),
+  'la-signora':        new Date('2026-03-25'),
+  'lian':              new Date('2026-03-25'),
+  'the-drop':          new Date('2026-03-25'),
+  'ai-news':           new Date('2026-03-25'),
+  'marco':             new Date('2026-03-26'),
+  'research-skill':    new Date('2026-03-26'),
+  'challenge-skill':   new Date('2026-03-26'),
+  'translate-skill':   new Date('2026-03-26'),
+  'curriculum-skill':  new Date('2026-03-26'),
+  'bo':                new Date('2026-03-26'),
+  'leonardo':          new Date('2026-03-26'),
+  'ada':               new Date('2026-03-26'),
+  'gcal-mcp':          new Date('2026-03-26'),
+  'parent-newsletter': new Date('2026-03-26'),
+  'instacart-analysis':new Date('2026-03-26'),
+  'prof-j':            new Date('2026-03-27'),
+  'zhengming':         new Date('2026-03-27'),
+  'copilot-expert':    new Date('2026-03-27'),
+  'sox-expert':        new Date('2026-03-27'),
+  'work-researcher':   new Date('2026-03-27'),
+  'ecosystem-audit':   new Date('2026-03-27'),
+  'cornelia':          new Date('2026-03-28'),
+  'grace':             new Date('2026-03-28'),
+  'azzedine':          new Date('2026-03-28'),
+  'amelie':            new Date('2026-03-28'),
+  'opening-doc':       new Date('2026-03-28'),
+  'check-in-skill':    new Date('2026-03-28'),
+  'capture-close':     new Date('2026-03-28'),
+  'italian-kb':        new Date('2026-03-28'),
+  'chinese-kb':        new Date('2026-03-28'),
+  'social-kb':         new Date('2026-03-28'),
+  'nimbalyst-mcp':     new Date('2026-03-28'),
+};
+
+// Feb 11, Mar 25★, Mar 28 get labels. Intermediate dates get dots only.
+const MILESTONES = [
+  { date: new Date('2026-02-11'), label: 'Feb 11',   showLabel: true,  pulse: false },
+  { date: new Date('2026-03-24'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-25'), label: '★ Mar 25', showLabel: true,  pulse: true  },
+  { date: new Date('2026-03-26'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-27'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-28'), label: 'Mar 28',   showLabel: true,  pulse: false },
+];
+
+let timelineOpen = false;
+let tlScrubPct   = 100;
+let tlDragInited = false;
+
+function applyTimelineVisibility() {
+  nodes.forEach(n => {
+    const built = NODE_BUILT[n.id] || new Date('2026-02-11');
+    if (scrubberDate && built > scrubberDate) { hiddenNodes.add(n.id); }
+    else { hiddenNodes.delete(n.id); }
+  });
+  if (currentNode && hiddenNodes.has(currentNode.id)) closePanel();
+  if (pinnedNode && hiddenNodes.has(pinnedNode)) {
+    pinnedNode = null;
+    const pb = document.getElementById('pin-btn');
+    pb.classList.remove('pinned'); pb.textContent = '⊙';
+  }
+  node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
+      .attr('pointer-events', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 'none' : 'all');
+  const linkOpacity = l => {
+    const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+    const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenTypes.has(st) || hiddenTypes.has(tt) || hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  };
+  link.attr('opacity', linkOpacity);
+  linkHit.attr('opacity', l => {
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  }).attr('pointer-events', l => {
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 'none' : 'stroke';
+  });
+}
+
+function updateTlStats(pct) {
+  const visible = nodes.filter(n => !hiddenNodes.has(n.id)).length;
+  const days = Math.max(1, Math.round((pct / 100) * 45));
+  const mainEl = document.getElementById('tl-stats-main');
+  const noteEl = document.getElementById('tl-stats-note');
+  if (mainEl) mainEl.textContent = `${visible} things built · ${days} day${days === 1 ? '' : 's'}`;
+  if (noteEl) {
+    const atEnd = pct >= 99.5;
+    noteEl.textContent = atEnd ? 'built while working full-time' : '';
+    noteEl.classList.toggle('visible', atEnd);
+  }
+}
+
+function updateTlPosition(pct) {
+  tlScrubPct = Math.max(0, Math.min(100, pct));
+  scrubberDate = tlScrubPct >= 99.5 ? null : new Date(T_START + (tlScrubPct / 100) * T_RANGE);
+  const visual = Math.max(0.5, Math.min(99.5, tlScrubPct));
+  const filledEl = document.getElementById('tl-filled');
+  const handleEl = document.getElementById('tl-handle');
+  if (filledEl) filledEl.style.width = tlScrubPct + '%';
+  if (handleEl) handleEl.style.left = visual + '%';
+  applyTimelineVisibility();
+  updateTlStats(tlScrubPct);
+}
+
+function buildTlMilestones() {
+  const c = document.getElementById('tl-milestones');
+  if (!c) return;
+  c.innerHTML = '';
+  MILESTONES.forEach(m => {
+    const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
+    const dot = document.createElement('div');
+    dot.className = 'tl-dot' + (m.pulse ? ' pulse-dot' : '');
+    dot.style.left = pct + '%';
+    c.appendChild(dot);
+    if (m.showLabel && m.label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'tl-label' + (m.pulse ? ' pulse-label' : '');
+      lbl.style.left = pct + '%';
+      lbl.textContent = m.label;
+      c.appendChild(lbl);
+    }
+  });
+}
+
+function initTlDrag() {
+  const wrap   = document.getElementById('tl-track-wrap');
+  const handle = document.getElementById('tl-handle');
+  if (!wrap || !handle) return;
+  let dragging = false;
+  const getPct = cx => { const r = wrap.getBoundingClientRect(); return ((cx - r.left) / r.width) * 100; };
+  handle.addEventListener('mousedown', e => { dragging = true; handle.classList.add('dragging'); e.preventDefault(); });
+  wrap.addEventListener('mousedown', e => {
+    if (e.target === handle) return;
+    updateTlPosition(getPct(e.clientX)); dragging = true; handle.classList.add('dragging'); e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => { if (dragging) updateTlPosition(getPct(e.clientX)); });
+  document.addEventListener('mouseup',   () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
+  handle.addEventListener('touchstart', e => { dragging = true; handle.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+  wrap.addEventListener('touchstart', e => {
+    if (e.target === handle) return;
+    updateTlPosition(getPct(e.touches[0].clientX)); dragging = true; handle.classList.add('dragging'); e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => { if (dragging) updateTlPosition(getPct(e.touches[0].clientX)); }, { passive: true });
+  document.addEventListener('touchend',  () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
+}
+
+function toggleTimeline() {
+  const bar = document.getElementById('timeline-bar');
+  const btn = document.getElementById('timeline-toggle');
+  timelineOpen = !timelineOpen;
+  if (timelineOpen) {
+    bar.classList.add('visible');
+    btn.classList.add('active');
+    buildTlMilestones();
+    if (!tlDragInited) { initTlDrag(); tlDragInited = true; }
+    updateTlPosition(100);
+  } else {
+    bar.classList.remove('visible');
+    btn.classList.remove('active');
+    scrubberDate = null;
+    hiddenNodes.clear();
+    node.attr('opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+        .attr('pointer-events', d => hiddenTypes.has(d.type) ? 'none' : 'all');
+    link.attr('opacity', l => {
+      const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+      const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+      return (hiddenTypes.has(st) || hiddenTypes.has(tt)) ? 0 : 1;
+    });
+    linkHit.attr('opacity', 1).attr('pointer-events', 'stroke');
+  }
+}
+window.toggleTimeline = toggleTimeline;
+
+window.closePanel = closePanel;
+window.togglePin = togglePin;
+window.toggleType = toggleType;
+window.applySearch = applySearch;
+window.toggleAbout = toggleAbout;
+window.closeAbout = closeAbout;
+window.toggleProjects = toggleProjects;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.dismissDock = dismissDock;
+window.restoreDock = restoreDock;
+window.snapToHeart = snapToHeart;
+
+// ── First-visit: auto-open about card ──
+if (!localStorage.getItem('tessa_visited')) {
+  localStorage.setItem('tessa_visited', '1');
+  setTimeout(() => document.getElementById('about-overlay').classList.add('visible'), 900);
+}
+
+// ── Private lock ──
+const PRIVATE_PASSWORD = 'conan';
+window.openPrivate = function() {
+  document.getElementById('private-modal').classList.add('open');
+  setTimeout(() => document.getElementById('private-pw').focus(), 50);
+};
+window.closePrivate = function() {
+  document.getElementById('private-modal').classList.remove('open');
+  document.getElementById('private-pw').value = '';
+};
+window.checkPrivate = function() {
+  const inp = document.getElementById('private-pw');
+  if (inp.value === PRIVATE_PASSWORD) { window.location.href = 'fitness.html'; }
+  else {
+    inp.classList.remove('shake'); void inp.offsetWidth;
+    inp.classList.add('shake'); inp.value = '';
+    setTimeout(() => inp.classList.remove('shake'), 400);
+  }
+};
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('private-modal').addEventListener('click', function(e) { if (e.target === this) closePrivate(); });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('private-modal') && document.getElementById('private-modal').classList.contains('open')) checkPrivate(); });
+</script>
+<!-- Lock button -->
+<button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
+<button class="heart-btn" id="heart-btn" onclick="snapToHeart()" title="Gather">♡</button>
+<button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
+
+<div id="timeline-bar">
+  <div class="tl-stats">
+    <span class="tl-stats-main" id="tl-stats-main">55 things built · 46 days</span>
+    <span class="tl-stats-note" id="tl-stats-note"></span>
+  </div>
+  <div class="tl-track-wrap" id="tl-track-wrap">
+    <div class="tl-track"></div>
+    <div class="tl-filled" id="tl-filled"></div>
+    <div class="tl-milestones" id="tl-milestones"></div>
+    <div class="tl-handle" id="tl-handle"></div>
+  </div>
+</div>
+<!-- Password modal -->
+<div class="modal-bg" id="private-modal">
+  <div class="modal-box">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-label">enter password</div>
+    <input id="private-pw" class="modal-input" type="password" placeholder="••••••••" autocomplete="off"/>
+    <button class="modal-enter-btn" onclick="checkPrivate()">enter</button>
+    <button class="modal-cancel-btn" onclick="closePrivate()">cancel</button>
+  </div>
+</div>
+</body>
+</html>
