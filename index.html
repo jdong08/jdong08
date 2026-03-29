@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>jdong08 — Tessa OS</title>
-<meta name="description" content="Tessa OS — Jay's personal AI system. 20 specialist agents, 25 skills, 5 integrations."/>
+<meta name="description" content="Tessa OS — Jay's personal AI system. 24 specialist agents, 25 skills, 5 integrations."/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
@@ -873,7 +873,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-close" onclick="closeAbout()">✕</button>
     <div class="about-title">Tessa OS</div>
     <div class="about-body">
-      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 20 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+      <p>Jay's personal AI system. Instead of using AI as a single chatbot, Jay built a team of 24 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
       <p>25 workflows handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
       <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor she works in.</p>
       <p>Everything in this graph is something Jay built and uses daily.</p>
@@ -1013,6 +1013,22 @@ const nodes = [
     origin: '正名 Zhèngmíng — Confucian concept: to rectify names, so things can be what they actually are.',
     desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.',
     example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
+  { id: 'grace',           label: 'Grace',           type: 'agent',
+    origin: 'Grace Paley — the writer who paid attention to small things until they told her everything.',
+    desc: 'Aesthetic watcher — logs what Jay finds beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
+    example: 'Jay sends a photo she can\'t stop looking at. Grace logs it. Three weeks later, after enough inputs, Grace says: "You keep returning to things that are worn, earned, impermanent. That\'s the throughline."' },
+  { id: 'azzedine',        label: 'Azzedine',        type: 'agent',
+    origin: 'Azzedine Alaïa — the couturier who built garments that made the body say what it means.',
+    desc: 'Aesthetic executor — outfit verdicts, purchase decisions, how Jay appears in the world. Reads Grace\'s log before every response. Gives verdicts, not suggestions.',
+    example: 'Jay tries on two options before a meeting. Azzedine has already seen what she\'s been drawn to lately. He says: "The second one. The first one is performing."' },
+  { id: 'cornelia',        label: 'Cornelia',        type: 'agent',
+    origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
+    desc: 'Italian cultural bridge — Andrea\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
+    example: 'Jay can\'t tell if Andrea\'s mother is upset or just Italian. Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
+  { id: 'iris',            label: 'Iris',            type: 'agent',
+    origin: 'Iris — the messenger who crossed between worlds, carrying what needed to be said without distorting it.',
+    desc: 'Andrea-specific relationship coach — his behavior, their dynamic, specific conflicts, communication patterns, what Jay actually wants from this partnership.',
+    example: 'Jay and Andrea keep having the same argument with different surface details. Iris sees the pattern underneath and names it — not to assign blame, but so Jay can work with the real thing.' },
   { id: 'week-review',     label: '/week-review',    type: 'skill',
     desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
     example: 'Every Sunday, Jay reviews her week — what worked, what\'s still open, what comes next. At the end, it sends her a short letter with a challenge for the coming week.' },
@@ -1225,6 +1241,16 @@ const links = [
   { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who Jay actually is, not just what\'s on the list.' },
   // process workflows
   { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
+  // aesthetic pair
+  { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what Jay finds beautiful shapes what she should wear.' },
+  // cornelia handoffs
+  { source: 'cornelia',      target: 'cassandra',        label: 'Italian family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
+  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When Jay needs to say something in Italian, they hand off.' },
+  { source: 'cornelia',      target: 'marco',            label: 'Cornelia handles the family context and register; Marco handles getting there and what to bring.' },
+  { source: 'cornelia',      target: 'iris',             label: 'When Andrea\'s behavior has a cultural explanation, Cornelia provides it. When it\'s a relationship pattern, she passes to Iris.' },
+  // iris connections
+  { source: 'iris',          target: 'cassandra',        label: 'Iris handles what\'s specifically about Andrea; Cassandra holds the bigger question of what Jay wants her life to look like.' },
+  { source: 'soul-doc',      target: 'iris',             label: 'Iris reads soul.md to understand Jay\'s patterns in relationship — where she freezes, where she over-accommodates.' },
 ];
 
 // Build adjacency map
@@ -1238,10 +1264,11 @@ links.forEach(l => {
 const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 
 // Dynamic node radius — nodes with more connections render larger (Obsidian-style)
+// Base sizes scaled to 85% of original
 function nodeR(d) {
-  const base = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 }[d.type] || 10;
+  const base = { agent: 8.5, skill: 7, mcp: 7, output: 8.5, doc: 7.5 }[d.type] || 8.5;
   const degree = (adj[d.id] || []).length;
-  return base + Math.min(degree * 1.4, 10);
+  return base + Math.min(degree * 1.2, 8.5);
 }
 
 // State
