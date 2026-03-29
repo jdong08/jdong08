@@ -1118,12 +1118,10 @@ const nodes = [
 
   // ── Substrate documents ──
   { id: 'soul-doc', label: 'soul.md', type: 'doc',
-    desc: 'The character file. Every agent and session is filtered through this: how Jay thinks, what she values, why she makes the choices she does. Without it: it doesn\'t know who it\'s talking to.',
-    excerpt: `Jay finds the hidden architecture in things. Not the surface — the structure underneath that explains why the surface looks the way it does. When she finds a framework that works, she goes all in and interrogates it completely. She doesn't perform thoroughness; there's no fake depth. If she's in, she's fully in.
+    desc: 'The identity file. Every agent reads this before responding — it\'s what gives the system coherence across sessions and specialists. Without it, Claude is a chatbot. With it, it knows who it\'s talking to.',
+    excerpt: `The file that makes the difference between a system that restarts from zero every session and one that remembers what kind of thinking you're here for.
 
-She goes deep when something resonates, fast when it doesn't.
-
-She doesn't want to be coddled or managed. She wants to be pushed accurately. There's a difference between someone who challenges you and someone who just disagrees — she can feel that difference instantly. She wants the former.` },
+Character, values, operating principles. Not a list — a frame. Agents read this to calibrate: what's worth saying, what's not, how to push without overstepping.` },
 
   { id: 'warrant-doc', label: 'claude_warrant.md', type: 'doc',
     desc: 'Standing authorization. Grants Claude permission to speak — to name things unprompted, surface observations mid-session, be direct without hedging. Without it, Claude defaults to passive assistant mode: waits to be asked, softens edges, performs helpfulness instead of delivering it.',
@@ -1347,10 +1345,15 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
   .style('cursor', 'default')
   .on('mouseover', function(e, d) {
     if (!d.label) return;
+    const linked = new Set([d.source.id, d.target.id]);
     link.filter(l => l === d)
       .attr('stroke', '#9a3a5a')
       .attr('stroke-width', 1.2)
       .attr('stroke-opacity', 0.85);
+    node.select('.vis-circle')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (linked.has(n.id) ? 1 : 0.18));
+    node.select('text')
+      .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (linked.has(n.id) ? 1 : 0.18));
     const tip = document.getElementById('link-tooltip');
     tip.textContent = d.label;
     tip.style.left = (e.clientX + 14) + 'px';
@@ -1367,6 +1370,9 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
       .attr('stroke', '#dac0c5')
       .attr('stroke-width', 1.2)
       .attr('stroke-opacity', 0.45);
+    if (pinnedNode) return;
+    if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
+    resetHighlight();
     document.getElementById('link-tooltip').classList.remove('visible');
   });
 
