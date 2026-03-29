@@ -380,6 +380,15 @@ header {
   margin-bottom: 18px;
 }
 .about-body p + p { margin-top: 10px; }
+.about-origin {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e8ddd5;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #877276;
+  line-height: 1.55;
+}
 .about-footer {
   font-size: 0.65rem;
   letter-spacing: 0.08em;
@@ -1102,6 +1111,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
       <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
       <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor I work in.</p>
       <p>Everything in this graph is something I built and use daily.</p>
+      <p class="about-origin">Named for Metis — Titaness of wisdom, craft, and deep thought. Zeus's first wife; he swallowed her so her wisdom would live inside him. An AI infrastructure that lives inside your life and thinks ahead for you.</p>
     </div>
     <div class="about-footer">Click any node to explore.</div>
   </div>
@@ -1604,10 +1614,10 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
       .attr('stroke', '#dac0c5')
       .attr('stroke-width', 1.0)
       .attr('stroke-opacity', 0.45);
+    document.getElementById('link-tooltip').classList.remove('visible');
     if (pinnedNode) return;
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
     resetHighlight();
-    document.getElementById('link-tooltip').classList.remove('visible');
   });
 
 const node = g.append('g').selectAll('g').data(nodes).join('g')
