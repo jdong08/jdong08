@@ -6,6 +6,8 @@
 <title>Tessa OS</title>
 <meta name="description" content="Tessa OS — a personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
 <meta name="robots" content="noindex, nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
@@ -75,6 +77,8 @@ header {
   width: 150px;
   border-color: rgba(154, 58, 90, 0.35);
   background: rgba(255,255,255,0.75);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(122,47,61,0.22);
 }
 .search-input::placeholder {
   color: #b0a0a4;
@@ -346,54 +350,105 @@ header {
 }
 .about-overlay.visible { opacity: 1; pointer-events: all; }
 .about-card {
-  background: #fcf9f0;
+  background: #1c1c17;
   border-radius: 16px;
-  padding: 32px 28px 28px;
+  padding: 0;
   max-width: 440px;
   width: calc(100% - 40px);
-  box-shadow: 0 24px 48px rgba(28,28,23,0.18);
+  box-shadow: 0 24px 48px rgba(28,28,23,0.32);
   position: relative;
+  overflow: hidden;
+}
+.about-card-bg {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.about-card-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+  filter: saturate(0.85);
+}
+.about-card-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(14, 11, 9, 0.08) 0%,
+    rgba(14, 11, 9, 0.18) 45%,
+    rgba(14, 11, 9, 0.72) 100%
+  );
+}
+.about-card-inner {
+  padding: 24px 28px 26px;
 }
 .about-close {
   position: absolute;
-  top: 14px; right: 14px;
-  width: 26px; height: 26px;
+  top: 12px; right: 12px;
+  width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; border: none;
   cursor: pointer;
-  color: #877276; font-size: 0.85rem;
-  background: transparent;
+  color: rgba(255,255,255,0.7); font-size: 0.85rem;
+  background: rgba(14,11,9,0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: background 0.15s, color 0.15s;
+  z-index: 5;
 }
-.about-close:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
+.about-close:hover { background: rgba(14,11,9,0.65); color: rgba(255,255,255,0.95); }
 .about-title {
   font-family: 'Newsreader', serif;
   font-style: italic;
   font-size: 1.6rem;
-  color: #7a2f3d;
-  margin-bottom: 16px;
+  color: #e8d5b0;
+  margin-bottom: 14px;
 }
 .about-body {
   font-size: 0.875rem;
   line-height: 1.72;
-  color: #544246;
-  margin-bottom: 18px;
+  color: rgba(245,240,230,0.82);
+  margin-bottom: 14px;
 }
 .about-body p + p { margin-top: 10px; }
 .about-origin {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #e8ddd5;
+  border-top: 1px solid rgba(255,255,255,0.1);
   font-size: 0.72rem;
   font-style: italic;
-  color: #877276;
+  color: rgba(245,240,230,0.48);
   line-height: 1.55;
+}
+.about-caption {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.05em;
+  position: absolute;
+  bottom: 10px;
+  left: 16px;
+  right: 44px;
+  z-index: 6;
+  pointer-events: none;
 }
 .about-footer {
   font-size: 0.65rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #877276;
+  color: rgba(245,240,230,0.38);
+  margin-top: 4px;
+}
+@media (max-width: 600px) {
+  .about-card-bg { height: 170px; }
+  .about-card-inner { padding: 20px 22px 22px; }
 }
 
 /* ── Lightbox ── */
@@ -1087,8 +1142,8 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 <div id="panel">
   <div class="panel-handle" id="panel-handle"></div>
   <div class="panel-actions">
-    <button class="panel-btn" id="pin-btn" onclick="togglePin()" title="Pin highlight">⊙</button>
-    <button class="panel-btn" onclick="closePanel()" title="Close">✕</button>
+    <button class="panel-btn" id="pin-btn" onclick="togglePin()" title="Pin highlight" aria-label="Pin highlight">⊙</button>
+    <button class="panel-btn" onclick="closePanel()" title="Close" aria-label="Close panel">✕</button>
   </div>
   <div class="panel-type" id="panel-type"></div>
   <div class="panel-name" id="panel-name"></div>
@@ -1102,26 +1157,30 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   <div class="conn-list" id="conn-list"></div>
 </div>
 
-<div class="about-overlay" id="about-overlay" onclick="closeAbout()">
+<div class="about-overlay" id="about-overlay" role="dialog" aria-modal="true" aria-labelledby="about-title" onclick="closeAbout()">
   <div class="about-card" onclick="event.stopPropagation()">
-    <button class="about-close" onclick="closeAbout()">✕</button>
-    <div class="about-title">Tessa OS</div>
-    <div class="about-body">
-      <p>A personal AI system. Instead of using AI as a single chatbot, I built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
-      <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
-      <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor I work in.</p>
-      <p>Everything in this graph is something I built and use daily.</p>
-      <p class="about-origin">Named for Metis — Titaness of wisdom, craft, and deep thought. Zeus's first wife; he swallowed her so her wisdom would live inside him. An AI infrastructure that lives inside your life and thinks ahead for you.</p>
-      <img src="artifacts/italy-fog.jpg" alt="Gas station, Val Gardena" style="width:100%;border-radius:8px;margin-top:16px;display:block;"/>
-      <p style="font-family:'DM Sans',sans-serif;font-weight:300;font-size:0.72rem;color:#a89880;margin-top:6px;letter-spacing:0.03em;">Valentine's Day. Val Gardena, Italy. February 2024.</p>
+    <button class="about-close" onclick="closeAbout()" aria-label="Close about">✕</button>
+    <div class="about-card-bg">
+      <img src="artifacts/italy-fog.jpg" alt="" role="presentation"/>
+      <span class="about-caption">Valentine's Day. Val Gardena, Italy. February 2024.</span>
     </div>
-    <div class="about-footer">Click any node to explore.</div>
+    <div class="about-card-inner">
+      <div class="about-title" id="about-title">Tessa OS</div>
+      <div class="about-body">
+        <p>A personal AI system. Instead of using AI as a single chatbot, I built a team of 23 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+        <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
+        <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor I work in.</p>
+        <p>Everything in this graph is something I built and use daily.</p>
+        <p class="about-origin">Named for Metis — Titaness of wisdom, craft, and deep thought. Zeus's first wife; he swallowed her so her wisdom would live inside him. An AI infrastructure that lives inside your life and thinks ahead for you.</p>
+      </div>
+      <div class="about-footer">Click any node to explore.</div>
+    </div>
   </div>
 </div>
 
-<div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+<div class="lightbox-overlay" id="lightbox-overlay" role="dialog" aria-modal="true" aria-labelledby="lb-title" onclick="closeLightbox()">
   <div class="lightbox-card" onclick="event.stopPropagation()">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
     <div class="lightbox-meta">
       <div class="lightbox-type" id="lb-type">Output</div>
       <div class="lightbox-title" id="lb-title"></div>
@@ -1132,7 +1191,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
       <div class="lightbox-made-tags" id="lb-made"></div>
     </div>
     <div class="lightbox-img-wrap" id="lb-img-wrap">
-      <img class="lightbox-img" id="lb-img" src="" alt=""/>
+      <img class="lightbox-img" id="lb-img" src="" alt="" loading="lazy"/>
       <div class="lightbox-excerpt" id="lb-excerpt"></div>
     </div>
   </div>
@@ -1981,6 +2040,7 @@ function restoreDock() {
 }
 
 function openLightbox(d) {
+  _lightboxTrigger = document.activeElement;
   currentNode = d;
 
   // Type badge — dynamic color
@@ -2046,19 +2106,37 @@ function openLightbox(d) {
 
   applyNeighborhoodHighlight(d);
   document.getElementById('lightbox-overlay').classList.add('visible');
+  setTimeout(() => {
+    const closeBtn = document.querySelector('.lightbox-close');
+    if (closeBtn) closeBtn.focus();
+  }, 50);
 }
+let _lightboxTrigger = null;
 function closeLightbox() {
   document.getElementById('lightbox-overlay').classList.remove('visible');
   currentNode = null;
   resetHighlight();
+  if (_lightboxTrigger) { _lightboxTrigger.focus(); _lightboxTrigger = null; }
 }
 
+let _aboutTrigger = null;
 function toggleAbout() {
-  document.getElementById('about-overlay').classList.toggle('visible');
+  const overlay = document.getElementById('about-overlay');
+  if (overlay.classList.contains('visible')) {
+    closeAbout();
+  } else {
+    _aboutTrigger = document.activeElement;
+    overlay.classList.add('visible');
+    setTimeout(() => {
+      const closeBtn = document.querySelector('.about-close');
+      if (closeBtn) closeBtn.focus();
+    }, 50);
+  }
 }
 let startHintReshown = false;
 function closeAbout() {
   document.getElementById('about-overlay').classList.remove('visible');
+  if (_aboutTrigger) { _aboutTrigger.focus(); _aboutTrigger = null; }
   if (!startHintAlive && !startHintReshown && soulNode && soulNode.x != null) {
     startHintReshown = true;
     const r = nodeR(soulNode);
