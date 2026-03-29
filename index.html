@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>jdong08 — Tessa OS</title>
+<title>Tessa OS</title>
 <meta name="description" content="Tessa OS — Jay's personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
 <meta name="robots" content="noindex, nofollow"/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -45,16 +45,10 @@ header {
 .brand {
   font-family: 'Newsreader', serif;
   font-style: italic;
-  font-size: 1.2rem;
+  font-size: 3.5rem;
+  line-height: 1;
   color: #9a3a5a;
-}
-.brand-sub {
-  font-size: 0.6rem;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #877276;
-  margin-left: 10px;
+  letter-spacing: -0.01em;
 }
 
 .header-right {
@@ -1028,8 +1022,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <header>
   <div class="header-left">
-    <span class="brand">jdong08</span>
-    <span class="brand-sub">Tessa OS</span>
+    <span class="brand">Tessa OS</span>
   </div>
   <div class="header-right">
     <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
@@ -1341,14 +1334,17 @@ const nodes = [
     date: 'March 2026' },
   { id: 'conversation-tracker', label: 'People I Talk To', type: 'output',
     desc: 'Real-time conversation tracker — visualizes who Jay talks to most, by frequency and recency. One of the first things built when she got Claude. February 2026.',
+    screenshot: 'artifacts/conversation-tracker.png',
     url: 'conversation-tracker.html',
     date: 'February 2026' },
   { id: 'powder-post', label: 'Powder Post', type: 'output',
     desc: 'Daily ski-condition briefing app. Weather, snowpack, sentiment — designed for slope decisions, not spreadsheets. Built February 2026 in the first vibe-coding sprint.',
+    screenshot: 'artifacts/powder-post.png',
     url: 'powder-post.html',
     date: 'February 2026' },
   { id: 'client-dash', label: 'Client Dash', type: 'output',
     desc: 'Client intelligence dashboard — earnings signals, competitor news, and market sentiment, updated live. Built February 2026 as an early test of AI-driven research tools.',
+    screenshot: 'artifacts/client-dash.png',
     url: 'client-dash.html',
     date: 'February 2026' },
 
@@ -1983,7 +1979,7 @@ function openLightbox(d) {
   typeEl.style.color = COLORS[d.type];
 
   document.getElementById('lb-title').textContent = d.label;
-  document.getElementById('lb-date').textContent = d.date || '';
+  document.getElementById('lb-date').textContent = d.date || 'March 2026';
   document.getElementById('lb-desc').textContent = d.desc;
 
   // Toggle image vs excerpt reading surface
