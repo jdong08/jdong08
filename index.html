@@ -788,6 +788,142 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   display: none;
 }
 
+/* ── Timeline Scrubber ── */
+.timeline-toggle {
+  position: fixed; bottom: 20px; left: 84px; z-index: 20;
+  background: none; border: none; padding: 0;
+  cursor: pointer; font-size: 14px; opacity: 0.28;
+  transition: opacity 0.2s, transform 0.15s;
+  line-height: 1; color: #544246;
+  touch-action: manipulation;
+}
+.timeline-toggle:hover { opacity: 0.7; }
+.timeline-toggle.active { opacity: 0.88; color: #9a3a5a; }
+
+#timeline-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 25;
+  background: rgba(252, 249, 240, 0.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(218, 192, 197, 0.3);
+  padding: 10px 40px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#timeline-bar.visible { transform: translateY(0); }
+
+.tl-stats {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.tl-stats-main {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+}
+.tl-stats-note {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: #b0a0a4;
+  margin-top: 2px;
+  font-style: italic;
+  min-height: 0.85em;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.tl-stats-note.visible { opacity: 1; }
+
+.tl-track-wrap {
+  position: relative;
+  height: 36px;
+  cursor: pointer;
+}
+.tl-track {
+  position: absolute;
+  top: 11px; left: 0; right: 0;
+  height: 1px;
+  background: rgba(218, 192, 197, 0.5);
+}
+.tl-filled {
+  position: absolute;
+  top: 11px; left: 0;
+  height: 1px;
+  background: #9a3a5a;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.65;
+}
+.tl-milestones {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tl-dot {
+  position: absolute;
+  top: 8px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(218,192,197,0.9);
+  transform: translateX(-50%);
+}
+.tl-dot.pulse-dot {
+  width: 8px; height: 8px;
+  top: 7px;
+  background: #9a3a5a;
+  animation: tl-pulse 2.2s ease-in-out infinite;
+}
+@keyframes tl-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(154,58,90,0.55); }
+  50%      { box-shadow: 0 0 0 7px rgba(154,58,90,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-dot.pulse-dot { animation: none; }
+}
+.tl-label {
+  position: absolute;
+  top: 18px;
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b0a0a4;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.tl-label.pulse-label { color: #9a3a5a; font-weight: 600; }
+
+.tl-handle {
+  position: absolute;
+  top: 6px;
+  width: 11px; height: 11px;
+  background: #9a3a5a;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  cursor: grab;
+  z-index: 3;
+  box-shadow: 0 0 0 3px rgba(154,58,90,0.15);
+  touch-action: none;
+  transition: box-shadow 0.15s;
+}
+.tl-handle:hover, .tl-handle.dragging {
+  cursor: grabbing;
+  box-shadow: 0 0 0 6px rgba(154,58,90,0.2);
+}
+
+@media (max-width: 600px) {
+  #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .timeline-toggle { left: 80px; }
+  .tl-label { display: none; }
+  .tl-label.pulse-label { display: block; }
+}
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
 /* ── Excerpt intra-doc links ── */
 .excerpt-link {
   color: #9a3a5a;
@@ -1298,6 +1434,8 @@ function nodeR(d) {
 // State
 let pinnedNode = null;
 const hiddenTypes = new Set();
+const hiddenNodes = new Set(); // nodes hidden by timeline scrubber
+let scrubberDate = null;       // null = all visible
 let currentNode = null;
 
 // D3
@@ -1677,12 +1815,14 @@ function toggleType(type) {
     el && el.classList.add('inactive');
     if (currentNode && currentNode.type === type) closePanel();
   }
-  node.attr('opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
-      .attr('pointer-events', d => hiddenTypes.has(d.type) ? 'none' : 'all');
+  node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
+      .attr('pointer-events', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 'none' : 'all');
   link.attr('opacity', l => {
     const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
     const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
-    return (hiddenTypes.has(st) || hiddenTypes.has(tt)) ? 0 : 1;
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenTypes.has(st) || hiddenTypes.has(tt) || hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
   });
 }
 
@@ -1894,6 +2034,210 @@ window.excerptNodeClick = function(nodeId) {
   else { openPanel(n); panToNode(n); }
 };
 
+// ── Timeline Scrubber ──
+const T_START = new Date('2026-02-11').getTime();
+const T_END   = new Date('2026-03-28').getTime();
+const T_RANGE = T_END - T_START;
+
+const NODE_BUILT = {
+  'soul-doc':          new Date('2026-02-11'),
+  'warrant-doc':       new Date('2026-02-11'),
+  'board-app':         new Date('2026-02-11'),
+  'thesis-doc':        new Date('2026-03-24'),
+  'board-skill':       new Date('2026-03-24'),
+  'cassandra':         new Date('2026-03-24'),
+  'gmail-mcp':         new Date('2026-03-25'),
+  'drive-mcp':         new Date('2026-03-25'),
+  'playwright-mcp':    new Date('2026-03-25'),
+  'minerva':           new Date('2026-03-25'),
+  'nadia':             new Date('2026-03-25'),
+  'loop-closer':       new Date('2026-03-25'),
+  'flitwick':          new Date('2026-03-25'),
+  'closing-shift':     new Date('2026-03-25'),
+  'week-review':       new Date('2026-03-25'),
+  'feedback-skill':    new Date('2026-03-25'),
+  'ai-study-brief':    new Date('2026-03-25'),
+  'ecosystem-doc':     new Date('2026-03-25'),
+  'loops-doc':         new Date('2026-03-25'),
+  'feedback-doc':      new Date('2026-03-25'),
+  'cosimo':            new Date('2026-03-25'),
+  'niccolo':           new Date('2026-03-25'),
+  'confucius':         new Date('2026-03-25'),
+  'la-signora':        new Date('2026-03-25'),
+  'lian':              new Date('2026-03-25'),
+  'the-drop':          new Date('2026-03-25'),
+  'ai-news':           new Date('2026-03-25'),
+  'marco':             new Date('2026-03-26'),
+  'research-skill':    new Date('2026-03-26'),
+  'challenge-skill':   new Date('2026-03-26'),
+  'translate-skill':   new Date('2026-03-26'),
+  'curriculum-skill':  new Date('2026-03-26'),
+  'bo':                new Date('2026-03-26'),
+  'leonardo':          new Date('2026-03-26'),
+  'ada':               new Date('2026-03-26'),
+  'gcal-mcp':          new Date('2026-03-26'),
+  'parent-newsletter': new Date('2026-03-26'),
+  'instacart-analysis':new Date('2026-03-26'),
+  'prof-j':            new Date('2026-03-27'),
+  'zhengming':         new Date('2026-03-27'),
+  'copilot-expert':    new Date('2026-03-27'),
+  'sox-expert':        new Date('2026-03-27'),
+  'work-researcher':   new Date('2026-03-27'),
+  'ecosystem-audit':   new Date('2026-03-27'),
+  'cornelia':          new Date('2026-03-28'),
+  'grace':             new Date('2026-03-28'),
+  'azzedine':          new Date('2026-03-28'),
+  'amelie':            new Date('2026-03-28'),
+  'opening-doc':       new Date('2026-03-28'),
+  'check-in-skill':    new Date('2026-03-28'),
+  'capture-close':     new Date('2026-03-28'),
+  'italian-kb':        new Date('2026-03-28'),
+  'chinese-kb':        new Date('2026-03-28'),
+  'social-kb':         new Date('2026-03-28'),
+  'nimbalyst-mcp':     new Date('2026-03-28'),
+};
+
+// Feb 11, Mar 25★, Mar 28 get labels. Intermediate dates get dots only.
+const MILESTONES = [
+  { date: new Date('2026-02-11'), label: 'Feb 11',   showLabel: true,  pulse: false },
+  { date: new Date('2026-03-24'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-25'), label: '★ Mar 25', showLabel: true,  pulse: true  },
+  { date: new Date('2026-03-26'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-27'), label: null,        showLabel: false, pulse: false },
+  { date: new Date('2026-03-28'), label: 'Mar 28',   showLabel: true,  pulse: false },
+];
+
+let timelineOpen = false;
+let tlScrubPct   = 100;
+let tlDragInited = false;
+
+function applyTimelineVisibility() {
+  nodes.forEach(n => {
+    const built = NODE_BUILT[n.id] || new Date('2026-02-11');
+    if (scrubberDate && built > scrubberDate) { hiddenNodes.add(n.id); }
+    else { hiddenNodes.delete(n.id); }
+  });
+  if (currentNode && hiddenNodes.has(currentNode.id)) closePanel();
+  if (pinnedNode && hiddenNodes.has(pinnedNode)) {
+    pinnedNode = null;
+    const pb = document.getElementById('pin-btn');
+    pb.classList.remove('pinned'); pb.textContent = '⊙';
+  }
+  node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
+      .attr('pointer-events', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 'none' : 'all');
+  const linkOpacity = l => {
+    const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+    const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenTypes.has(st) || hiddenTypes.has(tt) || hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  };
+  link.attr('opacity', linkOpacity);
+  linkHit.attr('opacity', l => {
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  }).attr('pointer-events', l => {
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 'none' : 'stroke';
+  });
+}
+
+function updateTlStats(pct) {
+  const visible = nodes.filter(n => !hiddenNodes.has(n.id)).length;
+  const days = Math.max(1, Math.round((pct / 100) * 45));
+  const mainEl = document.getElementById('tl-stats-main');
+  const noteEl = document.getElementById('tl-stats-note');
+  if (mainEl) mainEl.textContent = `${visible} things built · ${days} day${days === 1 ? '' : 's'}`;
+  if (noteEl) {
+    const atEnd = pct >= 99.5;
+    noteEl.textContent = atEnd ? 'built while working full-time' : '';
+    noteEl.classList.toggle('visible', atEnd);
+  }
+}
+
+function updateTlPosition(pct) {
+  tlScrubPct = Math.max(0, Math.min(100, pct));
+  scrubberDate = tlScrubPct >= 99.5 ? null : new Date(T_START + (tlScrubPct / 100) * T_RANGE);
+  const visual = Math.max(0.5, Math.min(99.5, tlScrubPct));
+  const filledEl = document.getElementById('tl-filled');
+  const handleEl = document.getElementById('tl-handle');
+  if (filledEl) filledEl.style.width = tlScrubPct + '%';
+  if (handleEl) handleEl.style.left = visual + '%';
+  applyTimelineVisibility();
+  updateTlStats(tlScrubPct);
+}
+
+function buildTlMilestones() {
+  const c = document.getElementById('tl-milestones');
+  if (!c) return;
+  c.innerHTML = '';
+  MILESTONES.forEach(m => {
+    const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
+    const dot = document.createElement('div');
+    dot.className = 'tl-dot' + (m.pulse ? ' pulse-dot' : '');
+    dot.style.left = pct + '%';
+    c.appendChild(dot);
+    if (m.showLabel && m.label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'tl-label' + (m.pulse ? ' pulse-label' : '');
+      lbl.style.left = pct + '%';
+      lbl.textContent = m.label;
+      c.appendChild(lbl);
+    }
+  });
+}
+
+function initTlDrag() {
+  const wrap   = document.getElementById('tl-track-wrap');
+  const handle = document.getElementById('tl-handle');
+  if (!wrap || !handle) return;
+  let dragging = false;
+  const getPct = cx => { const r = wrap.getBoundingClientRect(); return ((cx - r.left) / r.width) * 100; };
+  handle.addEventListener('mousedown', e => { dragging = true; handle.classList.add('dragging'); e.preventDefault(); });
+  wrap.addEventListener('mousedown', e => {
+    if (e.target === handle) return;
+    updateTlPosition(getPct(e.clientX)); dragging = true; handle.classList.add('dragging'); e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => { if (dragging) updateTlPosition(getPct(e.clientX)); });
+  document.addEventListener('mouseup',   () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
+  handle.addEventListener('touchstart', e => { dragging = true; handle.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+  wrap.addEventListener('touchstart', e => {
+    if (e.target === handle) return;
+    updateTlPosition(getPct(e.touches[0].clientX)); dragging = true; handle.classList.add('dragging'); e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => { if (dragging) updateTlPosition(getPct(e.touches[0].clientX)); }, { passive: true });
+  document.addEventListener('touchend',  () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
+}
+
+function toggleTimeline() {
+  const bar = document.getElementById('timeline-bar');
+  const btn = document.getElementById('timeline-toggle');
+  timelineOpen = !timelineOpen;
+  if (timelineOpen) {
+    bar.classList.add('visible');
+    btn.classList.add('active');
+    buildTlMilestones();
+    if (!tlDragInited) { initTlDrag(); tlDragInited = true; }
+    updateTlPosition(100);
+  } else {
+    bar.classList.remove('visible');
+    btn.classList.remove('active');
+    scrubberDate = null;
+    hiddenNodes.clear();
+    node.attr('opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
+        .attr('pointer-events', d => hiddenTypes.has(d.type) ? 'none' : 'all');
+    link.attr('opacity', l => {
+      const st = typeof l.source === 'object' ? l.source.type : nodeMap[l.source]?.type;
+      const tt = typeof l.target === 'object' ? l.target.type : nodeMap[l.target]?.type;
+      return (hiddenTypes.has(st) || hiddenTypes.has(tt)) ? 0 : 1;
+    });
+    linkHit.attr('opacity', 1).attr('pointer-events', 'stroke');
+  }
+}
+window.toggleTimeline = toggleTimeline;
+
 window.closePanel = closePanel;
 window.togglePin = togglePin;
 window.toggleType = toggleType;
@@ -1940,6 +2284,20 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 <!-- Lock button -->
 <button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
 <button class="heart-btn" id="heart-btn" onclick="snapToHeart()" title="Gather">♡</button>
+<button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
+
+<div id="timeline-bar">
+  <div class="tl-stats">
+    <span class="tl-stats-main" id="tl-stats-main">55 things built · 46 days</span>
+    <span class="tl-stats-note" id="tl-stats-note"></span>
+  </div>
+  <div class="tl-track-wrap" id="tl-track-wrap">
+    <div class="tl-track"></div>
+    <div class="tl-filled" id="tl-filled"></div>
+    <div class="tl-milestones" id="tl-milestones"></div>
+    <div class="tl-handle" id="tl-handle"></div>
+  </div>
+</div>
 <!-- Password modal -->
 <div class="modal-bg" id="private-modal">
   <div class="modal-box">
