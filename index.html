@@ -1445,7 +1445,7 @@ const startHintG = g.append('g').attr('class', 'start-hint-g').style('pointer-ev
 const startHintRect = startHintG.append('rect')
   .attr('rx', 7).attr('fill', '#fcf9f0')
   .attr('stroke', 'rgba(154,58,90,0.35)').attr('stroke-width', 1.2);
-startHintG.append('text').attr('class', 'start-hint-text').attr('text-anchor', 'middle').text('✦ start here');
+startHintG.append('text').attr('class', 'start-hint-text').attr('text-anchor', 'middle').attr('x', 0).attr('dominant-baseline', 'middle').text('✦ start here');
 // Fade in after 800ms (let graph settle a bit first)
 setTimeout(() => {
   if (startHintAlive) startHintG.transition().duration(500).style('opacity', 1);
@@ -1470,7 +1470,7 @@ sim.on('tick', () => {
   if (startHintAlive && soulNode && soulNode.x != null) {
     const r = nodeR(soulNode);
     startHintRect.attr('x', -48).attr('y', -(r + 36)).attr('width', 96).attr('height', 24);
-    startHintG.select('text').attr('y', -(r + 18));
+    startHintG.select('text').attr('y', -(r + 24)); // rect center: -(r+36) + 12 = -(r+24)
     startHintG.attr('transform', `translate(${soulNode.x},${soulNode.y})`);
   }
 });
