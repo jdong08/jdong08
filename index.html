@@ -1391,17 +1391,10 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
     })
   );
 
-// Backing circle masks lines behind nodes
-node.append('circle')
-  .attr('r', d => nodeR(d) + 1.5)
-  .attr('fill', '#fcf9f0')
-  .attr('stroke', 'none');
-
 node.append('circle')
   .attr('class', 'vis-circle')
   .attr('r', d => nodeR(d))
   .attr('fill', d => COLORS[d.type])
-  .attr('fill-opacity', 0.82)
   .attr('stroke', '#fcf9f0')
   .attr('stroke-width', 2.5);
 
