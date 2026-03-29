@@ -788,6 +788,40 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   display: none;
 }
 
+/* ── Timeline close + first-visit label ── */
+.tl-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: none; border: none;
+  font-size: 0.68rem;
+  color: #b0a0a4;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.tl-close:hover { color: #9a3a5a; }
+
+.tl-hint-label {
+  position: fixed;
+  bottom: 22px; left: 102px;
+  font-size: 9px;
+  font-family: 'Work Sans', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  opacity: 0.28;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  transition: opacity 0.6s;
+}
+.tl-hint-label.fading { opacity: 0; }
+@supports (bottom: env(safe-area-inset-bottom)) {
+  .tl-hint-label { bottom: calc(22px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 600px) { .tl-hint-label { left: 96px; } }
+
 /* ── Timeline Scrubber ── */
 .timeline-toggle {
   position: fixed; bottom: 20px; left: 84px; z-index: 20;
@@ -2258,9 +2292,19 @@ function initTlDrag() {
   document.addEventListener('touchend',  () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
 }
 
+function dismissTlHint() {
+  if (localStorage.getItem('tl-hint-seen')) return;
+  localStorage.setItem('tl-hint-seen', '1');
+  const lbl = document.getElementById('tl-hint-label');
+  if (!lbl) return;
+  lbl.classList.add('fading');
+  setTimeout(() => { lbl.style.display = 'none'; }, 650);
+}
+
 function toggleTimeline() {
   const bar = document.getElementById('timeline-bar');
   const btn = document.getElementById('timeline-toggle');
+  dismissTlHint();
   timelineOpen = !timelineOpen;
   if (timelineOpen) {
     bar.classList.add('visible');
@@ -2284,6 +2328,47 @@ function toggleTimeline() {
   }
 }
 window.toggleTimeline = toggleTimeline;
+
+// Timeline first-visit hint — auto-fade after 8s
+(function() {
+  if (localStorage.getItem('tl-hint-seen')) {
+    const lbl = document.getElementById('tl-hint-label');
+    if (lbl) lbl.style.display = 'none';
+    return;
+  }
+  setTimeout(() => {
+    const lbl = document.getElementById('tl-hint-label');
+    if (!lbl || localStorage.getItem('tl-hint-seen')) return;
+    lbl.classList.add('fading');
+    setTimeout(() => { if (lbl) lbl.style.display = 'none'; }, 650);
+  }, 8000);
+})();
+
+// Soul ring — three slow exhale cycles, then gone
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const soulN = nodes.find(n => n.id === 'soul-doc');
+  if (!soulN) return;
+  const soulGroup = node.filter(d => d.id === 'soul-doc');
+  const ringEl = soulGroup.insert('circle', '.hit-pad')
+    .attr('r', nodeR(soulN) + 2)
+    .attr('fill', 'none')
+    .attr('stroke', '#9a3a5a')
+    .attr('stroke-width', 0.8)
+    .attr('opacity', 0)
+    .style('pointer-events', 'none');
+  let cycles = 0;
+  function exhale() {
+    if (cycles >= 3) { ringEl.remove(); return; }
+    cycles++;
+    const base = nodeR(soulN) + 2;
+    ringEl.attr('r', base).attr('opacity', 0.55);
+    ringEl.transition().duration(2200).ease(d3.easeQuadOut)
+      .attr('r', base + 12).attr('opacity', 0)
+      .on('end', exhale);
+  }
+  setTimeout(exhale, 1400);
+})();
 
 window.closePanel = closePanel;
 window.togglePin = togglePin;
@@ -2332,8 +2417,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 <button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
 <button class="heart-btn" id="heart-btn" onclick="snapToHeart()" title="Gather">♡</button>
 <button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
+<span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 
 <div id="timeline-bar">
+  <button class="tl-close" onclick="toggleTimeline()" title="Close timeline">✕</button>
   <div class="tl-stats">
     <span class="tl-stats-main" id="tl-stats-main">55 things built · 46 days</span>
     <span class="tl-stats-note" id="tl-stats-note"></span>
