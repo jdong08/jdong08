@@ -102,11 +102,34 @@ header {
   cursor: pointer;
   transition: opacity 0.15s;
   user-select: none;
+  border-radius: 4px;
+  padding: 2px 3px;
 }
 .legend-item:hover { opacity: 0.7; }
+.legend-item:focus-visible { outline: 2px solid rgba(122,47,61,0.55); outline-offset: 2px; }
 .legend-item.inactive { opacity: 0.28; }
 .legend-item.inactive .legend-dot { background: #b0a0a4 !important; }
 .legend-item.inactive span { text-decoration: line-through; }
+
+/* Filter reset button */
+.legend-reset {
+  display: none;
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7a2f3d;
+  background: none;
+  border: 1px solid rgba(122,47,61,0.25);
+  border-radius: 999px;
+  padding: 2px 7px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.legend-reset:hover { background: rgba(122,47,61,0.08); }
+.legend-reset:focus-visible { outline: 2px solid rgba(122,47,61,0.55); outline-offset: 2px; }
+.legend-reset.visible { display: inline-block; }
 .legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
 /* About button */
@@ -128,9 +151,85 @@ header {
 .about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(122,47,61,0.4); }
 
 
+/* Mobile search trigger button (shown on mobile instead of inline input) */
+.search-mobile-btn {
+  display: none;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(218, 192, 197, 0.5);
+  background: rgba(252,249,240,0.85);
+  color: #877276;
+  font-size: 0.9rem;
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+}
+.search-mobile-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; }
+
+/* Mobile search overlay */
+.search-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(252,249,240,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 20px;
+  padding-top: max(24px, env(safe-area-inset-top));
+}
+.search-overlay.open { display: flex; }
+.search-overlay-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+.search-overlay-input {
+  flex: 1;
+  background: rgba(218,192,197,0.14);
+  border: 1px solid rgba(218,192,197,0.5);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-family: 'DM Sans', sans-serif;
+  color: #544246;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(122,47,61,0.2);
+}
+.search-overlay-input::placeholder { color: #b0a0a4; letter-spacing: 0.06em; }
+.search-overlay-cancel {
+  background: none;
+  border: none;
+  color: #7a2f3d;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 4px;
+  flex-shrink: 0;
+}
+/* Empty state message */
+.search-empty {
+  display: none;
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: #9a7a80;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
 @media (max-width: 600px) {
   .legend { display: none; }
   .search-input { display: none; }
+  .search-mobile-btn { display: flex; }
 }
 
 /* ── Graph ── */
@@ -1089,28 +1188,30 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <span class="brand">Tessa OS</span>
   </div>
   <div class="header-right">
-    <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
-    <div class="legend">
-      <div class="legend-item" data-type="agent" onclick="toggleType('agent')">
+    <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)" aria-label="Search nodes"/>
+    <button class="search-mobile-btn" onclick="openSearchOverlay()" aria-label="Search">⌕</button>
+    <div class="legend" role="group" aria-label="Filter by type">
+      <div class="legend-item" data-type="agent" onclick="toggleType('agent')" role="checkbox" aria-checked="true" tabindex="0">
         <div class="legend-dot" style="background:#7a2f3d"></div>
         <span>Agent</span>
       </div>
-      <div class="legend-item" data-type="skill" onclick="toggleType('skill')">
+      <div class="legend-item" data-type="skill" onclick="toggleType('skill')" role="checkbox" aria-checked="true" tabindex="0">
         <div class="legend-dot" style="background:#53643a"></div>
         <span>Skill</span>
       </div>
-      <div class="legend-item" data-type="mcp" onclick="toggleType('mcp')">
+      <div class="legend-item" data-type="mcp" onclick="toggleType('mcp')" role="checkbox" aria-checked="true" tabindex="0">
         <div class="legend-dot" style="background:#765700"></div>
         <span>Integration</span>
       </div>
-      <div class="legend-item" data-type="output" onclick="toggleType('output')">
+      <div class="legend-item" data-type="output" onclick="toggleType('output')" role="checkbox" aria-checked="true" tabindex="0">
         <div class="legend-dot" style="background:#4f6478"></div>
         <span>Output</span>
       </div>
-      <div class="legend-item" data-type="doc" onclick="toggleType('doc')">
+      <div class="legend-item" data-type="doc" onclick="toggleType('doc')" role="checkbox" aria-checked="true" tabindex="0">
         <div class="legend-dot" style="background:#6b4f7a"></div>
         <span>Document</span>
       </div>
+      <button class="legend-reset" id="legend-reset" onclick="resetFilters()" aria-label="Reset all filters">reset</button>
     </div>
     <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
@@ -1136,10 +1237,21 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   </div>
 </div>
 
+<!-- Mobile search overlay -->
+<div class="search-overlay" id="search-overlay" role="search">
+  <div class="search-overlay-row">
+    <input class="search-overlay-input" id="search-overlay-input" type="search" placeholder="Search…" autocomplete="off" aria-label="Search nodes" oninput="applySearch(this.value); syncDesktopSearch(this.value)"/>
+    <button class="search-overlay-cancel" onclick="closeSearchOverlay()">cancel</button>
+  </div>
+  <div class="search-empty" id="search-overlay-empty">Nothing matched — try a shorter word.</div>
+</div>
+
 <svg id="graph-svg"></svg>
 <div class="link-tooltip" id="link-tooltip"></div>
+<!-- Desktop search empty state -->
+<div class="search-empty" id="search-empty" style="position:fixed;top:65px;left:50%;transform:translateX(-50%);z-index:18;pointer-events:none;"></div>
 
-<div id="panel">
+<div id="panel" role="complementary" aria-label="Node detail">
   <div class="panel-handle" id="panel-handle"></div>
   <div class="panel-actions">
     <button class="panel-btn" id="pin-btn" onclick="togglePin()" title="Pin highlight" aria-label="Pin highlight">⊙</button>
@@ -1973,10 +2085,10 @@ function toggleType(type) {
   const el = document.querySelector(`.legend-item[data-type="${type}"]`);
   if (hiddenTypes.has(type)) {
     hiddenTypes.delete(type);
-    el && el.classList.remove('inactive');
+    if (el) { el.classList.remove('inactive'); el.setAttribute('aria-checked', 'true'); }
   } else {
     hiddenTypes.add(type);
-    el && el.classList.add('inactive');
+    if (el) { el.classList.add('inactive'); el.setAttribute('aria-checked', 'false'); }
     if (currentNode && currentNode.type === type) closePanel();
   }
   node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
@@ -1988,18 +2100,70 @@ function toggleType(type) {
     const ti = typeof l.target === 'object' ? l.target.id : l.target;
     return (hiddenTypes.has(st) || hiddenTypes.has(tt) || hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
   });
+  // Show reset button if any filter is active
+  const resetBtn = document.getElementById('legend-reset');
+  if (resetBtn) resetBtn.classList.toggle('visible', hiddenTypes.size > 0);
+}
+
+function resetFilters() {
+  const types = ['agent', 'skill', 'mcp', 'output', 'doc'];
+  types.forEach(type => {
+    if (hiddenTypes.has(type)) {
+      hiddenTypes.delete(type);
+      const el = document.querySelector(`.legend-item[data-type="${type}"]`);
+      if (el) { el.classList.remove('inactive'); el.setAttribute('aria-checked', 'true'); }
+    }
+  });
+  node.attr('opacity', d => hiddenNodes.has(d.id) ? 0 : 1)
+      .attr('pointer-events', d => hiddenNodes.has(d.id) ? 'none' : 'all');
+  link.attr('opacity', l => {
+    const si = typeof l.source === 'object' ? l.source.id : l.source;
+    const ti = typeof l.target === 'object' ? l.target.id : l.target;
+    return (hiddenNodes.has(si) || hiddenNodes.has(ti)) ? 0 : 1;
+  });
+  const resetBtn = document.getElementById('legend-reset');
+  if (resetBtn) resetBtn.classList.remove('visible');
+}
+
+// Keyboard activation for legend filter items
+document.querySelectorAll('.legend-item[data-type]').forEach(el => {
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleType(el.getAttribute('data-type'));
+    }
+  });
+});
+
+function nodeMatchesSearch(n, query) {
+  return n.label.toLowerCase().includes(query) ||
+    (n.desc && n.desc.toLowerCase().includes(query)) ||
+    (n.type && n.type.toLowerCase().includes(query));
 }
 
 function applySearch(q) {
   const query = q.toLowerCase().trim();
-  if (!query) { resetHighlight(); return; }
+  const emptyEl = document.getElementById('search-empty');
+  const mobileEmptyEl = document.getElementById('search-overlay-empty');
+  if (!query) {
+    resetHighlight();
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (mobileEmptyEl) mobileEmptyEl.style.display = 'none';
+    return;
+  }
+  const hasMatch = nodes.some(n => nodeMatchesSearch(n, query));
   node.select('.vis-circle')
-    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.08)
-    .attr('r', n => n.label.toLowerCase().includes(query) ? nodeR(n) + 3 : nodeR(n));
+    .attr('fill-opacity', n => nodeMatchesSearch(n, query) ? 1 : 0.08)
+    .attr('r', n => nodeMatchesSearch(n, query) ? nodeR(n) + 3 : nodeR(n));
   node.select('text')
-    .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.1)
-    .attr('font-weight', n => n.label.toLowerCase().includes(query) ? '600' : '400');
+    .attr('fill-opacity', n => nodeMatchesSearch(n, query) ? 1 : 0.1)
+    .attr('font-weight', n => nodeMatchesSearch(n, query) ? '600' : '400');
   link.attr('stroke-opacity', 0.04);
+  if (emptyEl) {
+    emptyEl.textContent = 'Nothing matched — try a shorter word.';
+    emptyEl.style.display = hasMatch ? 'none' : 'block';
+  }
+  if (mobileEmptyEl) mobileEmptyEl.style.display = hasMatch ? 'none' : 'block';
 }
 
 // ── Panel drag-to-resize (mobile) ──
@@ -2157,7 +2321,15 @@ function toggleProjects() {
 
 // Keyboard
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closePanel(); closeAbout(); closeLightbox(); }
+  if (e.key === 'Escape') {
+    closePanel(); closeAbout(); closeLightbox();
+    if (document.getElementById('search-overlay') && document.getElementById('search-overlay').classList.contains('open')) {
+      closeSearchOverlay();
+    }
+    if (document.getElementById('private-modal') && document.getElementById('private-modal').classList.contains('open')) {
+      window.closePrivate();
+    }
+  }
 });
 
 // Touch hint
@@ -2540,9 +2712,34 @@ window.toggleTimeline = toggleTimeline;
   setTimeout(exhale, 1400);
 })();
 
+// ── Mobile search overlay ──
+function openSearchOverlay() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-overlay-input');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  setTimeout(() => input && input.focus(), 60);
+}
+function closeSearchOverlay() {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  const input = document.getElementById('search-overlay-input');
+  if (input) input.value = '';
+  applySearch('');
+  // Also clear desktop search input
+  const desktopInput = document.getElementById('search');
+  if (desktopInput) desktopInput.value = '';
+}
+function syncDesktopSearch(val) {
+  const desktopInput = document.getElementById('search');
+  if (desktopInput) desktopInput.value = val;
+}
+
 window.closePanel = closePanel;
 window.togglePin = togglePin;
 window.toggleType = toggleType;
+window.resetFilters = resetFilters;
 window.applySearch = applySearch;
 window.toggleAbout = toggleAbout;
 window.closeAbout = closeAbout;
@@ -2552,6 +2749,8 @@ window.closeLightbox = closeLightbox;
 window.dismissDock = dismissDock;
 window.restoreDock = restoreDock;
 window.snapToHeart = snapToHeart;
+window.openSearchOverlay = openSearchOverlay;
+window.closeSearchOverlay = closeSearchOverlay;
 
 // ── First-visit: auto-open about card ──
 if (!localStorage.getItem('tessa_visited')) {
@@ -2561,13 +2760,16 @@ if (!localStorage.getItem('tessa_visited')) {
 
 // ── Private lock ──
 const PRIVATE_PASSWORD = 'conan';
+let _privateTrigger = null;
 window.openPrivate = function() {
+  _privateTrigger = document.activeElement;
   document.getElementById('private-modal').classList.add('open');
   setTimeout(() => document.getElementById('private-pw').focus(), 50);
 };
 window.closePrivate = function() {
   document.getElementById('private-modal').classList.remove('open');
   document.getElementById('private-pw').value = '';
+  if (_privateTrigger) { _privateTrigger.focus(); _privateTrigger = null; }
 };
 window.checkPrivate = function() {
   const inp = document.getElementById('private-pw');
@@ -2609,11 +2811,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
   </div>
 </div>
 <!-- Password modal -->
-<div class="modal-bg" id="private-modal">
+<div class="modal-bg" id="private-modal" role="dialog" aria-modal="true" aria-labelledby="private-modal-label">
   <div class="modal-box">
-    <div class="modal-icon">🔒</div>
-    <div class="modal-label">enter password</div>
-    <input id="private-pw" class="modal-input" type="password" placeholder="••••••••" autocomplete="off"/>
+    <div class="modal-icon" aria-hidden="true">🔒</div>
+    <div class="modal-label" id="private-modal-label">enter password</div>
+    <input id="private-pw" class="modal-input" type="password" placeholder="••••••••" autocomplete="off" aria-label="Password"/>
     <button class="modal-enter-btn" onclick="checkPrivate()">enter</button>
     <button class="modal-cancel-btn" onclick="closePrivate()">cancel</button>
   </div>
