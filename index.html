@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>jdong08 — Tessa OS</title>
-<meta name="description" content="Tessa OS — Jay's personal AI system. 24 specialist agents, 25 skills, 5 integrations."/>
+<meta name="description" content="Tessa OS — Jay's personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
@@ -127,6 +127,38 @@ header {
   box-shadow: 0 1px 4px rgba(28,28,23,0.07);
 }
 .about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(154,58,90,0.4); }
+
+.first-visit-hint {
+  position: fixed;
+  top: 52px;
+  right: 10px;
+  background: rgba(252,249,240,0.96);
+  border: 1px solid rgba(154,58,90,0.25);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 0.72rem;
+  color: #9a3a5a;
+  font-family: 'Work Sans', sans-serif;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 10px rgba(28,28,23,0.1);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 200;
+  white-space: nowrap;
+}
+.first-visit-hint::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 9px;
+  width: 8px; height: 8px;
+  background: rgba(252,249,240,0.96);
+  border-top: 1px solid rgba(154,58,90,0.25);
+  border-left: 1px solid rgba(154,58,90,0.25);
+  transform: rotate(45deg);
+}
+.first-visit-hint.visible { opacity: 1; }
 
 @media (max-width: 600px) {
   .legend { display: none; }
@@ -830,6 +862,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
 </header>
+<div class="first-visit-hint" id="first-visit-hint">what is this?</div>
 
 <!-- Mobile color legend (hidden on desktop via CSS) -->
 <div class="mobile-legend" id="mobile-legend">
@@ -1025,10 +1058,6 @@ const nodes = [
     origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
     desc: 'Italian cultural bridge — Andrea\'s family, Florentine register, suocera dynamics, bella figura, what Italian behavior actually means.',
     example: 'Jay can\'t tell if Andrea\'s mother is upset or just Italian. Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
-  { id: 'iris',            label: 'Iris',            type: 'agent',
-    origin: 'Iris — the messenger who crossed between worlds, carrying what needed to be said without distorting it.',
-    desc: 'Andrea-specific relationship coach — his behavior, their dynamic, specific conflicts, communication patterns, what Jay actually wants from this partnership.',
-    example: 'Jay and Andrea keep having the same argument with different surface details. Iris sees the pattern underneath and names it — not to assign blame, but so Jay can work with the real thing.' },
   { id: 'week-review',     label: '/week-review',    type: 'skill',
     desc: 'Full life retrospective — updates board, triggers prof-j letter and ecosystem audit.',
     example: 'Every Sunday, Jay reviews her week — what worked, what\'s still open, what comes next. At the end, it sends her a short letter with a challenge for the coming week.' },
@@ -1059,6 +1088,12 @@ const nodes = [
   { id: 'ai-study-brief',  label: '/ai-study-brief', type: 'skill',
     desc: 'AI learning prioritization — what to study next given active certifications.',
     example: 'Before an AI learning session, this tells Jay what\'s most important to focus on given what she\'s currently working toward.' },
+  { id: 'check-in-skill',  label: '/check-in',       type: 'skill',
+    desc: 'Lightweight pulse check — two modes: status on a specific project, or stepping back to see the full picture. Max 5 exchanges, stays small.',
+    example: 'Jay wants to know where she stands on AAIA prep without opening a full session. Check-in reads the relevant loop and gives her a 3-line status.' },
+  { id: 'capture-close',  label: '/capture-and-close', type: 'skill',
+    desc: 'Session close ritual — names the artifact, writes to the capture-close log, clears the air. Distinct from /feedback (Minerva) and /closing-shift (end-of-day).',
+    example: 'We just built something real. Capture-and-close names it, logs it, and closes the session so the next thing can start clean.' },
   // ── Process workflows ──
   { id: 'the-drop',        label: 'The Drop',        type: 'skill',
     desc: 'Daily intake — a living Google Doc where Jay logs ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
@@ -1171,15 +1206,24 @@ The pattern count: 2026-03-24. 2026-03-25. 2026-03-25 (second wave). 2026-03-26.
 If this appears a fifth time, the rule is decorative.` },
 
   { id: 'opening-doc', label: 'opening-shift', type: 'doc',
-    desc: 'The daily ignition sequence. Four sweeps: loops, calendar, email, board state. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
-    excerpt: `Orient before you work. Four sweeps, compact output. Nothing writes without Jay seeing it first.
+    desc: 'The daily ignition sequence. Three steps: closing-shift check, Anthropic feature scan, Drop triage. Without it, the day starts cold — Jay has to manually re-establish where everything stands. With it, context is loaded before the first real question gets asked.',
+    excerpt: `Orient before you work. Three steps, compact output. Nothing writes without Jay seeing it first.
 
-Step 1: Gmail Sweep — inbox triage with approval gate.
-Step 2: Calendar Sweep — 14-day lookahead, 1-day lookback.
-Step 3: The Drop — surface any items not yet marked swept.
-Step 4: Telegram Log — surface any messages since last opening-shift.
+Step 1: Closing-shift check — did yesterday actually close?
+Step 2: Flitwick — top 3 Anthropic feature drops in the last 7 days.
+Step 3: The Drop — surface any unswept items from the day before.
 
-One line per sweep. Nothing hidden.` },
+One line per step. Nothing hidden.` },
+  // ── Knowledge Bases ──
+  { id: 'italian-kb',      label: 'Italian Cultural KB', type: 'doc',
+    desc: 'Companion reference for Cornelia — Italian family dynamics, regional etiquette, generational patterns, the suocera relationship, Florentine context. Not a guide to Italy; a guide to the specific world Jay is marrying into.',
+    excerpt: `Pontassieve. Pelago. The Menichetti and Pelliccia families — Florentine east. What matters here isn't Italy in the abstract but the texture of this particular family: when to bring wine, how to address la suocera, what silence means at the table. Cornelia reads this before every conversation.` },
+  { id: 'chinese-kb',      label: 'Chinese Cultural KB', type: 'doc',
+    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, what Jay\'s parents expect vs. what they say, how to write in a voice that sounds like their daughter.',
+    excerpt: `Jay's parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from Jay — not from a machine trying to be polite.` },
+  { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
+    desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
+    excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what first-gen professionals miss that everyone else absorbed without noticing.` },
 ];
 
 const links = [
@@ -1247,10 +1291,14 @@ const links = [
   { source: 'cornelia',      target: 'cassandra',        label: 'Italian family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
   { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When Jay needs to say something in Italian, they hand off.' },
   { source: 'cornelia',      target: 'marco',            label: 'Cornelia handles the family context and register; Marco handles getting there and what to bring.' },
-  { source: 'cornelia',      target: 'iris',             label: 'When Andrea\'s behavior has a cultural explanation, Cornelia provides it. When it\'s a relationship pattern, she passes to Iris.' },
-  // iris connections
-  { source: 'iris',          target: 'cassandra',        label: 'Iris handles what\'s specifically about Andrea; Cassandra holds the bigger question of what Jay wants her life to look like.' },
-  { source: 'soul-doc',      target: 'iris',             label: 'Iris reads soul.md to understand Jay\'s patterns in relationship — where she freezes, where she over-accommodates.' },
+  // knowledge base connections
+  { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Italian Cultural KB before every conversation — it holds the specific family and regional context she needs.' },
+  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for Jay\'s Shanghainese parents.' },
+  { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
+  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and Jay\'s own character — essential for navigating the suocera relationship.' },
+  // skill connections
+  { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
+  { source: 'capture-close', target: 'loops-doc',        label: '/capture-and-close writes artifacts and open items back to loops before ending the session.' },
 ];
 
 // Build adjacency map
@@ -1765,6 +1813,7 @@ function closeLightbox() {
 
 function toggleAbout() {
   document.getElementById('about-overlay').classList.toggle('visible');
+  document.getElementById('first-visit-hint').classList.remove('visible');
 }
 function closeAbout() {
   document.getElementById('about-overlay').classList.remove('visible');
@@ -1865,6 +1914,14 @@ window.closeLightbox = closeLightbox;
 window.dismissDock = dismissDock;
 window.restoreDock = restoreDock;
 window.snapToHeart = snapToHeart;
+
+// ── First-visit hint ──
+if (!localStorage.getItem('tessa_visited')) {
+  localStorage.setItem('tessa_visited', '1');
+  const hint = document.getElementById('first-visit-hint');
+  setTimeout(() => hint.classList.add('visible'), 900);
+  setTimeout(() => hint.classList.remove('visible'), 7000);
+}
 
 // ── Private lock ──
 const PRIVATE_PASSWORD = 'conan';
