@@ -1324,8 +1324,8 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
     if (!d.label) return;
     link.filter(l => l === d)
       .attr('stroke', '#9a3a5a')
-      .attr('stroke-width', 1.8)
-      .attr('stroke-opacity', 0.7);
+      .attr('stroke-width', 1.2)
+      .attr('stroke-opacity', 0.85);
     const tip = document.getElementById('link-tooltip');
     tip.textContent = d.label;
     tip.style.left = (e.clientX + 14) + 'px';
