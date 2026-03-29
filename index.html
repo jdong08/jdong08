@@ -1512,7 +1512,7 @@ sim.on('tick', () => {
 
 function resetHighlight() {
   node.select('.vis-circle')
-    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 0.82)
+    .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
     .attr('r', d => nodeR(d))
     .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
     .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 1.0 : 0.8);
@@ -1534,7 +1534,7 @@ function applyNeighborhoodHighlight(d) {
     .attr('font-weight', n => n.id === d.id ? '600' : '400');
   link
     .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
-    .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
+    .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
 }
 
 function fitAll() {
