@@ -128,37 +128,6 @@ header {
 }
 .about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(154,58,90,0.4); }
 
-.first-visit-hint {
-  position: fixed;
-  top: 52px;
-  right: 10px;
-  background: rgba(252,249,240,0.96);
-  border: 1px solid rgba(154,58,90,0.25);
-  border-radius: 8px;
-  padding: 6px 11px;
-  font-size: 0.72rem;
-  color: #9a3a5a;
-  font-family: 'Work Sans', sans-serif;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 10px rgba(28,28,23,0.1);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  z-index: 200;
-  white-space: nowrap;
-}
-.first-visit-hint::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  right: 9px;
-  width: 8px; height: 8px;
-  background: rgba(252,249,240,0.96);
-  border-top: 1px solid rgba(154,58,90,0.25);
-  border-left: 1px solid rgba(154,58,90,0.25);
-  transform: rotate(45deg);
-}
-.first-visit-hint.visible { opacity: 1; }
 
 @media (max-width: 600px) {
   .legend { display: none; }
@@ -866,7 +835,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
   </div>
 </header>
-<div class="first-visit-hint" id="first-visit-hint">what is this?</div>
+
 
 <!-- Mobile color legend (hidden on desktop via CSS) -->
 <div class="mobile-legend" id="mobile-legend">
@@ -1821,7 +1790,6 @@ function closeLightbox() {
 
 function toggleAbout() {
   document.getElementById('about-overlay').classList.toggle('visible');
-  document.getElementById('first-visit-hint').classList.remove('visible');
 }
 let startHintReshown = false;
 function closeAbout() {
@@ -1933,12 +1901,10 @@ window.dismissDock = dismissDock;
 window.restoreDock = restoreDock;
 window.snapToHeart = snapToHeart;
 
-// ── First-visit hint ──
+// ── First-visit: auto-open about card ──
 if (!localStorage.getItem('tessa_visited')) {
   localStorage.setItem('tessa_visited', '1');
-  const hint = document.getElementById('first-visit-hint');
-  setTimeout(() => hint.classList.add('visible'), 900);
-  setTimeout(() => hint.classList.remove('visible'), 7000);
+  setTimeout(() => document.getElementById('about-overlay').classList.add('visible'), 900);
 }
 
 // ── Private lock ──
