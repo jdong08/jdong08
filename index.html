@@ -1289,9 +1289,9 @@ const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 // Dynamic node radius — nodes with more connections render larger (Obsidian-style)
 // Base sizes scaled to 85% of original
 function nodeR(d) {
-  const base = { agent: 8.5, skill: 7, mcp: 7, output: 8.5, doc: 7.5 }[d.type] || 8.5;
+  const base = { agent: 7.2, skill: 6.0, mcp: 6.0, output: 7.2, doc: 6.4 }[d.type] || 7.2;
   const degree = (adj[d.id] || []).length;
-  return base + Math.min(degree * 1.2, 8.5);
+  return base + Math.min(degree * 1.0, 5.0);
 }
 
 // State
@@ -1318,7 +1318,7 @@ const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
   .force('charge', d3.forceManyBody().strength(-200))
   .force('center', d3.forceCenter(W / 2, H / 2))
-  .force('collision', d3.forceCollide().radius(d => nodeR(d) + 22))
+  .force('collision', d3.forceCollide().radius(d => nodeR(d) + 14))
   .alpha(0.4)
   .alphaDecay(isMobile ? 0.07 : 0.045)
   .velocityDecay(0.62)
@@ -1334,7 +1334,7 @@ const sim = d3.forceSimulation(nodes)
 
 const link = g.append('g').selectAll('line').data(links).join('line')
   .attr('stroke', '#dac0c5')
-  .attr('stroke-width', 1.2)
+  .attr('stroke-width', 1.0)
   .attr('stroke-opacity', 0.45);
 
 // Wider invisible lines for link hover hit detection
@@ -1348,7 +1348,7 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
     const linked = new Set([d.source.id, d.target.id]);
     link.filter(l => l === d)
       .attr('stroke', '#9a3a5a')
-      .attr('stroke-width', 1.2)
+      .attr('stroke-width', 1.0)
       .attr('stroke-opacity', 0.85);
     node.select('.vis-circle')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (linked.has(n.id) ? 1 : 0.18));
@@ -1368,7 +1368,7 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
   .on('mouseout', function(e, d) {
     link.filter(l => l === d)
       .attr('stroke', '#dac0c5')
-      .attr('stroke-width', 1.2)
+      .attr('stroke-width', 1.0)
       .attr('stroke-opacity', 0.45);
     if (pinnedNode) return;
     if (currentNode) { applyNeighborhoodHighlight(currentNode); return; }
@@ -1396,7 +1396,7 @@ node.append('circle')
   .attr('r', d => nodeR(d))
   .attr('fill', d => COLORS[d.type])
   .attr('stroke', '#fcf9f0')
-  .attr('stroke-width', 2.5);
+  .attr('stroke-width', 0.8);
 
 // Transparent hit-pad on top (z-order: last = highest) — 44px+ touch target on mobile
 node.append('circle')
@@ -1424,7 +1424,7 @@ node
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
     link
       .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
-      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
   })
   .on('mouseout', () => {
     if (pinnedNode) return;
@@ -1515,11 +1515,11 @@ function resetHighlight() {
     .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 0.82)
     .attr('r', d => nodeR(d))
     .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
-    .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 3 : 2.5);
+    .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 1.0 : 0.8);
   node.select('text')
     .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 1)
     .attr('font-weight', '400');
-  link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.2);
+  link.attr('stroke-opacity', 0.45).attr('stroke-width', 1.0);
 }
 
 function applyNeighborhoodHighlight(d) {
@@ -1528,7 +1528,7 @@ function applyNeighborhoodHighlight(d) {
     .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
     .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n))
     .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
-    .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
+    .attr('stroke-width', n => n.id === d.id ? 1.0 : 0.8);
   node.select('text')
     .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
     .attr('font-weight', n => n.id === d.id ? '600' : '400');
@@ -1662,7 +1662,7 @@ function togglePin() {
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
     link
       .attr('stroke-opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 0.9 : 0.18)
-      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 2.2 : 1);
+      .attr('stroke-width',   l => (l.source.id === d.id || l.target.id === d.id) ? 1.6 : 0.8);
   }
 }
 
