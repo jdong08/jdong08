@@ -924,6 +924,21 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
 
+/* ── Lightbox external link ── */
+.lb-link {
+  display: inline-block;
+  font-size: 0.65rem;
+  color: #9a3a5a;
+  text-decoration: none;
+  letter-spacing: 0.07em;
+  border: 1px solid rgba(154,58,90,0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-bottom: 14px;
+  transition: background 0.15s;
+}
+.lb-link:hover { background: rgba(154,58,90,0.08); }
+
 /* ── Excerpt intra-doc links ── */
 .excerpt-link {
   color: #9a3a5a;
@@ -1036,6 +1051,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
       <div class="lightbox-title" id="lb-title"></div>
       <div class="lightbox-date" id="lb-date"></div>
       <div class="lightbox-desc" id="lb-desc"></div>
+      <a class="lb-link" id="lb-link" href="#" target="_blank" rel="noopener" style="display:none">open ↗</a>
       <div class="lightbox-made-label" id="lb-made-label">Made with</div>
       <div class="lightbox-made-tags" id="lb-made"></div>
     </div>
@@ -1252,6 +1268,18 @@ const nodes = [
     screenshot: 'artifacts/ai-news.png',
     made: ['flitwick'],
     date: 'March 2026' },
+  { id: 'conversation-tracker', label: 'People I Talk To', type: 'output',
+    desc: 'Real-time conversation tracker — visualizes who Jay talks to most, by frequency and recency. One of the first things built when she got Claude. February 2026.',
+    url: 'conversation-tracker.html',
+    date: 'February 2026' },
+  { id: 'powder-post', label: 'Powder Post', type: 'output',
+    desc: 'Daily ski-condition briefing app. Weather, snowpack, sentiment — designed for slope decisions, not spreadsheets. Built February 2026 in the first vibe-coding sprint.',
+    url: 'powder-post.html',
+    date: 'February 2026' },
+  { id: 'client-dash', label: 'Client Dash', type: 'output',
+    desc: 'Client intelligence dashboard — earnings signals, competitor news, and market sentiment, updated live. Built February 2026 as an early test of AI-driven research tools.',
+    url: 'client-dash.html',
+    date: 'February 2026' },
 
   // ── Substrate documents ──
   { id: 'soul-doc', label: 'soul.md', type: 'doc',
@@ -1573,7 +1601,7 @@ node
   .on('click', (e, d) => {
     e.stopPropagation();
     if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
-    else { openPanel(d); panToNodeMobile(d); }
+    else { openPanel(d); }
   });
 
 svg.on('click', (e) => { if (e.target === svg.node()) { closePanel(); dismissStartHint(); } });
@@ -1603,7 +1631,7 @@ node.each(function(d) {
     if (dt > 300 || dist > 15) return;
     // This is a genuine tap on the node — D3's click didn't fire
     if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
-    else { openPanel(d); panToNodeMobile(d); }
+    else { openPanel(d); }
   }, { passive: true });
 });
 
@@ -1748,7 +1776,7 @@ function openPanel(d) {
       tag.style.color = COLORS[n.type];
       tag.style.borderColor = COLORS[n.type] + '55';
       tag.style.background = COLORS[n.type] + '10';
-      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); panToNode(n); };
+      tag.onclick = ev => { ev.stopPropagation(); openPanel(n); };
       list.appendChild(tag);
     });
   } else {
@@ -1888,20 +1916,34 @@ function openLightbox(d) {
   document.getElementById('lb-desc').textContent = d.desc;
 
   // Toggle image vs excerpt reading surface
+  const imgWrap = document.getElementById('lb-img-wrap');
   const imgEl = document.getElementById('lb-img');
   const excerptEl = document.getElementById('lb-excerpt');
   if (d.type === 'doc') {
     imgEl.style.display = 'none';
+    imgWrap.style.display = 'none';
     excerptEl.innerHTML = buildLinkedExcerpt(d.excerpt || '', d.id);
-    // Restart cursor animation on each open
     excerptEl.classList.remove('visible');
     void excerptEl.offsetWidth;
     excerptEl.classList.add('visible');
-  } else {
+  } else if (d.screenshot) {
+    imgWrap.style.display = '';
     imgEl.style.display = '';
-    imgEl.src = d.screenshot || '';
+    imgEl.src = d.screenshot;
     imgEl.alt = d.label;
     excerptEl.classList.remove('visible');
+  } else {
+    imgWrap.style.display = 'none';
+    excerptEl.classList.remove('visible');
+  }
+
+  // URL link (for output nodes with an external page)
+  const linkEl = document.getElementById('lb-link');
+  if (d.url) {
+    linkEl.href = d.url;
+    linkEl.style.display = '';
+  } else {
+    linkEl.style.display = 'none';
   }
 
   // Made with — hide section entirely if empty
@@ -1930,6 +1972,7 @@ function openLightbox(d) {
 }
 function closeLightbox() {
   document.getElementById('lightbox-overlay').classList.remove('visible');
+  document.getElementById('lb-img-wrap').style.display = '';
   currentNode = null;
   resetHighlight();
 }
@@ -2031,7 +2074,7 @@ window.excerptNodeClick = function(nodeId) {
   if (!n) return;
   closeLightbox();
   if (n.type === 'doc' || n.type === 'output') { setTimeout(() => openLightbox(n), 50); }
-  else { openPanel(n); panToNode(n); }
+  else { openPanel(n); }
 };
 
 // ── Timeline Scrubber ──
@@ -2040,9 +2083,12 @@ const T_END   = new Date('2026-03-28').getTime();
 const T_RANGE = T_END - T_START;
 
 const NODE_BUILT = {
-  'soul-doc':          new Date('2026-02-11'),
-  'warrant-doc':       new Date('2026-02-11'),
-  'board-app':         new Date('2026-02-11'),
+  'soul-doc':           new Date('2026-02-11'),
+  'warrant-doc':        new Date('2026-02-11'),
+  'board-app':          new Date('2026-02-22'),
+  'conversation-tracker': new Date('2026-02-22'),
+  'powder-post':        new Date('2026-02-22'),
+  'client-dash':        new Date('2026-02-22'),
   'thesis-doc':        new Date('2026-03-24'),
   'board-skill':       new Date('2026-03-24'),
   'cassandra':         new Date('2026-03-24'),
@@ -2100,6 +2146,7 @@ const NODE_BUILT = {
 // Feb 11, Mar 25★, Mar 28 get labels. Intermediate dates get dots only.
 const MILESTONES = [
   { date: new Date('2026-02-11'), label: 'Feb 11',   showLabel: true,  pulse: false },
+  { date: new Date('2026-02-22'), label: 'Feb 22',   showLabel: true,  pulse: false },
   { date: new Date('2026-03-24'), label: null,        showLabel: false, pulse: false },
   { date: new Date('2026-03-25'), label: '★ Mar 25', showLabel: true,  pulse: true  },
   { date: new Date('2026-03-26'), label: null,        showLabel: false, pulse: false },
