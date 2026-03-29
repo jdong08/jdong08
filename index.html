@@ -226,7 +226,7 @@ header {
   text-align: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 601px) {
   .legend { display: none; }
   .search-input { display: none; }
   .search-mobile-btn { display: flex; }
@@ -649,7 +649,7 @@ header {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top;
+  object-position: top; /* default; overridden per-node via data-position */
   display: block;
 }
 /* Doc node reading surface */
@@ -799,7 +799,7 @@ header {
 .heart-btn {
   position: fixed; bottom: 20px; left: 50px; z-index: 20;
   background: none; border: none; padding: 0;
-  cursor: pointer; font-size: 13px; opacity: 0.28;
+  cursor: pointer; font-size: 13px; opacity: 0.45;
   transition: opacity 0.2s, transform 0.15s;
   line-height: 1;
 }
@@ -927,7 +927,8 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 /* ── Start-here hint (soul.md) ── */
 .start-hint-text {
   font-family: 'DM Sans', sans-serif;
-  font-size: 9.5px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   fill: #7a2f3d;
@@ -983,7 +984,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 .timeline-toggle {
   position: fixed; bottom: 20px; left: 84px; z-index: 20;
   background: none; border: none; padding: 0;
-  cursor: pointer; font-size: 14px; opacity: 0.28;
+  cursor: pointer; font-size: 14px; opacity: 0.45;
   transition: opacity 0.2s, transform 0.15s;
   line-height: 1; color: #544246;
   touch-action: manipulation;
@@ -1167,6 +1168,21 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .lb-link:hover { background: rgba(122,47,61,0.08); }
 
+/* ── Mobile panel tap-outside interceptor ── */
+.panel-backdrop {
+  display: none;
+}
+@media (max-width: 600px) {
+  .panel-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 18; /* below panel (z:20) but above graph (z:1) */
+    background: transparent;
+    pointer-events: none;
+  }
+}
+
 /* ── Excerpt intra-doc links ── */
 .excerpt-link {
   color: #7a2f3d;
@@ -1213,26 +1229,26 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
       </div>
       <button class="legend-reset" id="legend-reset" onclick="resetFilters()" aria-label="Reset all filters">reset</button>
     </div>
-    <button class="about-btn" onclick="toggleAbout()" aria-label="About">?</button>
+    <button class="about-btn" onclick="toggleAbout()" aria-label="About">i</button>
   </div>
 </header>
 
 
 <!-- Mobile color legend (hidden on desktop via CSS) -->
 <div class="mobile-legend" id="mobile-legend">
-  <div class="mobile-legend-item" data-type="agent" onclick="toggleType('agent'); this.classList.toggle('inactive')">
+  <div class="mobile-legend-item" data-type="agent" onclick="toggleType('agent')">
     <div class="mobile-legend-dot" style="background:#7a2f3d"></div>Agent
   </div>
-  <div class="mobile-legend-item" data-type="skill" onclick="toggleType('skill'); this.classList.toggle('inactive')">
+  <div class="mobile-legend-item" data-type="skill" onclick="toggleType('skill')">
     <div class="mobile-legend-dot" style="background:#53643a"></div>Skill
   </div>
-  <div class="mobile-legend-item" data-type="mcp" onclick="toggleType('mcp'); this.classList.toggle('inactive')">
+  <div class="mobile-legend-item" data-type="mcp" onclick="toggleType('mcp')">
     <div class="mobile-legend-dot" style="background:#765700"></div>Integration
   </div>
-  <div class="mobile-legend-item" data-type="output" onclick="toggleType('output'); this.classList.toggle('inactive')">
+  <div class="mobile-legend-item" data-type="output" onclick="toggleType('output')">
     <div class="mobile-legend-dot" style="background:#4f6478"></div>Output
   </div>
-  <div class="mobile-legend-item" data-type="doc" onclick="toggleType('doc'); this.classList.toggle('inactive')">
+  <div class="mobile-legend-item" data-type="doc" onclick="toggleType('doc')">
     <div class="mobile-legend-dot" style="background:#6b4f7a"></div>Doc
   </div>
 </div>
@@ -1251,6 +1267,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 <!-- Desktop search empty state -->
 <div class="search-empty" id="search-empty" style="position:fixed;top:65px;left:50%;transform:translateX(-50%);z-index:18;pointer-events:none;"></div>
 
+<div class="panel-backdrop" id="panel-backdrop" onclick="closePanel()"></div>
 <div id="panel" role="complementary" aria-label="Node detail">
   <div class="panel-handle" id="panel-handle"></div>
   <div class="panel-actions">
@@ -1285,7 +1302,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
         <p>Everything in this graph is something I built and use daily.</p>
         <p class="about-origin">Named for Metis — Titaness of wisdom, craft, and deep thought. Zeus's first wife; he swallowed her so her wisdom would live inside him. An AI infrastructure that lives inside your life and thinks ahead for you.</p>
       </div>
-      <div class="about-footer">Click any node to explore.</div>
+      <div class="about-footer" id="about-footer">Click any node to explore.</div>
     </div>
   </div>
 </div>
@@ -1311,7 +1328,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <div class="hint" id="hint"></div>
 
-<button class="dock-restore" id="dock-restore" style="display:none" onclick="restoreDock()">Projects ▸</button>
+<button class="dock-restore" id="dock-restore" style="display:none" onclick="restoreDock()">Builds ▸</button>
 
 <div class="projects-dock" id="projects-dock">
   <div class="projects-list" id="projects-list">
@@ -1334,7 +1351,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   </div>
   <div class="projects-toggle-row">
     <button class="projects-toggle" id="projects-toggle" onclick="toggleProjects()">
-      Projects <span class="toggle-arrow">▾</span>
+      Builds <span class="toggle-arrow">▾</span>
     </button>
     <button class="dock-dismiss" onclick="dismissDock()" title="Hide">✕</button>
   </div>
@@ -1495,39 +1512,46 @@ const nodes = [
     desc: 'Monthly AI briefing written for my Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
     example: 'A newsletter explaining AI breakthroughs to my parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
     screenshot: 'artifacts/parent-newsletter.png',
+    position: 'top',
     made: ['flitwick', 'nadia', 'lian'],
     date: 'March 2026' },
   { id: 'instacart-analysis', label: 'Instacart Analysis', type: 'output',
     desc: '5-year spending analysis across 139 orders. Tracked inflation on recurring items, behavioral shifts by year, fee evolution, and shrinkflation signals — all from live receipt data.',
     example: 'I uploaded 5 years of Instacart receipts and asked what it said about my spending. The output was a full research report: data tables, price tracking across every recurring item, and behavioral analysis by year.',
     screenshot: 'artifacts/instacart-analysis.png',
+    position: 'top',
     made: ['cosimo'],
     date: 'March 2026' },
   { id: 'board-app', label: 'The Board App', type: 'output',
     desc: 'A custom web app giving me conversational access to 13 specialist advisors. Built from scratch — design, frontend, and API integration.',
     example: 'I wanted a visual interface for my advisor council. In one session, Claude built a full dark-mode web app with advisor cards, portraits, and a live chat interface wired to each agent.',
     screenshot: 'artifacts/board-app.png',
+    position: 'top',
     made: ['minerva', 'ada'],
     date: 'February 2026' },
   { id: 'ai-news', label: 'AI Intelligence Brief', type: 'output',
     desc: 'Weekly AI news report covering frontier model releases, policy shifts, and professional relevance. Sourced live, synthesized by Flitwick, formatted for mobile reading.',
     example: 'Every week, Flitwick searches the AI landscape and writes a briefing I can read on my phone — covering what shipped, what it means for my work, and what to watch.',
     screenshot: 'artifacts/ai-news.png',
+    position: 'top',
     made: ['flitwick'],
     date: 'March 2026' },
   { id: 'conversation-tracker', label: 'People I Talk To', type: 'output',
     desc: 'Real-time conversation tracker — visualizes who I talk to most, by frequency and recency. One of the first things built after getting Claude. February 2026.',
     screenshot: 'artifacts/conversation-tracker.png',
+    position: 'top',
     url: 'conversation-tracker.html',
     date: 'February 2026' },
   { id: 'powder-post', label: 'Powder Post', type: 'output',
     desc: 'Daily ski-condition briefing app. Weather, snowpack, sentiment — designed for slope decisions, not spreadsheets. Built February 2026 in the first vibe-coding sprint.',
     screenshot: 'artifacts/powder-post.png',
+    position: 'top',
     url: 'powder-post.html',
     date: 'February 2026' },
   { id: 'client-dash', label: 'Client Dash', type: 'output',
     desc: 'Client intelligence dashboard — earnings signals, competitor news, and market sentiment, updated live. Built February 2026 as an early test of AI-driven research tools.',
     screenshot: 'artifacts/client-dash.png',
+    position: 'top',
     url: 'client-dash.html',
     date: 'February 2026' },
 
@@ -2043,10 +2067,14 @@ function openPanel(d) {
   applyNeighborhoodHighlight(d);
 
   document.getElementById('panel').classList.add('visible');
+  const backdrop = document.getElementById('panel-backdrop');
+  if (backdrop) backdrop.style.pointerEvents = 'all';
 }
 
 function closePanel() {
   document.getElementById('panel').classList.remove('visible');
+  const backdrop = document.getElementById('panel-backdrop');
+  if (backdrop) backdrop.style.pointerEvents = 'none';
   currentNode = null;
   pinnedNode = null;
   document.getElementById('pin-btn').classList.remove('pinned');
@@ -2083,12 +2111,15 @@ function togglePin() {
 
 function toggleType(type) {
   const el = document.querySelector(`.legend-item[data-type="${type}"]`);
+  const mobileEl = document.querySelector(`.mobile-legend-item[data-type="${type}"]`);
   if (hiddenTypes.has(type)) {
     hiddenTypes.delete(type);
     if (el) { el.classList.remove('inactive'); el.setAttribute('aria-checked', 'true'); }
+    if (mobileEl) mobileEl.classList.remove('inactive');
   } else {
     hiddenTypes.add(type);
     if (el) { el.classList.add('inactive'); el.setAttribute('aria-checked', 'false'); }
+    if (mobileEl) mobileEl.classList.add('inactive');
     if (currentNode && currentNode.type === type) closePanel();
   }
   node.attr('opacity', d => (hiddenTypes.has(d.type) || hiddenNodes.has(d.id)) ? 0 : 1)
@@ -2112,6 +2143,8 @@ function resetFilters() {
       hiddenTypes.delete(type);
       const el = document.querySelector(`.legend-item[data-type="${type}"]`);
       if (el) { el.classList.remove('inactive'); el.setAttribute('aria-checked', 'true'); }
+      const mobileEl = document.querySelector(`.mobile-legend-item[data-type="${type}"]`);
+      if (mobileEl) mobileEl.classList.remove('inactive');
     }
   });
   node.attr('opacity', d => hiddenNodes.has(d.id) ? 0 : 1)
@@ -2232,6 +2265,7 @@ function openLightbox(d) {
     imgEl.style.display = '';
     imgEl.src = d.screenshot;
     imgEl.alt = d.label;
+    imgEl.style.objectPosition = d.position || 'top';
     excerptEl.classList.remove('visible');
   } else {
     imgWrap.style.display = 'none';
@@ -2332,9 +2366,16 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Touch hint
-if ('ontouchstart' in window) {
+// Hint copy — touch vs desktop
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   document.getElementById('hint').textContent = 'tap to explore · tap to open · pinch to zoom';
+} else {
+  document.getElementById('hint').textContent = 'Drag to explore. Click any node.';
+}
+// About footer: "Tap" on touch devices
+if (navigator.maxTouchPoints > 0) {
+  const footerEl = document.getElementById('about-footer');
+  if (footerEl) footerEl.textContent = 'Tap any node to explore.';
 }
 
 let _resizeTimer;
@@ -2610,6 +2651,14 @@ function buildTlMilestones() {
     lbl.textContent = m.label;
     floatEl.appendChild(lbl);
   });
+
+  // "now" label pinned at far right
+  const nowLbl = document.createElement('div');
+  nowLbl.className = 'tl-float-label accent';
+  nowLbl.style.left = '100%';
+  nowLbl.style.transform = 'translateX(-100%)';
+  nowLbl.textContent = 'now';
+  floatEl.appendChild(nowLbl);
 }
 
 function initTlDrag() {
@@ -2736,6 +2785,19 @@ function syncDesktopSearch(val) {
   if (desktopInput) desktopInput.value = val;
 }
 
+function showBtnTooltip(e, text) {
+  const tip = document.getElementById('link-tooltip');
+  tip.textContent = text;
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = (e.clientY - 10) + 'px';
+  tip.classList.add('visible');
+}
+function hideBtnTooltip() {
+  document.getElementById('link-tooltip').classList.remove('visible');
+}
+window.showBtnTooltip = showBtnTooltip;
+window.hideBtnTooltip = hideBtnTooltip;
+
 window.closePanel = closePanel;
 window.togglePin = togglePin;
 window.toggleType = toggleType;
@@ -2787,7 +2849,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 </script>
 <!-- Lock button -->
 <button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
-<button class="heart-btn" id="heart-btn" onclick="snapToHeart()" title="Gather">♡</button>
+<button class="heart-btn" id="heart-btn" onclick="snapToHeart()"
+  onmouseenter="showBtnTooltip(event,'Gather pinned nodes')"
+  onmouseleave="hideBtnTooltip()"
+  aria-label="Gather pinned nodes">♡</button>
 <button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
 <span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 
