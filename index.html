@@ -6,14 +6,14 @@
 <title>Tessa OS</title>
 <meta name="description" content="Tessa OS — a personal AI system. 23 specialist agents, 27 skills, 5 integrations."/>
 <meta name="robots" content="noindex, nofollow"/>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   background: #fcf9f0;
-  font-family: 'Work Sans', -apple-system, sans-serif;
+  font-family: 'DM Sans', -apple-system, sans-serif;
   overflow: hidden;
   width: 100vw;
   height: 100vh;
@@ -47,7 +47,7 @@ header {
   font-style: italic;
   font-size: 3.5rem;
   line-height: 1;
-  color: #9a3a5a;
+  color: #7a2f3d;
   letter-spacing: -0.01em;
 }
 
@@ -64,7 +64,7 @@ header {
   border-radius: 999px;
   padding: 5px 12px;
   font-size: 16px; /* prevents auto-zoom on mobile focus */
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: #544246;
   width: 110px;
   outline: none;
@@ -118,10 +118,10 @@ header {
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
   flex-shrink: 0;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   box-shadow: 0 1px 4px rgba(28,28,23,0.07);
 }
-.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(154,58,90,0.4); }
+.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(122,47,61,0.4); }
 
 
 @media (max-width: 600px) {
@@ -144,7 +144,7 @@ header {
 
 .node-label {
   font-size: 10px;
-  font-family: 'Work Sans', 'Noto Sans SC', sans-serif;
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
   fill: #544246;
   pointer-events: none;
   user-select: none;
@@ -174,7 +174,7 @@ header {
 .panel-handle {
   display: none;
   width: 36px; height: 4px;
-  background: rgba(154,58,90,0.18);
+  background: rgba(122,47,61,0.18);
   border-radius: 999px;
   margin: -4px auto 14px;
   cursor: ns-resize;
@@ -221,7 +221,7 @@ header {
   line-height: 1;
   transition: color 0.15s;
 }
-.dock-dismiss:hover { color: #9a3a5a; }
+.dock-dismiss:hover { color: #7a2f3d; }
 @media (max-width: 600px) {
   .dock-dismiss { display: none; }
   .projects-toggle-row { display: flex; align-items: center; gap: 4px; }
@@ -243,7 +243,7 @@ header {
   background: transparent;
   color: #877276;
   transition: background 0.15s, color 0.15s;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 @media (max-width: 600px) {
   .panel-btn { width: 44px; height: 44px; font-size: 1rem; }
@@ -263,7 +263,7 @@ header {
   .node-label { font-size: 11px; }
 }
 .panel-btn:hover { background: rgba(218,192,197,0.35); color: #1c1c17; }
-.panel-btn.pinned { color: #9a3a5a; background: rgba(154,58,90,0.1); }
+.panel-btn.pinned { color: #7a2f3d; background: rgba(122,47,61,0.1); }
 
 .panel-type {
   font-size: 0.6rem;
@@ -298,7 +298,7 @@ header {
   font-size: 0.58rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #9a3a5a;
+  color: #7a2f3d;
   margin-bottom: 5px;
   font-weight: 600;
 }
@@ -325,7 +325,7 @@ header {
   cursor: pointer;
   transition: opacity 0.12s, transform 0.12s;
   background: transparent;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 .conn-tag:hover { opacity: 0.65; transform: translateY(-1px); }
 
@@ -370,7 +370,7 @@ header {
   font-family: 'Newsreader', serif;
   font-style: italic;
   font-size: 1.6rem;
-  color: #9a3a5a;
+  color: #7a2f3d;
   margin-bottom: 16px;
 }
 .about-body {
@@ -448,7 +448,7 @@ header {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 600;
-  color: #3d6b7a;
+  color: #4a5e42;
   margin-bottom: 4px;
 }
 .lightbox-title {
@@ -602,10 +602,10 @@ header {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(28,28,23,0.10);
 }
-.project-link:hover .project-name { color: #9a3a5a; }
+.project-link:hover .project-name { color: #7a2f3d; }
 .project-name {
   font-size: 0.72rem;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: #544246;
   transition: color 0.15s;
 }
@@ -613,7 +613,7 @@ header {
   font-size: 0.58rem;
   color: #b0a0a4;
   letter-spacing: 0.04em;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 .projects-toggle {
   display: flex;
@@ -630,14 +630,14 @@ header {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #877276;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   transition: color 0.15s;
   box-shadow: 0 1px 6px rgba(28,28,23,0.06);
   white-space: nowrap;
   border: none;
   border: 1px solid rgba(218, 192, 197, 0.5);
 }
-.projects-toggle:hover { color: #9a3a5a; }
+.projects-toggle:hover { color: #7a2f3d; }
 .toggle-arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
 .projects-toggle.open .toggle-arrow { transform: rotate(180deg); }
 
@@ -757,7 +757,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   z-index: 80;
   background: rgba(28,28,23,0.82);
   color: #f5f0e8;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem;
   line-height: 1.4;
   padding: 6px 10px;
@@ -772,11 +772,11 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 /* ── Start-here hint (soul.md) ── */
 .start-hint-text {
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 9.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  fill: #9a3a5a;
+  fill: #7a2f3d;
   pointer-events: none;
 }
 
@@ -803,13 +803,13 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   line-height: 1;
   transition: color 0.15s;
 }
-.tl-close:hover { color: #9a3a5a; }
+.tl-close:hover { color: #7a2f3d; }
 
 .tl-hint-label {
   position: fixed;
   bottom: 22px; left: 102px;
   font-size: 9px;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #877276;
@@ -835,7 +835,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   touch-action: manipulation;
 }
 .timeline-toggle:hover { opacity: 0.7; }
-.timeline-toggle.active { opacity: 0.88; color: #9a3a5a; }
+.timeline-toggle.active { opacity: 0.88; color: #7a2f3d; }
 
 #timeline-bar {
   position: fixed;
@@ -892,7 +892,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   transform: translateX(-50%);
   white-space: nowrap;
 }
-.tl-float-label.accent { color: #9a3a5a; font-weight: 600; }
+.tl-float-label.accent { color: #7a2f3d; font-weight: 600; }
 
 /* Dual-track area */
 .tl-track-wrap {
@@ -924,7 +924,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   position: absolute;
   top: 22px; left: 0;
   height: 1px;
-  background: #9a3a5a;
+  background: #7a2f3d;
   width: 100%;
   pointer-events: none;
   opacity: 0.65;
@@ -945,12 +945,12 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 .tl-dot.pulse-dot {
   width: 8px; height: 8px;
   top: 18px;
-  background: #9a3a5a;
+  background: #7a2f3d;
   animation: tl-pulse 2.2s ease-in-out infinite;
 }
 @keyframes tl-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(154,58,90,0.55); }
-  50%      { box-shadow: 0 0 0 7px rgba(154,58,90,0); }
+  0%,100% { box-shadow: 0 0 0 0 rgba(122,47,61,0.55); }
+  50%      { box-shadow: 0 0 0 7px rgba(122,47,61,0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .tl-dot.pulse-dot { animation: none; }
@@ -959,18 +959,18 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   position: absolute;
   top: 17px;
   width: 11px; height: 11px;
-  background: #9a3a5a;
+  background: #7a2f3d;
   border-radius: 50%;
   transform: translateX(-50%);
   cursor: grab;
   z-index: 3;
-  box-shadow: 0 0 0 3px rgba(154,58,90,0.15);
+  box-shadow: 0 0 0 3px rgba(122,47,61,0.15);
   touch-action: none;
   transition: box-shadow 0.15s;
 }
 .tl-handle:hover, .tl-handle.dragging {
   cursor: grabbing;
-  box-shadow: 0 0 0 6px rgba(154,58,90,0.2);
+  box-shadow: 0 0 0 6px rgba(122,47,61,0.2);
 }
 
 /* Track legend */
@@ -984,7 +984,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   margin-top: 5px;
 }
 .tl-legend-ai   { color: #c9a27c; }
-.tl-legend-code { color: #9a3a5a; }
+.tl-legend-code { color: #7a2f3d; }
 
 @media (max-width: 600px) {
   #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
@@ -1002,24 +1002,24 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 .lb-link {
   display: inline-block;
   font-size: 0.65rem;
-  color: #9a3a5a;
+  color: #7a2f3d;
   text-decoration: none;
   letter-spacing: 0.07em;
-  border: 1px solid rgba(154,58,90,0.3);
+  border: 1px solid rgba(122,47,61,0.3);
   border-radius: 999px;
   padding: 3px 10px;
   margin-bottom: 14px;
   transition: background 0.15s;
 }
-.lb-link:hover { background: rgba(154,58,90,0.08); }
+.lb-link:hover { background: rgba(122,47,61,0.08); }
 
 /* ── Excerpt intra-doc links ── */
 .excerpt-link {
-  color: #9a3a5a;
+  color: #7a2f3d;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-color: rgba(154,58,90,0.5);
+  text-decoration-color: rgba(122,47,61,0.5);
   font-style: inherit;
 }
 .excerpt-link:hover {
@@ -1037,7 +1037,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)"/>
     <div class="legend">
       <div class="legend-item" data-type="agent" onclick="toggleType('agent')">
-        <div class="legend-dot" style="background:#9a3a5a"></div>
+        <div class="legend-dot" style="background:#7a2f3d"></div>
         <span>Agent</span>
       </div>
       <div class="legend-item" data-type="skill" onclick="toggleType('skill')">
@@ -1049,7 +1049,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
         <span>Integration</span>
       </div>
       <div class="legend-item" data-type="output" onclick="toggleType('output')">
-        <div class="legend-dot" style="background:#3d6b7a"></div>
+        <div class="legend-dot" style="background:#4a5e42"></div>
         <span>Output</span>
       </div>
       <div class="legend-item" data-type="doc" onclick="toggleType('doc')">
@@ -1065,7 +1065,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 <!-- Mobile color legend (hidden on desktop via CSS) -->
 <div class="mobile-legend" id="mobile-legend">
   <div class="mobile-legend-item" data-type="agent" onclick="toggleType('agent'); this.classList.toggle('inactive')">
-    <div class="mobile-legend-dot" style="background:#9a3a5a"></div>Agent
+    <div class="mobile-legend-dot" style="background:#7a2f3d"></div>Agent
   </div>
   <div class="mobile-legend-item" data-type="skill" onclick="toggleType('skill'); this.classList.toggle('inactive')">
     <div class="mobile-legend-dot" style="background:#53643a"></div>Skill
@@ -1074,7 +1074,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <div class="mobile-legend-dot" style="background:#765700"></div>Integration
   </div>
   <div class="mobile-legend-item" data-type="output" onclick="toggleType('output'); this.classList.toggle('inactive')">
-    <div class="mobile-legend-dot" style="background:#3d6b7a"></div>Output
+    <div class="mobile-legend-dot" style="background:#4a5e42"></div>Output
   </div>
   <div class="mobile-legend-item" data-type="doc" onclick="toggleType('doc'); this.classList.toggle('inactive')">
     <div class="mobile-legend-dot" style="background:#6b4f7a"></div>Doc
@@ -1136,7 +1136,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   </div>
 </div>
 
-<div class="hint" id="hint">hover to explore · click to open · scroll to zoom</div>
+<div class="hint" id="hint"></div>
 
 <button class="dock-restore" id="dock-restore" style="display:none" onclick="restoreDock()">Projects ▸</button>
 
@@ -1168,7 +1168,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 </div>
 
 <script>
-const COLORS = { agent: '#9a3a5a', skill: '#53643a', mcp: '#765700', output: '#3d6b7a', doc: '#6b4f7a' };
+const COLORS = { agent: '#7a2f3d', skill: '#53643a', mcp: '#765700', output: '#4a5e42', doc: '#6b4f7a' };
 const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 };
 
 const nodes = [
@@ -1589,7 +1589,7 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
     if (!d.label) return;
     const linked = new Set([d.source.id, d.target.id]);
     link.filter(l => l === d)
-      .attr('stroke', '#9a3a5a')
+      .attr('stroke', '#7a2f3d')
       .attr('stroke-width', 1.0)
       .attr('stroke-opacity', 0.85);
     node.select('.vis-circle')
@@ -1716,7 +1716,7 @@ let startHintAlive = true;
 const startHintG = g.append('g').attr('class', 'start-hint-g').style('pointer-events', 'none').style('opacity', 0);
 const startHintRect = startHintG.append('rect')
   .attr('rx', 7).attr('fill', '#fcf9f0')
-  .attr('stroke', 'rgba(154,58,90,0.35)').attr('stroke-width', 1.2);
+  .attr('stroke', 'rgba(122,47,61,0.35)').attr('stroke-width', 1.2);
 startHintG.append('text').attr('class', 'start-hint-text').attr('text-anchor', 'middle').attr('x', 0).attr('dominant-baseline', 'middle').text('✦ start here');
 // Fade in after 800ms (let graph settle a bit first)
 setTimeout(() => {
@@ -2443,7 +2443,7 @@ window.toggleTimeline = toggleTimeline;
   const ringEl = soulGroup.insert('circle', '.hit-pad')
     .attr('r', nodeR(soulN) + 2)
     .attr('fill', 'none')
-    .attr('stroke', '#9a3a5a')
+    .attr('stroke', '#7a2f3d')
     .attr('stroke-width', 0.8)
     .attr('opacity', 0)
     .style('pointer-events', 'none');
