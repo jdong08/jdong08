@@ -1878,33 +1878,36 @@ node
 
 svg.on('click', (e) => { if (e.target === svg.node()) { closePanel(); dismissStartHint(); } });
 
-// ── Mobile touch fallback for node tap ──
-// D3 .clickDistance(10) fires a synthetic click on short taps — works on most browsers.
-// On some Android versions the synthetic click doesn't fire, so we add a touchend fallback.
-// Guard: if D3's click already fired (via _clickFired flag), skip the fallback.
-let _clickFired = false;
-const _origNodeClick = node.on('click');
-node.on('click', function(e, d) {
-  _clickFired = true;
-  _origNodeClick.call(this, e, d);
-});
+// ── Android/Chrome 144+ touch tap fix ──
+// Chrome 144 (Jan 2026) changed pointer boundary event dispatch, breaking D3's synthetic
+// click on touch devices. D3's drag consumes the touch sequence before the click fires.
+//
+// Fix: per-node pointerdown/pointerup tap detection, completely independent of D3's click.
+// The existing .on('click') handler stays active for desktop (mouse) users.
+// On touch, pointerup fires the action directly — no dependency on D3's synthetic click.
 node.each(function(d) {
-  let _touchStart = null;
-  this.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 1) { _touchStart = null; return; }
-    _clickFired = false;
-    _touchStart = { t: Date.now(), x: e.touches[0].clientX, y: e.touches[0].clientY };
+  let _pdX = null, _pdY = null, _pdT = null, _pdId = null;
+
+  this.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return; // desktop handled by .on('click')
+    if (_pdId !== null) return;            // already tracking a touch
+    _pdId = e.pointerId;
+    _pdX = e.clientX; _pdY = e.clientY; _pdT = Date.now();
   }, { passive: true });
-  this.addEventListener('touchend', (e) => {
-    if (_clickFired || !_touchStart) return;
-    const dt = Date.now() - _touchStart.t;
-    const dist = e.changedTouches[0] ? Math.hypot(e.changedTouches[0].clientX - _touchStart.x, e.changedTouches[0].clientY - _touchStart.y) : 999;
-    _touchStart = null;
-    if (dt > 300 || dist > 15) return;
-    // This is a genuine tap on the node — D3's click didn't fire
+
+  this.addEventListener('pointerup', (e) => {
+    if (e.pointerType === 'mouse') return;
+    if (e.pointerId !== _pdId) return;
+    const dt   = Date.now() - _pdT;
+    const dist = Math.hypot(e.clientX - _pdX, e.clientY - _pdY);
+    _pdId = null;
+    if (dt > 350 || dist > 12) return; // real drag — not a tap
+    // Genuine tap confirmed — open panel or lightbox
     if (d.type === 'output' || d.type === 'doc') { openLightbox(d); }
     else { openPanel(d); }
   }, { passive: true });
+
+  this.addEventListener('pointercancel', () => { _pdId = null; }, { passive: true });
 });
 
 // Start-here hint on soul.md — visible for first 5s, dismissed on any interaction
