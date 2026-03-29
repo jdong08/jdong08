@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Multi-Agent Ecosystem Redesign — jdong08</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #fcf9f0;
+  font-family: 'Work Sans', -apple-system, sans-serif;
+  color: #1c1c17;
+  line-height: 1.7;
+  padding: 0 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+a { color: #9a3a5a; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back {
+  display: inline-block;
+  margin: 24px 0 40px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #9a3a5a;
+}
+
+h1 {
+  font-family: 'Newsreader', serif;
+  font-weight: 700;
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: #1c1c17;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 0.95rem;
+  color: #8a8a7a;
+  margin-bottom: 40px;
+}
+h2 {
+  font-family: 'Newsreader', serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin: 40px 0 12px;
+  color: #1c1c17;
+}
+h3 {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 24px 0 8px;
+  color: #9a3a5a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+p { margin-bottom: 14px; font-size: 0.95rem; }
+ul { margin: 0 0 16px 20px; font-size: 0.95rem; }
+li { margin-bottom: 6px; }
+strong { font-weight: 600; }
+
+.stat-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 24px 0 32px;
+}
+.stat {
+  flex: 1;
+  min-width: 120px;
+  background: rgba(218,192,197,0.15);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #9a3a5a;
+}
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #8a8a7a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 12px 0 24px;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a8a7a;
+  padding: 8px 12px;
+  border-bottom: 2px solid rgba(218,192,197,0.4);
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(218,192,197,0.2);
+  vertical-align: top;
+}
+
+.callout {
+  background: rgba(154,58,90,0.06);
+  border-left: 3px solid #9a3a5a;
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+footer {
+  margin: 60px 0 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(218,192,197,0.3);
+  font-size: 0.8rem;
+  color: #8a8a7a;
+}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">&larr; Back to Tessa OS</a>
+
+<h1>AI Agent Ecosystem Architecture &amp; Multi-Agent Governance Design</h1>
+<p class="subtitle">Single session &middot; March 28, 2026 &middot; Built from first principles</p>
+
+<div class="stat-row">
+  <div class="stat"><div class="stat-num">17</div><div class="stat-label">Files Modified</div></div>
+  <div class="stat"><div class="stat-num">12</div><div class="stat-label">Agent Specs</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Board Rounds</div></div>
+  <div class="stat"><div class="stat-num">4</div><div class="stat-label">Specialist Agents</div></div>
+</div>
+
+<h2>The Problem</h2>
+<p>A 25-agent AI ecosystem had grown organically over weeks of building. The core life-coaching agent (Cassandra) was underutilized &mdash; scoped as a reactive specialist when the system needed an integrated watchdog. Cross-agent coordination was ad-hoc. Several domains had no owner. The agents didn't know what they didn't know about the user.</p>
+
+<h2>The Approach</h2>
+<p>Instead of redesigning top-down, I used the system's own multi-agent deliberation infrastructure to audit itself. Three rounds of structured board sessions, each going one layer deeper than the last.</p>
+
+<h3>Round 1: Self-Audit + Board Evaluation</h3>
+<p>Cassandra audited her own role against all available context files and proposed 7 spec changes. Four specialist agents (financial, career, philosophical, resilience) evaluated the proposals in parallel. The board adopted all 7 with 5 modifications &mdash; adding financial coordination gates, escalation protocols, timing rules for the watchdog function, an open-space mandate, and a defined failure mode.</p>
+
+<h3>Round 2: What the Agent Can't See About Itself</h3>
+<p>The board ran without Cassandra present. The question shifted from operational changes to character: is her fundamental personality right? What does the user need that she hasn't suggested about herself?</p>
+<p>Key findings:</p>
+<ul>
+  <li>The mythological frame ("prophetess who sees truly") structurally builds in acceptance of non-movement &mdash; it excuses the coach from accountability for outcomes</li>
+  <li>The agent treats the non-optimizable texture of life as "below altitude" when it's actually the richest data available</li>
+  <li>Career decisions were handed off too early, losing the identity question underneath the tactical one</li>
+  <li>A second permanent diagnostic question was needed alongside the first</li>
+</ul>
+
+<h3>Round 3: The Epistemological Layer</h3>
+<p>The deepest round. The user pointed out: "We're still getting to know each other. Just because something about me hasn't been stated doesn't mean it's not true."</p>
+<p>This surfaced the most valuable output of the session: an epistemological framework for how AI agents should operate with permanently incomplete knowledge of their user. Seven principles were codified, placed above all operational machinery in the core agent's spec:</p>
+
+<div class="callout">
+  "The documented self is a sample, not a census. The floor, not the ceiling. Treat silence in the record as signal, not absence. What hasn't been named may be the most real thing in the room."
+</div>
+
+<h2>What Was Built</h2>
+
+<table>
+  <tr><th>Category</th><th>Item</th><th>Detail</th></tr>
+  <tr><td>Core rewrite</td><td>Life-coach agent (Cassandra)</td><td>Full spec rewrite: epistemological ground, dual permanent questions, career boundary, cross-domain watchdog, adversarial patience, open-space mandate, 5 standing questions with escalation protocol, Cosimo + Leonardo coordination sections</td></tr>
+  <tr><td>New agent</td><td>Network Strategist</td><td>Professional relationship infrastructure &mdash; relationship mapping, outreach cadence, event recs, first-gen gap analysis</td></tr>
+  <tr><td>New agent</td><td>Aesthetic-Contemplative</td><td>The counterweight &mdash; taste, inner life, embodied practice. "Everyone else asks what should you do? This one asks what are you noticing?"</td></tr>
+  <tr><td>New skill</td><td>/offer-evaluation</td><td>3-agent coordinated output for job offers: financial impact &rarr; negotiation strategy &rarr; identity check</td></tr>
+  <tr><td>Spec updates</td><td>9 existing agents</td><td>Cross-agent coordination: financial gates, resilience recon, scenario stress-testing, alignment tracking, credential checks, payment network audit, industry framing mode</td></tr>
+  <tr><td>Companion file</td><td>Art of War reference</td><td>Sun Tzu translated for life-design altitude</td></tr>
+</table>
+
+<h2>Cross-Agent Coordination Added</h2>
+
+<table>
+  <tr><th>From</th><th>To</th><th>Trigger</th></tr>
+  <tr><td>Marco (travel)</td><td>Cosimo (CFO)</td><td>Any plan &gt;$2K gets financial sign-off</td></tr>
+  <tr><td>Marco (travel)</td><td>Leonardo (resilience)</td><td>"Where do we stay" becomes "what does this location survive"</td></tr>
+  <tr><td>Niccol&ograve; (career)</td><td>Cosimo (CFO)</td><td>Before comp negotiation targets</td></tr>
+  <tr><td>Iris (relationship)</td><td>Leonardo (resilience)</td><td>Alignment tension surfaces</td></tr>
+  <tr><td>Cornelia (Italian)</td><td>Leonardo (resilience)</td><td>Family context surfaces resilience-relevant info (bidirectional)</td></tr>
+  <tr><td>Cosimo (CFO)</td><td>Leonardo (resilience)</td><td>"Does this hold up if things get worse"</td></tr>
+  <tr><td>Bo (learning)</td><td>Niccol&ograve; (career)</td><td>Credential positioning check before finalizing</td></tr>
+  <tr><td>Cassandra (life)</td><td>Cosimo (CFO)</td><td>Any financially-implicated question</td></tr>
+</table>
+
+<h2>The Interesting Part</h2>
+<p>Each round produced diminishing operational detail and increasing foundational insight. Round 1 was about what to add. Round 2 was about what to change. Round 3 was about how to know.</p>
+<p>The third round &mdash; where the board was asked to reason about the gap between documented reality and actual reality &mdash; produced the session's most important artifact: a framework for epistemic humility in AI systems that work with human beings. Not as a philosophical exercise, but as a concrete spec section that changes how every session opens.</p>
+<p>One board member (the philosophical agent, drawing on Confucius) put it this way: <em>"If Cassandra treats the documented self as the whole self, she will produce excellent plans for someone slightly less interesting than the user."</em></p>
+
+<h2>Technical Scope</h2>
+<p>17 files created or modified. 12 agent specifications. 1 skill definition. 1 companion knowledge base. 1 full session transcript (~7,000 words). Zero code &mdash; pure architecture and specification design. Single session, start to finish.</p>
+
+<footer>
+  March 28, 2026 &middot; Built with Claude Opus 4.6 in Nimbalyst &middot; <a href="index.html">jdong08</a>
+</footer>
+
+</body>
+</html>

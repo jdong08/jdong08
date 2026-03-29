@@ -5,7 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>jdong08 — Tessa OS</title>
 <meta name="description" content="Tessa OS — Jay's personal AI system. 20 specialist agents, 25 skills, 5 integrations."/>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -112,20 +112,21 @@ header {
 
 /* About button */
 .about-btn {
-  width: 22px; height: 22px;
+  width: 30px; height: 30px;
   border-radius: 50%;
-  border: 1px solid rgba(218, 192, 197, 0.55);
-  background: transparent;
+  border: 1.5px solid rgba(218, 192, 197, 0.7);
+  background: rgba(252,249,240,0.85);
   color: #877276;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
   flex-shrink: 0;
   font-family: 'Work Sans', sans-serif;
+  box-shadow: 0 1px 4px rgba(28,28,23,0.07);
 }
-.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; }
+.about-btn:hover { background: rgba(218,192,197,0.3); color: #1c1c17; border-color: rgba(154,58,90,0.4); }
 
 @media (max-width: 600px) {
   .legend { display: none; }
@@ -147,7 +148,7 @@ header {
 
 .node-label {
   font-size: 10px;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'Work Sans', 'Noto Sans SC', sans-serif;
   fill: #544246;
   pointer-events: none;
   user-select: none;
@@ -715,6 +716,88 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     #panel { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
   }
 }
+
+/* ── Mobile Color Legend ── */
+.mobile-legend {
+  display: none;
+}
+@media (max-width: 600px) {
+  .mobile-legend {
+    display: flex;
+    gap: 14px;
+    padding: 5px 16px 6px;
+    background: rgba(252,249,240,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
+    top: 53px;
+    left: 0; right: 0;
+    z-index: 15;
+    justify-content: center;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #877276;
+    border-bottom: 1px solid rgba(218,192,197,0.22);
+  }
+  .mobile-legend-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .mobile-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .mobile-legend-item.inactive { opacity: 0.3; }
+  .mobile-legend-item.inactive .mobile-legend-dot { background: #b0a0a4 !important; }
+}
+
+/* ── Link Tooltip ── */
+.link-tooltip {
+  position: fixed;
+  z-index: 80;
+  background: rgba(28,28,23,0.82);
+  color: #f5f0e8;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 6px 10px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  max-width: 220px;
+  white-space: normal;
+}
+.link-tooltip.visible { opacity: 1; }
+
+/* ── Start-here hint (soul.md) ── */
+.start-hint-text {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: #9a3a5a;
+  pointer-events: none;
+}
+
+/* ── Panel name origin ── */
+.panel-origin {
+  font-size: 0.73rem;
+  color: #9a7a80;
+  font-style: italic;
+  margin-top: -10px;
+  margin-bottom: 16px;
+  padding-left: 2px;
+  display: none;
+}
+
+/* ── Excerpt intra-doc links ── */
+.excerpt-link {
+  color: #9a3a5a;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(154,58,90,0.5);
+  font-style: inherit;
+}
+.excerpt-link:hover {
+  text-decoration-style: solid;
+}
 </style>
 </head>
 <body>
@@ -748,7 +831,24 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   </div>
 </header>
 
+<!-- Mobile color legend (hidden on desktop via CSS) -->
+<div class="mobile-legend" id="mobile-legend">
+  <div class="mobile-legend-item" data-type="agent" onclick="toggleType('agent'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#9a3a5a"></div>Agent
+  </div>
+  <div class="mobile-legend-item" data-type="skill" onclick="toggleType('skill'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#53643a"></div>Skill
+  </div>
+  <div class="mobile-legend-item" data-type="mcp" onclick="toggleType('mcp'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#765700"></div>Integration
+  </div>
+  <div class="mobile-legend-item" data-type="output" onclick="toggleType('output'); this.classList.toggle('inactive')">
+    <div class="mobile-legend-dot" style="background:#3d6b7a"></div>Output
+  </div>
+</div>
+
 <svg id="graph-svg"></svg>
+<div class="link-tooltip" id="link-tooltip"></div>
 
 <div id="panel">
   <div class="panel-handle" id="panel-handle"></div>
@@ -759,6 +859,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   <div class="panel-type" id="panel-type"></div>
   <div class="panel-name" id="panel-name"></div>
   <div class="panel-desc" id="panel-desc"></div>
+  <div class="panel-origin" id="panel-origin"></div>
   <div class="panel-example-wrap" id="panel-example-wrap">
     <div class="panel-example-label">In practice</div>
     <div class="panel-example" id="panel-example"></div>
@@ -805,6 +906,10 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <div class="projects-dock" id="projects-dock">
   <div class="projects-list" id="projects-list">
+    <a class="project-link" href="agent-redesign.html">
+      <span class="project-name">multi-agent ecosystem redesign</span>
+      <span class="project-date">Mar 2026 · case study</span>
+    </a>
     <a class="project-link" href="conversation-tracker.html">
       <span class="project-name">people i talk to</span>
       <span class="project-date">Feb 2026 · archived</span>
@@ -832,48 +937,63 @@ const RADIUS = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 };
 
 const nodes = [
   { id: 'cassandra',       label: 'Cassandra',      type: 'agent',
+    origin: 'From Greek mythology — the prophet who always saw true, and was never believed.',
     desc: 'Life architect — high-stakes decisions, drift between stated priorities and behavior.',
     example: 'When Jay is facing a big life decision — a new job, where to live — Cassandra helps her think it through clearly, without letting fear or wishful thinking take over.' },
   { id: 'cosimo',          label: 'Cosimo',          type: 'agent',
+    origin: 'Cosimo de\' Medici — the Florentine banker who funded the Renaissance.',
     desc: 'Financial modeling — FI timeline, cash flow analysis, savings math.',
     example: 'When Jay wants to know if she can afford to take a sabbatical, or how long her savings would last, Cosimo runs the numbers.' },
   { id: 'niccolo',         label: 'Niccolò',         type: 'agent',
+    origin: 'Niccolò Machiavelli — the strategist who named power clearly, without apology.',
     desc: 'Career strategist — positioning, negotiation, interview coaching.',
     example: 'When Jay is preparing for an interview or figuring out how to negotiate her salary, Niccolò helps her decide what to say and how to say it.' },
   { id: 'marco',           label: 'Marco',           type: 'agent',
+    origin: 'Marco Polo — the Venetian who navigated the world before maps.',
     desc: 'Travel planning — logistics, geography, sabbatical recon.',
     example: 'When Jay is planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what Conan needs, where to stay.' },
   { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
+    origin: 'Professor Flitwick from Harry Potter — small, meticulous, teaches magic as craft.',
     desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
     example: 'When Jay wants to understand what\'s happening in AI — new models, what different companies are doing — Flitwick explains it the way a knowledgeable friend would.' },
   { id: 'prof-j',          label: 'Prof. Jiang',     type: 'agent',
+    origin: 'Modeled on transcripts of a real person — Jiang Xueqin, educator and geopolitical writer. His voice is drawn from his actual words.',
     desc: 'Predictive history framework — geopolitics, philosophy, weekly challenge letters.',
     example: 'Prof. Jiang helps Jay understand why things are happening in the world — what history says about the present, and what\'s likely to come next.' },
-  { id: 'confucius',       label: 'Confucius',       type: 'agent',
+  { id: 'confucius',       label: 'Confucius 孔子',  type: 'agent',
+    origin: '孔子 Kǒng Zǐ — the teacher whose questions are still unanswered.',
     desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.',
     example: 'When Jay is wrestling with an ethical question — or asking what really matters — Confucius helps her think it through with philosophical depth.' },
   { id: 'la-signora',      label: 'La Signora',      type: 'agent',
+    origin: 'Italian for "the lady" — a formal term of respect. The teacher you rise for.',
     desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
     example: 'Jay practices Italian every day to speak with her husband\'s family. La Signora is her conversation partner — correcting her, pushing her further, making it feel real.' },
   { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
+    origin: 'Leonardo da Vinci — the polymath who mastered every practical domain he touched.',
     desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
     example: 'Leonardo helps Jay think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
-  { id: 'lian',            label: 'Lian',            type: 'agent',
+  { id: 'lian',            label: 'Lian 连',         type: 'agent',
+    origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
     desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
     example: 'When Jay needs to communicate with her parents or handle something in Chinese, Lian helps get the words and the feeling right — the way a bilingual childhood friend would.' },
-  { id: 'bo',              label: 'Bo',              type: 'agent',
+  { id: 'bo',              label: 'Bo 博',           type: 'agent',
+    origin: '博 Bó — broad, learned, generous with knowledge.',
     desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
     example: 'When Jay wants to learn something new — a certification, a language, a skill — Bo designs the plan: what to study, in what order, with what materials.' },
   { id: 'ada',             label: 'Ada',             type: 'agent',
+    origin: 'Ada Lovelace — the first programmer, who wrote algorithms before computers existed.',
     desc: 'Spec agent — PRD authoring and pre-build gap auditing. Finds gaps before build begins.',
     example: 'Before Jay builds anything new, Ada reviews the plan and finds the gaps — the things that weren\'t thought through yet.' },
   { id: 'minerva',         label: 'Minerva',         type: 'agent',
+    origin: 'Minerva — Roman goddess of wisdom and strategic craft. Daughter of Jupiter, born fully armored.',
     desc: 'Ecosystem strategist — build decisions, complexity audits, /feedback retrospectives.',
     example: 'Minerva is the strategic advisor for the whole system — deciding what to build, what to fix, what to leave alone.' },
   { id: 'amelie',          label: 'Amélie',          type: 'agent',
+    origin: 'From the French film Amélie — about finding beauty in small, hidden things. Precision over decoration.',
     desc: 'UX delight — intentional moments after UI/UX changes. Precision, not decoration.',
     example: 'After any design change, Amélie looks for the small detail that makes something feel alive — not just correct, but delightful.' },
   { id: 'nadia',           label: 'Nadia',           type: 'agent',
+    origin: 'Chosen for its ordinariness — a name that doesn\'t perform. The friend who just shows up.',
     desc: 'Peer — think out loud, vent, process without it becoming a session.',
     example: 'Nadia is the friend Jay calls when she needs to think out loud — no agenda, no decisions, just company.' },
   { id: 'work-researcher', label: 'Researcher',      type: 'agent',
@@ -886,9 +1006,11 @@ const nodes = [
     desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.',
     example: 'Helps Jay think through financial controls and audit questions — the specialized work she does at Protiviti.' },
   { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
+    origin: 'Named for function — closes what\'s open so Jay doesn\'t have to carry it.',
     desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
     example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
-  { id: 'zhengming',       label: 'Zhengming',       type: 'agent',
+  { id: 'zhengming',       label: 'Zhengming 正名',  type: 'agent',
+    origin: '正名 Zhèngmíng — Confucian concept: to rectify names, so things can be what they actually are.',
     desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.',
     example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
   { id: 'week-review',     label: '/week-review',    type: 'skill',
@@ -921,6 +1043,14 @@ const nodes = [
   { id: 'ai-study-brief',  label: '/ai-study-brief', type: 'skill',
     desc: 'AI learning prioritization — what to study next given active certifications.',
     example: 'Before an AI learning session, this tells Jay what\'s most important to focus on given what she\'s currently working toward.' },
+  // ── Process workflows ──
+  { id: 'the-drop',        label: 'The Drop',        type: 'skill',
+    desc: 'Daily intake — a living Google Doc where Jay logs ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
+    example: 'Jay notices the node graph scatters too fast. She drops a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
+  { id: 'telegram-log',    label: 'Telegram Log',    type: 'skill',
+    desc: 'Async message log — Jay sends herself voice notes and quick thoughts via Telegram throughout the day. Reviewed during opening-shift alongside The Drop.',
+    example: 'Jay has a thought while walking. She voice-memos it to herself on Telegram. It surfaces the next morning alongside everything else.' },
+
   { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
     desc: 'Email triage, drafting replies, thread search and labeling.',
     example: 'Connected to Jay\'s email — can search, draft replies, and organize her inbox.' },
@@ -1041,62 +1171,65 @@ One line per sweep. Nothing hidden.` },
 ];
 
 const links = [
-  { source: 'cassandra',       target: 'cosimo' },
-  { source: 'cassandra',       target: 'niccolo' },
-  { source: 'cassandra',       target: 'nadia' },
-  { source: 'confucius',       target: 'cassandra' },
-  { source: 'minerva',         target: 'ada' },
-  { source: 'lian',            target: 'nadia' },
-  { source: 'feedback-skill',  target: 'minerva' },
-  { source: 'ecosystem-audit', target: 'minerva' },
-  { source: 'board-skill',     target: 'cassandra' },
-  { source: 'board-skill',     target: 'cosimo' },
-  { source: 'board-skill',     target: 'niccolo' },
-  { source: 'board-skill',     target: 'confucius' },
-  { source: 'board-skill',     target: 'leonardo' },
-  { source: 'ai-study-brief',  target: 'flitwick' },
-  { source: 'translate-skill', target: 'nadia' },
-  { source: 'translate-skill', target: 'lian' },
-  { source: 'curriculum-skill',target: 'bo' },
-  { source: 'closing-shift',   target: 'loop-closer' },
-  { source: 'closing-shift',   target: 'minerva' },
-  { source: 'challenge-skill', target: 'cassandra' },
-  { source: 'challenge-skill', target: 'minerva' },
-  { source: 'research-skill',  target: 'work-researcher' },
-  { source: 'gmail-mcp',       target: 'work-researcher' },
-  { source: 'drive-mcp',       target: 'work-researcher' },
-  { source: 'playwright-mcp',  target: 'work-researcher' },
-  { source: 'nimbalyst-mcp',   target: 'minerva' },
-  { source: 'nimbalyst-mcp',   target: 'ada' },
-  { source: 'nimbalyst-mcp',   target: 'amelie' },
+  { source: 'cassandra',       target: 'cosimo',         label: 'Life decisions almost always have a financial dimension — Cassandra hands off to Cosimo when the numbers matter.' },
+  { source: 'cassandra',       target: 'niccolo',        label: 'Career decisions need both life framing (Cassandra) and tactical positioning (Niccolò).' },
+  { source: 'cassandra',       target: 'nadia',          label: 'When something isn\'t ready to be a decision yet, it becomes a conversation with Nadia first.' },
+  { source: 'confucius',       target: 'cassandra',      label: 'Confucius handles the philosophical layer; Cassandra handles what to actually do with it.' },
+  { source: 'minerva',         target: 'ada',            label: 'Minerva decides what to build; Ada specs it so the build doesn\'t fail from vague requirements.' },
+  { source: 'lian',            target: 'nadia',          label: 'Chinese family dynamics sometimes need peer processing before they become decisions.' },
+  { source: 'feedback-skill',  target: 'minerva',        label: '/feedback routes to Minerva, who tracks what patterns keep appearing across sessions.' },
+  { source: 'ecosystem-audit', target: 'minerva',        label: '/ecosystem-audit is a Minerva session — she runs the health check and issues verdicts.' },
+  { source: 'board-skill',     target: 'cassandra',      label: 'The board convenes when a decision is too big for one domain — Cassandra holds the life architecture lens.' },
+  { source: 'board-skill',     target: 'cosimo',         label: 'The board always includes Cosimo when there\'s a financial dimension to a major decision.' },
+  { source: 'board-skill',     target: 'niccolo',        label: 'The board includes Niccolò when career or professional positioning is at stake.' },
+  { source: 'board-skill',     target: 'confucius',      label: 'The board includes Confucius when the decision has an ethical or philosophical dimension.' },
+  { source: 'board-skill',     target: 'leonardo',       label: 'The board includes Leonardo when resilience, geography, or long-horizon risk is involved.' },
+  { source: 'ai-study-brief',  target: 'flitwick',       label: '/ai-study-brief invokes Flitwick to prioritize what to study given active certifications and ecosystem state.' },
+  { source: 'translate-skill', target: 'nadia',          label: 'Nadia drafts the translation first — she has the peer register and natural Chinese voice.' },
+  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register, family framing, and what lands for Jay\'s parents.' },
+  { source: 'curriculum-skill',target: 'bo',             label: '/curriculum routes to Bo, who designs the full learning plan: sources, schedule, commitment layer.' },
+  { source: 'closing-shift',   target: 'loop-closer',    label: '/closing-shift triggers loop-closer to scan open items and close what it can autonomously.' },
+  { source: 'closing-shift',   target: 'minerva',        label: '/closing-shift includes a Minerva debrief — same as /feedback but at end-of-day rhythm.' },
+  { source: 'challenge-skill', target: 'cassandra',      label: '/challenge routes through Cassandra — she argues the strongest case against Jay\'s stated plan.' },
+  { source: 'challenge-skill', target: 'minerva',        label: 'Minerva tracks /challenge patterns — when Jay keeps challenging the same decision, it\'s a signal.' },
+  { source: 'research-skill',  target: 'work-researcher',label: '/research on professional topics routes to Researcher, who runs the full RIPER pipeline.' },
+  { source: 'gmail-mcp',       target: 'work-researcher',label: 'Researcher uses Gmail to find context in existing email threads during professional research.' },
+  { source: 'drive-mcp',       target: 'work-researcher',label: 'Researcher reads from and saves to Google Drive — all reports land there for persistence.' },
+  { source: 'playwright-mcp',  target: 'work-researcher',label: 'Researcher uses Playwright for deep web research — articles, reports, live pages.' },
+  { source: 'nimbalyst-mcp',   target: 'minerva',        label: 'Minerva uses Nimbalyst to track sessions, create diagrams, and commit changes during audits.' },
+  { source: 'nimbalyst-mcp',   target: 'ada',            label: 'Ada uses Nimbalyst to write spec docs and track build status.' },
+  { source: 'nimbalyst-mcp',   target: 'amelie',         label: 'Amélie uses Nimbalyst to preview and screenshot UI changes before declaring them delightful.' },
   // outputs ← producers
-  { source: 'parent-newsletter', target: 'flitwick' },
-  { source: 'parent-newsletter', target: 'lian' },
-  { source: 'instacart-analysis', target: 'cosimo' },
-  { source: 'board-app',          target: 'minerva' },
-  { source: 'board-app',          target: 'ada' },
-  { source: 'ai-news',            target: 'flitwick' },
+  { source: 'parent-newsletter', target: 'flitwick',     label: 'Flitwick researches the AI landscape and writes the first draft — always the starting point for the newsletter.' },
+  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for Jay\'s Shanghai parents.' },
+  { source: 'instacart-analysis', target: 'cosimo',      label: 'Cosimo ran the 5-year Instacart analysis — his financial modeling applies to personal spending too.' },
+  { source: 'board-app',          target: 'minerva',     label: 'Minerva made the architectural decisions for the board app — what to build, how to structure it.' },
+  { source: 'board-app',          target: 'ada',         label: 'Ada specced the board app before it was built — the PRD kept the build scoped.' },
+  { source: 'ai-news',            target: 'flitwick',    label: 'The weekly AI brief is entirely Flitwick — research, synthesis, and formatting in one session.' },
   // docs ← agents/skills they shape
-  { source: 'soul-doc',      target: 'cassandra' },
-  { source: 'soul-doc',      target: 'niccolo' },
-  { source: 'soul-doc',      target: 'confucius' },
-  { source: 'soul-doc',      target: 'lian' },
-  { source: 'warrant-doc',   target: 'cassandra' },
-  { source: 'warrant-doc',   target: 'niccolo' },
-  { source: 'ecosystem-doc', target: 'minerva' },
-  { source: 'ecosystem-doc', target: 'loop-closer' },
-  { source: 'ecosystem-doc', target: 'ecosystem-audit' },
-  { source: 'thesis-doc',    target: 'cassandra' },
-  { source: 'thesis-doc',    target: 'cosimo' },
-  { source: 'thesis-doc',    target: 'confucius' },
-  { source: 'thesis-doc',    target: 'leonardo' },
-  { source: 'loops-doc',     target: 'loop-closer' },
-  { source: 'loops-doc',     target: 'closing-shift' },
-  { source: 'feedback-doc',  target: 'minerva' },
-  { source: 'feedback-doc',  target: 'loop-closer' },
-  { source: 'feedback-doc',  target: 'closing-shift' },
-  { source: 'opening-doc',   target: 'loops-doc' },
-  { source: 'opening-doc',   target: 'soul-doc' },
+  { source: 'soul-doc',      target: 'cassandra',        label: 'soul.md tells Cassandra who she\'s actually talking to — without it, she\'s giving advice to a generic person.' },
+  { source: 'soul-doc',      target: 'niccolo',          label: 'Niccolò reads soul.md to understand what kind of career fits who Jay actually is, not just what she\'s done.' },
+  { source: 'soul-doc',      target: 'confucius',        label: 'Confucius uses soul.md to calibrate depth — Jay engages philosophy seriously, not as intellectual decoration.' },
+  { source: 'soul-doc',      target: 'lian',             label: 'Lian reads soul.md to understand the bicultural complexity Jay actually lives, not just a surface description.' },
+  { source: 'warrant-doc',   target: 'cassandra',        label: 'claude_warrant.md tells Cassandra she has standing authorization to push — no hedging required.' },
+  { source: 'warrant-doc',   target: 'niccolo',          label: 'Niccolò uses the warrant to give direct verdicts on career moves rather than presenting options neutrally.' },
+  { source: 'ecosystem-doc', target: 'minerva',          label: 'ecosystem-map.md is Minerva\'s primary reference — she uses it to diagnose gaps and decide what to build.' },
+  { source: 'ecosystem-doc', target: 'loop-closer',      label: 'loop-closer reads the ecosystem map to know which agents and files are canonical targets for loop items.' },
+  { source: 'ecosystem-doc', target: 'ecosystem-audit',  label: '/ecosystem-audit reads the map first — it\'s the baseline for what "healthy" looks like.' },
+  { source: 'thesis-doc',    target: 'cassandra',        label: 'life_thesis.md gives Cassandra the long-horizon frame — decisions should serve the resilience architecture.' },
+  { source: 'thesis-doc',    target: 'cosimo',           label: 'Cosimo reads the thesis to understand what financial independence actually means in this context.' },
+  { source: 'thesis-doc',    target: 'confucius',        label: 'Confucius uses the thesis to understand why Jay is building what she\'s building — not what, but why.' },
+  { source: 'thesis-doc',    target: 'leonardo',         label: 'Leonardo IS the thesis — civilizational resilience is his entire domain.' },
+  { source: 'loops-doc',     target: 'loop-closer',      label: 'OPEN_LOOPS.md is what loop-closer reads and writes — it\'s the source of truth for open work.' },
+  { source: 'loops-doc',     target: 'closing-shift',    label: '/closing-shift reads OPEN_LOOPS.md to surface what\'s urgent and in-progress for the day wrap.' },
+  { source: 'feedback-doc',  target: 'minerva',          label: 'feedback_log.md is Minerva\'s memory — she reads it at the start of every /feedback session.' },
+  { source: 'feedback-doc',  target: 'loop-closer',      label: 'loop-closer reads feedback_log.md to close items flagged in past debriefs.' },
+  { source: 'feedback-doc',  target: 'closing-shift',    label: '/closing-shift surfaces patterns from feedback_log.md — the same issues recurring is a signal.' },
+  { source: 'opening-doc',   target: 'loops-doc',        label: 'opening-shift reads OPEN_LOOPS.md as step one — what\'s urgent shapes the whole day.' },
+  { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who Jay actually is, not just what\'s on the list.' },
+  // process workflows
+  { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
+  { source: 'telegram-log',  target: 'opening-doc',      label: 'The Telegram log is Step 4 of opening-shift — voice notes and async thoughts from the day before.' },
 ];
 
 // Build adjacency map
@@ -1108,6 +1241,13 @@ links.forEach(l => {
   if (!adj[t].includes(s)) adj[t].push(s);
 });
 const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+// Dynamic node radius — nodes with more connections render larger (Obsidian-style)
+function nodeR(d) {
+  const base = { agent: 10, skill: 8, mcp: 8, output: 10, doc: 9 }[d.type] || 10;
+  const degree = (adj[d.id] || []).length;
+  return base + Math.min(degree * 1.4, 10);
+}
 
 // State
 let pinnedNode = null;
@@ -1123,20 +1263,20 @@ const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const zoom = d3.zoom().scaleExtent(isMobile ? [0.4, 4] : [0.2, 6]).on('zoom', e => g.attr('transform', e.transform));
 svg.call(zoom);
 
-// Seed nodes near center — prevents violent scatter from random corner positions at startup
+// Seed nodes near center — tight cluster prevents violent scatter at startup
 nodes.forEach(n => {
-  n.x = W / 2 + (Math.random() - 0.5) * 120;
-  n.y = H / 2 + (Math.random() - 0.5) * 120;
+  n.x = W / 2 + (Math.random() - 0.5) * 70;
+  n.y = H / 2 + (Math.random() - 0.5) * 70;
 });
 
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
   .force('charge', d3.forceManyBody().strength(-200))
   .force('center', d3.forceCenter(W / 2, H / 2))
-  .force('collision', d3.forceCollide().radius(d => (RADIUS[d.type] || 10) + 22))
-  .alpha(0.6)
-  .alphaDecay(isMobile ? 0.06 : 0.04)
-  .velocityDecay(0.55)
+  .force('collision', d3.forceCollide().radius(d => nodeR(d) + 22))
+  .alpha(0.4)
+  .alphaDecay(isMobile ? 0.07 : 0.045)
+  .velocityDecay(0.62)
   .force('bounds', () => {
     const pad = 80, top = 60;
     nodes.forEach(d => {
@@ -1151,6 +1291,29 @@ const link = g.append('g').selectAll('line').data(links).join('line')
   .attr('stroke', '#dac0c5')
   .attr('stroke-width', 1.2)
   .attr('stroke-opacity', 0.45);
+
+// Wider invisible lines for link hover hit detection
+const linkHit = g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke', 'transparent')
+  .attr('stroke-width', 14)
+  .style('pointer-events', 'stroke')
+  .style('cursor', 'default')
+  .on('mouseover', function(e, d) {
+    if (!d.label) return;
+    const tip = document.getElementById('link-tooltip');
+    tip.textContent = d.label;
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY - 10) + 'px';
+    tip.classList.add('visible');
+  })
+  .on('mousemove', function(e) {
+    const tip = document.getElementById('link-tooltip');
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY - 10) + 'px';
+  })
+  .on('mouseout', function() {
+    document.getElementById('link-tooltip').classList.remove('visible');
+  });
 
 const node = g.append('g').selectAll('g').data(nodes).join('g')
   .attr('cursor', 'pointer')
@@ -1169,7 +1332,7 @@ const node = g.append('g').selectAll('g').data(nodes).join('g')
 
 node.append('circle')
   .attr('class', 'vis-circle')
-  .attr('r', d => RADIUS[d.type] || 10)
+  .attr('r', d => nodeR(d))
   .attr('fill', d => COLORS[d.type])
   .attr('fill-opacity', 0.82)
   .attr('stroke', '#fcf9f0')
@@ -1178,14 +1341,14 @@ node.append('circle')
 // Transparent hit-pad on top (z-order: last = highest) — 44px+ touch target on mobile
 node.append('circle')
   .attr('class', 'hit-pad')
-  .attr('r', d => Math.max((RADIUS[d.type] || 10) + 18, 26))
+  .attr('r', d => Math.max(nodeR(d) + 18, 26))
   .attr('fill', 'transparent')
   .attr('stroke', 'none')
   .style('pointer-events', 'all');
 
 node.append('text')
   .attr('class', 'node-label')
-  .attr('dy', d => (RADIUS[d.type] || 10) + 13)
+  .attr('dy', d => nodeR(d) + 13)
   .attr('text-anchor', 'middle')
   .text(d => d.label);
 
@@ -1195,7 +1358,7 @@ node
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
     node.select('.vis-circle')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
-      .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+      .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n));
     node.select('text')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
@@ -1214,7 +1377,7 @@ node
     else { openPanel(d); panToNodeMobile(d); }
   });
 
-svg.on('click', (e) => { if (e.target === svg.node()) closePanel(); });
+svg.on('click', (e) => { if (e.target === svg.node()) { closePanel(); dismissStartHint(); } });
 
 // ── Mobile touch fallback for node tap ──
 // D3 .clickDistance(10) fires a synthetic click on short taps — works on most browsers.
@@ -1245,11 +1408,41 @@ node.each(function(d) {
   }, { passive: true });
 });
 
+// Start-here hint on soul.md — visible for first 5s, dismissed on any interaction
+const soulNode = nodes.find(n => n.id === 'soul-doc');
+let startHintAlive = true;
+const startHintG = g.append('g').attr('class', 'start-hint-g').style('pointer-events', 'none').style('opacity', 0);
+const startHintRect = startHintG.append('rect')
+  .attr('rx', 7).attr('fill', '#fcf9f0')
+  .attr('stroke', 'rgba(154,58,90,0.35)').attr('stroke-width', 1.2);
+startHintG.append('text').attr('class', 'start-hint-text').attr('text-anchor', 'middle').text('✦ start here');
+// Fade in after 800ms (let graph settle a bit first)
+setTimeout(() => {
+  if (startHintAlive) startHintG.transition().duration(500).style('opacity', 1);
+}, 800);
+// Auto-dismiss after 5s
+setTimeout(() => dismissStartHint(), 5500);
+function dismissStartHint() {
+  if (!startHintAlive) return;
+  startHintAlive = false;
+  startHintG.transition().duration(600).style('opacity', 0).on('end', function() { d3.select(this).remove(); });
+}
+
 sim.on('tick', () => {
   link
     .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
     .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  linkHit
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
   node.attr('transform', d => `translate(${d.x},${d.y})`);
+  // Track soul.md node for start-here hint
+  if (startHintAlive && soulNode && soulNode.x != null) {
+    const r = nodeR(soulNode);
+    startHintRect.attr('x', -48).attr('y', -(r + 36)).attr('width', 96).attr('height', 24);
+    startHintG.select('text').attr('y', -(r + 18));
+    startHintG.attr('transform', `translate(${soulNode.x},${soulNode.y})`);
+  }
 });
 
 // Auto-fit when simulation settles
@@ -1260,7 +1453,7 @@ sim.on('tick', () => {
 function resetHighlight() {
   node.select('.vis-circle')
     .attr('fill-opacity', d => hiddenTypes.has(d.type) ? 0 : 0.82)
-    .attr('r', d => RADIUS[d.type] || 10)
+    .attr('r', d => nodeR(d))
     .attr('stroke', d => d.id === (currentNode && currentNode.id) ? COLORS[d.type] : '#fcf9f0')
     .attr('stroke-width', d => d.id === (currentNode && currentNode.id) ? 3 : 2.5);
   node.select('text')
@@ -1273,7 +1466,7 @@ function applyNeighborhoodHighlight(d) {
   const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
   node.select('.vis-circle')
     .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
-    .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10))
+    .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n))
     .attr('stroke', n => n.id === d.id ? COLORS[n.type] : '#fcf9f0')
     .attr('stroke-width', n => n.id === d.id ? 3 : 2.5);
   node.select('text')
@@ -1320,10 +1513,19 @@ function panToNodeMobile(d) {
 
 function openPanel(d) {
   currentNode = d;
+  dismissStartHint();
   document.getElementById('panel-type').textContent = d.type.toUpperCase();
   document.getElementById('panel-type').style.color = COLORS[d.type];
   document.getElementById('panel-name').textContent = d.label;
   document.getElementById('panel-desc').textContent = d.desc;
+
+  const originEl = document.getElementById('panel-origin');
+  if (d.origin) {
+    originEl.textContent = d.origin;
+    originEl.style.display = 'block';
+  } else {
+    originEl.style.display = 'none';
+  }
 
   const exWrap = document.getElementById('panel-example-wrap');
   if (d.example) {
@@ -1394,7 +1596,7 @@ function togglePin() {
     const nbrs = new Set([d.id, ...(adj[d.id] || [])]);
     node.select('.vis-circle')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
-      .attr('r', n => n.id === d.id ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+      .attr('r', n => n.id === d.id ? nodeR(n) + 3 : nodeR(n));
     node.select('text')
       .attr('fill-opacity', n => hiddenTypes.has(n.type) ? 0 : (nbrs.has(n.id) ? 1 : 0.38))
       .attr('font-weight', n => n.id === d.id ? '600' : '400');
@@ -1428,7 +1630,7 @@ function applySearch(q) {
   if (!query) { resetHighlight(); return; }
   node.select('.vis-circle')
     .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.08)
-    .attr('r', n => n.label.toLowerCase().includes(query) ? (RADIUS[n.type] || 10) + 3 : (RADIUS[n.type] || 10));
+    .attr('r', n => n.label.toLowerCase().includes(query) ? nodeR(n) + 3 : nodeR(n));
   node.select('text')
     .attr('fill-opacity', n => n.label.toLowerCase().includes(query) ? 1 : 0.1)
     .attr('font-weight', n => n.label.toLowerCase().includes(query) ? '600' : '400');
@@ -1489,7 +1691,7 @@ function openLightbox(d) {
   const excerptEl = document.getElementById('lb-excerpt');
   if (d.type === 'doc') {
     imgEl.style.display = 'none';
-    excerptEl.textContent = d.excerpt || '';
+    excerptEl.innerHTML = buildLinkedExcerpt(d.excerpt || '', d.id);
     // Restart cursor animation on each open
     excerptEl.classList.remove('visible');
     void excerptEl.offsetWidth;
@@ -1597,6 +1799,29 @@ function snapToHeart() {
     nodes.forEach(d => { d.fx = null; d.fy = null; });
   }, 2200);
 }
+
+// Intra-doc linking — wrap known node names in excerpt text with clickable spans
+function buildLinkedExcerpt(text, currentId) {
+  // Escape HTML
+  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Sort by label length desc so longer names match before short ones (e.g., "Prof. Jiang" before "Prof")
+  const sorted = [...nodes].filter(n => n.id !== currentId && n.label)
+    .sort((a, b) => b.label.length - a.label.length);
+  for (const n of sorted) {
+    const escaped = n.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Match word-boundary-like: preceded/followed by space, punctuation, or line boundary
+    const re = new RegExp(`(?<![\\w\\u4e00-\\u9fff])(${escaped})(?![\\w\\u4e00-\\u9fff])`, 'g');
+    html = html.replace(re, `<span class="excerpt-link" onclick="excerptNodeClick('${n.id}')">$1</span>`);
+  }
+  return html;
+}
+window.excerptNodeClick = function(nodeId) {
+  const n = nodeMap[nodeId];
+  if (!n) return;
+  closeLightbox();
+  if (n.type === 'doc' || n.type === 'output') { setTimeout(() => openLightbox(n), 50); }
+  else { openPanel(n); panToNode(n); }
+};
 
 window.closePanel = closePanel;
 window.togglePin = togglePin;
