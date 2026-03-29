@@ -2286,7 +2286,8 @@ function updateTlStats(pct) {
   const currentDate = new Date(T_START + (pct / 100) * T_RANGE);
   const convCount = Object.entries(CLAUDE_AI_DATA).reduce((sum, [ds, c]) =>
     new Date(ds) <= currentDate ? sum + c : sum, 0);
-  if (mainEl) mainEl.textContent = `${visible} things built · ${convCount} conversations`;
+  const dateLabel = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  if (mainEl) mainEl.textContent = `${dateLabel} · ${visible} things built · ${convCount} conversations`;
   if (noteEl) {
     const atEnd = pct >= 99.5;
     noteEl.textContent = atEnd ? '46 active days — all while working full-time' : '';
