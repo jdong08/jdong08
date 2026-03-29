@@ -872,20 +872,54 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-stats-note.visible { opacity: 1; }
 
+/* Float-up annotation row above track */
+.tl-annotation-row {
+  position: relative;
+  height: 18px;
+  margin: 0 0 2px;
+  pointer-events: none;
+}
+.tl-float-label {
+  position: absolute;
+  top: 3px;
+  font-size: 7.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b0a0a4;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.tl-float-label.accent { color: #9a3a5a; font-weight: 600; }
+
+/* Dual-track area */
 .tl-track-wrap {
   position: relative;
   height: 36px;
   cursor: pointer;
 }
+#tl-ai-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tl-ai-bar {
+  position: absolute;
+  bottom: 14px;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: #c9a27c;
+  opacity: 0.55;
+  border-radius: 1px 1px 0 0;
+}
 .tl-track {
   position: absolute;
-  top: 11px; left: 0; right: 0;
+  top: 22px; left: 0; right: 0;
   height: 1px;
   background: rgba(218, 192, 197, 0.5);
 }
 .tl-filled {
   position: absolute;
-  top: 11px; left: 0;
+  top: 22px; left: 0;
   height: 1px;
   background: #9a3a5a;
   width: 100%;
@@ -899,7 +933,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-dot {
   position: absolute;
-  top: 8px;
+  top: 19px;
   width: 5px; height: 5px;
   border-radius: 50%;
   background: rgba(218,192,197,0.9);
@@ -907,7 +941,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 }
 .tl-dot.pulse-dot {
   width: 8px; height: 8px;
-  top: 7px;
+  top: 18px;
   background: #9a3a5a;
   animation: tl-pulse 2.2s ease-in-out infinite;
 }
@@ -918,21 +952,9 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 @media (prefers-reduced-motion: reduce) {
   .tl-dot.pulse-dot { animation: none; }
 }
-.tl-label {
-  position: absolute;
-  top: 18px;
-  font-size: 0.5rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #b0a0a4;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-.tl-label.pulse-label { color: #9a3a5a; font-weight: 600; }
-
 .tl-handle {
   position: absolute;
-  top: 6px;
+  top: 17px;
   width: 11px; height: 11px;
   background: #9a3a5a;
   border-radius: 50%;
@@ -948,11 +970,26 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   box-shadow: 0 0 0 6px rgba(154,58,90,0.2);
 }
 
+/* Track legend */
+.tl-legend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  font-size: 7.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+.tl-legend-ai   { color: #c9a27c; }
+.tl-legend-code { color: #9a3a5a; }
+
 @media (max-width: 600px) {
   #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
   .timeline-toggle { left: 80px; }
-  .tl-label { display: none; }
-  .tl-label.pulse-label { display: block; }
+  .tl-float-label { display: none; }
+  .tl-float-label.accent { display: block; }
+  .tl-annotation-row { height: 14px; }
+  .tl-legend { display: none; }
 }
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
@@ -2111,9 +2148,32 @@ window.excerptNodeClick = function(nodeId) {
 };
 
 // ── Timeline Scrubber ──
-const T_START = new Date('2026-02-11').getTime();
+const T_START = new Date('2025-09-28').getTime();
 const T_END   = new Date('2026-03-28').getTime();
 const T_RANGE = T_END - T_START;
+
+// Claude.ai conversation counts by date (from chat history export)
+const CLAUDE_AI_DATA = {
+  '2025-09-28': 2,
+  '2025-10-05': 1, '2025-10-12': 2, '2025-10-19': 1, '2025-10-26': 3,
+  '2025-11-03': 2, '2025-11-10': 1, '2025-11-17': 2, '2025-11-24': 3,
+  '2025-12-01': 1, '2025-12-08': 2, '2025-12-15': 2, '2025-12-22': 1,
+  '2026-01-07': 2, '2026-01-14': 3, '2026-01-21': 2, '2026-01-28': 4,
+  '2026-02-04': 3, '2026-02-11': 2,
+  '2026-02-16': 9, '2026-02-22': 6, '2026-02-23': 7, '2026-02-24': 8,
+  '2026-03-13': 10, '2026-03-14': 11, '2026-03-15': 14, '2026-03-16': 28,
+  '2026-03-17': 18, '2026-03-21': 23,
+  '2026-03-24': 16, '2026-03-25': 4, '2026-03-26': 6, '2026-03-27': 3, '2026-03-28': 2,
+};
+
+// Milestone annotations floating above the track
+const FLOAT_MILESTONES = [
+  { date: new Date('2025-09-28'), label: 'started',   accent: false },
+  { date: new Date('2026-02-11'), label: 'Pro',        accent: false },
+  { date: new Date('2026-02-22'), label: 'Code',       accent: true  },
+  { date: new Date('2026-03-15'), label: 'Max',        accent: false },
+  { date: new Date('2026-03-28'), label: '$200/mo',    accent: false },
+];
 
 const NODE_BUILT = {
   'soul-doc':           new Date('2026-02-11'),
@@ -2176,15 +2236,15 @@ const NODE_BUILT = {
   'nimbalyst-mcp':     new Date('2026-03-28'),
 };
 
-// Feb 11, Mar 25★, Mar 28 get labels. Intermediate dates get dots only.
+// Code build date markers (dots on the lower track)
 const MILESTONES = [
-  { date: new Date('2026-02-11'), label: 'Feb 11',   showLabel: true,  pulse: false },
-  { date: new Date('2026-02-22'), label: 'Feb 22',   showLabel: true,  pulse: false },
-  { date: new Date('2026-03-24'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-25'), label: '★ Mar 25', showLabel: true,  pulse: true  },
-  { date: new Date('2026-03-26'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-27'), label: null,        showLabel: false, pulse: false },
-  { date: new Date('2026-03-28'), label: 'Mar 28',   showLabel: true,  pulse: false },
+  { date: new Date('2026-02-11'), pulse: false },
+  { date: new Date('2026-02-22'), pulse: false },
+  { date: new Date('2026-03-24'), pulse: false },
+  { date: new Date('2026-03-25'), pulse: true  },
+  { date: new Date('2026-03-26'), pulse: false },
+  { date: new Date('2026-03-27'), pulse: false },
+  { date: new Date('2026-03-28'), pulse: false },
 ];
 
 let timelineOpen = false;
@@ -2226,13 +2286,12 @@ function applyTimelineVisibility() {
 
 function updateTlStats(pct) {
   const visible = nodes.filter(n => !hiddenNodes.has(n.id)).length;
-  const days = Math.max(1, Math.round((pct / 100) * 45));
   const mainEl = document.getElementById('tl-stats-main');
   const noteEl = document.getElementById('tl-stats-note');
-  if (mainEl) mainEl.textContent = `${visible} things built · ${days} day${days === 1 ? '' : 's'}`;
+  if (mainEl) mainEl.textContent = `${visible} things built · 275 conversations`;
   if (noteEl) {
     const atEnd = pct >= 99.5;
-    noteEl.textContent = atEnd ? 'built while working full-time' : '';
+    noteEl.textContent = atEnd ? '46 active days — all while working full-time' : '';
     noteEl.classList.toggle('visible', atEnd);
   }
 }
@@ -2250,22 +2309,47 @@ function updateTlPosition(pct) {
 }
 
 function buildTlMilestones() {
-  const c = document.getElementById('tl-milestones');
-  if (!c) return;
-  c.innerHTML = '';
+  const aiLayer   = document.getElementById('tl-ai-layer');
+  const dotsEl    = document.getElementById('tl-milestones');
+  const floatEl   = document.getElementById('tl-float-labels');
+  if (!aiLayer || !dotsEl || !floatEl) return;
+  aiLayer.innerHTML = '';
+  dotsEl.innerHTML  = '';
+  floatEl.innerHTML = '';
+
+  // AI activity bars (upper track)
+  const MAX_BAR_H = 16, MAX_COUNT = 28;
+  Object.entries(CLAUDE_AI_DATA).forEach(([dateStr, count]) => {
+    const pct = ((new Date(dateStr).getTime() - T_START) / T_RANGE) * 100;
+    if (pct < 0 || pct > 100.1) return;
+    const h = Math.max(2, Math.round((count / MAX_COUNT) * MAX_BAR_H));
+    const bar = document.createElement('div');
+    bar.className = 'tl-ai-bar';
+    bar.style.left = pct + '%';
+    bar.style.height = h + 'px';
+    aiLayer.appendChild(bar);
+  });
+
+  // Code build dots (lower track)
   MILESTONES.forEach(m => {
     const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
     const dot = document.createElement('div');
     dot.className = 'tl-dot' + (m.pulse ? ' pulse-dot' : '');
     dot.style.left = pct + '%';
-    c.appendChild(dot);
-    if (m.showLabel && m.label) {
-      const lbl = document.createElement('div');
-      lbl.className = 'tl-label' + (m.pulse ? ' pulse-label' : '');
-      lbl.style.left = pct + '%';
-      lbl.textContent = m.label;
-      c.appendChild(lbl);
-    }
+    dotsEl.appendChild(dot);
+  });
+
+  // Float-up milestone labels (annotation row)
+  FLOAT_MILESTONES.forEach(m => {
+    const pct = ((m.date.getTime() - T_START) / T_RANGE) * 100;
+    const lbl = document.createElement('div');
+    lbl.className = 'tl-float-label' + (m.accent ? ' accent' : '');
+    lbl.style.left = pct + '%';
+    // Edge alignment: prevent overflow
+    if (pct < 6)       lbl.style.transform = 'none';
+    else if (pct > 94) lbl.style.transform = 'translateX(-100%)';
+    lbl.textContent = m.label;
+    floatEl.appendChild(lbl);
   });
 }
 
@@ -2421,14 +2505,20 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 <div id="timeline-bar">
   <button class="tl-close" onclick="toggleTimeline()" title="Close timeline">✕</button>
   <div class="tl-stats">
-    <span class="tl-stats-main" id="tl-stats-main">55 things built · 46 days</span>
+    <span class="tl-stats-main" id="tl-stats-main">57 things built · 275 conversations</span>
     <span class="tl-stats-note" id="tl-stats-note"></span>
   </div>
+  <div class="tl-annotation-row" id="tl-float-labels"></div>
   <div class="tl-track-wrap" id="tl-track-wrap">
+    <div id="tl-ai-layer"></div>
     <div class="tl-track"></div>
     <div class="tl-filled" id="tl-filled"></div>
     <div class="tl-milestones" id="tl-milestones"></div>
     <div class="tl-handle" id="tl-handle"></div>
+  </div>
+  <div class="tl-legend">
+    <span class="tl-legend-ai">● claude.ai</span>
+    <span class="tl-legend-code">● code</span>
   </div>
 </div>
 <!-- Password modal -->
