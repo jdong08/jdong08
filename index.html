@@ -1322,6 +1322,10 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
   .style('cursor', 'default')
   .on('mouseover', function(e, d) {
     if (!d.label) return;
+    link.filter(l => l === d)
+      .attr('stroke', '#9a3a5a')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-opacity', 0.85);
     const tip = document.getElementById('link-tooltip');
     tip.textContent = d.label;
     tip.style.left = (e.clientX + 14) + 'px';
@@ -1333,7 +1337,11 @@ const linkHit = g.append('g').selectAll('line').data(links).join('line')
     tip.style.left = (e.clientX + 14) + 'px';
     tip.style.top = (e.clientY - 10) + 'px';
   })
-  .on('mouseout', function() {
+  .on('mouseout', function(e, d) {
+    link.filter(l => l === d)
+      .attr('stroke', '#dac0c5')
+      .attr('stroke-width', 1.2)
+      .attr('stroke-opacity', 0.45);
     document.getElementById('link-tooltip').classList.remove('visible');
   });
 
