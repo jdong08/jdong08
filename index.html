@@ -285,6 +285,21 @@ header {
   flex-shrink: 0;
 }
 
+/* Handle bounce affordance — one-time per session */
+@keyframes handle-bounce {
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(6px); }
+  60%  { transform: translateY(2px); }
+  80%  { transform: translateY(5px); }
+  100% { transform: translateY(0); }
+}
+.panel-handle.bounce {
+  animation: handle-bounce 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-handle.bounce { animation: none; }
+}
+
 @media (max-width: 600px) {
   #panel {
     top: auto; bottom: 0; right: 0; left: 0;
@@ -2095,6 +2110,19 @@ function openPanel(d) {
   applyNeighborhoodHighlight(d);
 
   document.getElementById('panel').classList.add('visible');
+
+  // One-time bounce on the drag handle — fires once per session on mobile,
+  // suppressed after that and under prefers-reduced-motion (handled in CSS).
+  if (window.innerWidth <= 600 && !sessionStorage.getItem('panel-handle-bounced')) {
+    sessionStorage.setItem('panel-handle-bounced', '1');
+    const handleEl = document.getElementById('panel-handle');
+    // Delay until after the panel slide-in transition (280ms) completes
+    setTimeout(() => {
+      handleEl.classList.add('bounce');
+      handleEl.addEventListener('animationend', () => handleEl.classList.remove('bounce'), { once: true });
+    }, 320);
+  }
+
   // Delay backdrop activation by one task so the tap's synthetic click
   // (which fires after pointerup on the same frame) doesn't immediately
   // hit the backdrop and close the panel we just opened.
@@ -2230,28 +2258,52 @@ function applySearch(q) {
   if (mobileEmptyEl) mobileEmptyEl.style.display = hasMatch ? 'none' : 'block';
 }
 
-// ── Panel drag-to-resize (mobile) ──
+// ── Panel drag-to-dismiss (mobile) ──
+// Drags the panel as a unit via translateY. Down-drag > 30% of panel height → dismiss.
 (function() {
   const handle = document.getElementById('panel-handle');
   const panelEl = document.getElementById('panel');
-  let startY = null, startH = null;
+  let startY = null;
+
   handle.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
-    startH = panelEl.offsetHeight;
+    // Remove the slide-in transition so the panel tracks the finger in real time
+    panelEl.style.transition = 'none';
     e.preventDefault();
   }, { passive: false });
+
   handle.addEventListener('touchmove', e => {
     if (startY === null) return;
-    const dy = startY - e.touches[0].clientY;
-    const newH = Math.max(100, Math.min(window.innerHeight - 60, startH + dy));
-    panelEl.style.height = newH + 'px';
+    const dy = e.touches[0].clientY - startY; // positive = dragging down
+    if (dy > 0) {
+      // Only allow downward drag — clamp upward to 0
+      panelEl.style.transform = 'translateY(' + dy + 'px)';
+    }
     e.preventDefault();
   }, { passive: false });
-  handle.addEventListener('touchend', (e) => {
-    if (startY !== null) {
-      const dy = startY - (e.changedTouches[0] ? e.changedTouches[0].clientY : startY);
-      // Negative dy = dragged down; close panel if dragged down > 60px
-      if (dy < -60) closePanel();
+
+  handle.addEventListener('touchend', e => {
+    if (startY === null) return;
+    const endY = e.changedTouches[0] ? e.changedTouches[0].clientY : startY;
+    const dy = endY - startY; // positive = dragged down
+    const threshold = panelEl.offsetHeight * 0.30; // 30% of panel height
+
+    // Restore transition before deciding to close or snap back
+    panelEl.style.transition = '';
+
+    if (dy > threshold) {
+      // Dragged far enough down — dismiss
+      // translateY(100%) slides it fully off-screen, matching the hidden state
+      panelEl.style.transform = 'translateY(100%)';
+      // After the transition completes, let closePanel clean up state
+      panelEl.addEventListener('transitionend', function onEnd() {
+        panelEl.removeEventListener('transitionend', onEnd);
+        panelEl.style.transform = '';
+        closePanel();
+      });
+    } else {
+      // Not far enough — snap back to open position
+      panelEl.style.transform = '';
     }
     startY = null;
   });
