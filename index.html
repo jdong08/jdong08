@@ -374,7 +374,7 @@ header {
   .conn-tag { min-height: 44px; display: inline-flex; align-items: center; font-size: 0.75rem; padding: 6px 12px; }
   .heart-btn { font-size: 16px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
   .private-lock-btn { font-size: 14px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
-  .timeline-toggle { font-size: 20px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
+  .timeline-toggle { font-size: 18px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
   .projects-toggle { min-height: 44px; padding: 8px 14px; font-size: 0.72rem; }
   .project-link { min-height: 44px; padding: 8px 14px; }
   .project-name { font-size: 0.82rem; }
@@ -1025,7 +1025,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 /* ── Timeline Scrubber ── */
 .timeline-toggle {
   background: none; border: none; padding: 6px 8px;
-  cursor: pointer; font-size: 18px; opacity: 0.45;
+  cursor: pointer; font-size: 16px; opacity: 0.45;
   transition: opacity 0.2s, transform 0.15s;
   line-height: 1; color: #544246;
   touch-action: manipulation;
@@ -2268,7 +2268,9 @@ function applySearch(q) {
 // (the handle zone). This makes the drag target finger-sized without widening the
 // actual visual handle.
 (function() {
-  if (window.innerWidth > 600) return; // desktop: panel slides in from right, no drag needed
+  // Note: do NOT gate on window.innerWidth at setup time — the IIFE runs before the
+  // viewport is fully settled on some Android Chrome versions, so the guard would fire
+  // false-positive and skip registering the listener. Check width inside the handler.
   const panelEl = document.getElementById('panel');
   let startY = null;
   let dragging = false;
@@ -2276,6 +2278,7 @@ function applySearch(q) {
   // Listen on the full panel so that touches landing just outside the 4px handle still work.
   // Only activate if the touch starts within the top 60px of the panel (handle zone).
   panelEl.addEventListener('touchstart', e => {
+    if (window.innerWidth > 600) return; // desktop: panel slides in from right, no drag
     if (!panelEl.classList.contains('visible')) return;
     const panelRect = panelEl.getBoundingClientRect();
     const touchY = e.touches[0].clientY;
@@ -2289,11 +2292,14 @@ function applySearch(q) {
 
   panelEl.addEventListener('touchmove', e => {
     if (startY === null) return;
+    // Always prevent default once we've committed to a handle-zone touch —
+    // otherwise the browser can claim the touch sequence for native scroll
+    // after the first few un-prevented move events.
+    e.preventDefault();
     const dy = e.touches[0].clientY - startY; // positive = dragging down
     if (dy > 4) dragging = true; // threshold to distinguish tap from drag
     if (dragging && dy > 0) {
       panelEl.style.transform = 'translateY(' + dy + 'px)';
-      e.preventDefault();
     }
   }, { passive: false });
 
