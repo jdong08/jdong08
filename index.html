@@ -724,6 +724,13 @@ header {
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
+  pointer-events: none; /* container passes touches through to SVG */
+}
+/* Re-enable pointer events on interactive dock children */
+.projects-list,
+.projects-toggle-row,
+.dock-restore {
+  pointer-events: auto;
 }
 .projects-list {
   display: flex;
@@ -2070,8 +2077,11 @@ function openPanel(d) {
   applyNeighborhoodHighlight(d);
 
   document.getElementById('panel').classList.add('visible');
+  // Delay backdrop activation by one task so the tap's synthetic click
+  // (which fires after pointerup on the same frame) doesn't immediately
+  // hit the backdrop and close the panel we just opened.
   const backdrop = document.getElementById('panel-backdrop');
-  if (backdrop) backdrop.style.pointerEvents = 'all';
+  if (backdrop) setTimeout(() => { backdrop.style.pointerEvents = 'all'; }, 0);
 }
 
 function closePanel() {
