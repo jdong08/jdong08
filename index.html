@@ -300,14 +300,17 @@ header {
   .panel-handle { display: block; }
   .hint { display: none; }
 
-  /* Mobile dock: top-right below header */
+  /* Mobile dock: toggle anchored top-right, list drops below */
   .projects-dock {
-    top: 60px; right: 16px;
+    top: 82px; right: 16px;
     bottom: auto; left: auto;
     align-items: flex-end;
+    flex-direction: column; /* toggle-row first (visually via order), list below */
+    gap: 4px;
   }
-  .projects-list { align-items: flex-end; }
-  .projects-list.open { max-height: 200px; }
+  .projects-toggle-row { order: -1; } /* toggle stays above the list */
+  .projects-list { align-items: flex-end; flex-direction: column; order: 1; }
+  .projects-list.open { max-height: 220px; }
   /* Hide restore button on mobile — no dismiss means no restore needed */
   .dock-restore { display: none !important; }
 }
@@ -354,8 +357,9 @@ header {
   .about-close { width: 44px; height: 44px; font-size: 1.1rem; }
   .lightbox-close { width: 44px; height: 44px; font-size: 1.1rem; }
   .conn-tag { min-height: 44px; display: inline-flex; align-items: center; font-size: 0.75rem; padding: 6px 12px; }
-  .heart-btn { font-size: 18px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-  .private-lock-btn { font-size: 16px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .heart-btn { font-size: 16px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
+  .private-lock-btn { font-size: 14px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
+  .timeline-toggle { font-size: 16px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
   .projects-toggle { min-height: 44px; padding: 8px 14px; font-size: 0.72rem; }
   .project-link { min-height: 44px; padding: 8px 14px; }
   .project-name { font-size: 0.82rem; }
@@ -802,15 +806,32 @@ header {
 .toggle-arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
 .projects-toggle.open .toggle-arrow { transform: rotate(180deg); }
 
+/* ── Bottom-left button group (lock + heart + timeline) ── */
+.bottom-btn-group {
+  position: fixed;
+  bottom: 20px; left: 20px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(252, 249, 240, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(218, 192, 197, 0.35);
+  border-radius: 999px;
+  padding: 0 4px;
+  box-shadow: 0 1px 6px rgba(28,28,23,0.07);
+}
+
 /* ── Heart Gather Button ── */
 .heart-btn {
-  position: fixed; bottom: 20px; left: 50px; z-index: 20;
-  background: none; border: none; padding: 0;
-  cursor: pointer; font-size: 13px; opacity: 0.45;
+  background: none; border: none; padding: 6px 8px;
+  cursor: pointer; font-size: 13px; opacity: 0.55;
   transition: opacity 0.2s, transform 0.15s;
   line-height: 1;
+  border-radius: 999px;
 }
-.heart-btn:hover { opacity: 0.7; transform: scale(1.25); }
+.heart-btn:hover { opacity: 0.8; transform: scale(1.2); }
 .heart-btn.beating {
   animation: heartbeat 0.55s ease-in-out 3;
 }
@@ -822,10 +843,10 @@ header {
 
 /* ── Private Lock Button ── */
 .private-lock-btn {
-  position: fixed; bottom: 20px; left: 24px; z-index: 20;
-  background: none; border: none; padding: 0;
-  cursor: pointer; font-size: 11px; opacity: 0.3;
+  background: none; border: none; padding: 6px 8px;
+  cursor: pointer; font-size: 11px; opacity: 0.38;
   transition: opacity 0.2s;
+  border-radius: 999px;
 }
 .private-lock-btn:hover { opacity: 0.7; }
 .modal-bg { display: none; position: fixed; inset: 0; background: rgba(30,20,15,0.5);
@@ -875,8 +896,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 /* Safe area insets for bottom-positioned elements */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .hint { bottom: calc(20px + env(safe-area-inset-bottom)); }
-  .heart-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
-  .private-lock-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .bottom-btn-group { bottom: calc(20px + env(safe-area-inset-bottom)); }
   .projects-dock { bottom: calc(20px + env(safe-area-inset-bottom)); }
   @media (max-width: 600px) {
     #panel { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
@@ -989,12 +1009,12 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 /* ── Timeline Scrubber ── */
 .timeline-toggle {
-  position: fixed; bottom: 20px; left: 84px; z-index: 20;
-  background: none; border: none; padding: 0;
+  background: none; border: none; padding: 6px 8px;
   cursor: pointer; font-size: 14px; opacity: 0.45;
   transition: opacity 0.2s, transform 0.15s;
   line-height: 1; color: #544246;
   touch-action: manipulation;
+  border-radius: 999px;
 }
 .timeline-toggle:hover { opacity: 0.7; }
 .timeline-toggle.active { opacity: 0.88; color: #7a2f3d; }
@@ -1150,14 +1170,12 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 @media (max-width: 600px) {
   #timeline-bar { padding: 8px 18px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-  .timeline-toggle { left: 80px; }
   .tl-float-label { display: none; }
   .tl-float-label.accent { display: block; }
   .tl-annotation-row { height: 14px; }
   .tl-legend { display: none; }
-}
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .timeline-toggle { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  /* Hide floating hint label on mobile — button group pill is self-explanatory */
+  .tl-hint-label { display: none; }
 }
 
 /* ── Lightbox external link ── */
@@ -2860,13 +2878,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('private-modal') && document.getElementById('private-modal').classList.contains('open')) checkPrivate(); });
 </script>
-<!-- Lock button -->
-<button class="private-lock-btn" onclick="openPrivate()" title="private">🔒</button>
-<button class="heart-btn" id="heart-btn" onclick="snapToHeart()"
-  onmouseenter="showBtnTooltip(event,'Gather pinned nodes')"
-  onmouseleave="hideBtnTooltip()"
-  aria-label="Gather pinned nodes">♡</button>
-<button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline">◷</button>
+<!-- Bottom-left button group: lock + heart + timeline -->
+<div class="bottom-btn-group">
+  <button class="private-lock-btn" onclick="openPrivate()" title="Private nodes" aria-label="Private nodes">🔒</button>
+  <button class="heart-btn" id="heart-btn" onclick="snapToHeart()"
+    onmouseenter="showBtnTooltip(event,'Gather pinned nodes')"
+    onmouseleave="hideBtnTooltip()"
+    aria-label="Gather pinned nodes">♡</button>
+  <button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline" aria-label="Build timeline">◷</button>
+</div>
 <span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 
 <div id="timeline-bar">
