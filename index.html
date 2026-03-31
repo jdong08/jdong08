@@ -824,16 +824,6 @@ header {
   position: fixed;
   bottom: 20px; left: 20px;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: rgba(252, 249, 240, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(218, 192, 197, 0.35);
-  border-radius: 999px;
-  padding: 2px;
-  box-shadow: 0 1px 6px rgba(28,28,23,0.07);
 }
 
 /* ── Mobile Foundation ── */
@@ -954,8 +944,8 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 .tl-hint-label {
   position: fixed;
-  bottom: 22px; left: 64px;
-  font-size: 9px;
+  bottom: 22px; left: 38px;
+  font-size: 8px;
   font-family: 'DM Sans', sans-serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -970,18 +960,17 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 @supports (bottom: env(safe-area-inset-bottom)) {
   .tl-hint-label { bottom: calc(22px + env(safe-area-inset-bottom)); }
 }
-@media (max-width: 600px) { .tl-hint-label { left: 64px; } }
+@media (max-width: 600px) { .tl-hint-label { left: 38px; } }
 
 /* ── Timeline Scrubber ── */
 .timeline-toggle {
-  background: none; border: none; padding: 8px 10px;
-  cursor: pointer; font-size: 18px; opacity: 0.55;
-  transition: opacity 0.2s, transform 0.15s;
+  background: none; border: none; padding: 0;
+  cursor: pointer; font-size: 15px; opacity: 0.35;
+  transition: opacity 0.2s;
   line-height: 1; color: #544246;
   touch-action: manipulation;
-  border-radius: 999px;
 }
-.timeline-toggle:hover { opacity: 0.7; }
+.timeline-toggle:hover { opacity: 0.6; }
 .timeline-toggle.active { opacity: 0.88; color: #7a2f3d; }
 
 #timeline-bar {
