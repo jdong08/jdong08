@@ -2260,7 +2260,7 @@ function showLineHint() {
   if (!hint) return;
   hint.style.display = 'block';
   hint.style.opacity = '0';
-  requestAnimationFrame(() => { hint.style.opacity = '1'; });
+  requestAnimationFrame(() => { requestAnimationFrame(() => { hint.style.opacity = '1'; }); });
   setTimeout(() => {
     hint.style.opacity = '0';
     setTimeout(() => { hint.style.display = 'none'; }, 600);
