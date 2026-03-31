@@ -372,7 +372,7 @@ header {
   .about-close { width: 44px; height: 44px; font-size: 1.1rem; }
   .lightbox-close { width: 44px; height: 44px; font-size: 1.1rem; }
   .conn-tag { min-height: 44px; display: inline-flex; align-items: center; font-size: 0.75rem; padding: 6px 12px; }
-  .timeline-toggle { font-size: 18px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
+  .bottom-btn-group { min-height: 40px; }
   .projects-toggle { min-height: 44px; padding: 8px 14px; font-size: 0.72rem; }
   .project-link { min-height: 44px; padding: 8px 14px; }
   .project-name { font-size: 0.82rem; }
@@ -824,6 +824,10 @@ header {
   position: fixed;
   bottom: 20px; left: 20px;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
 }
 
 /* ── Mobile Foundation ── */
@@ -943,35 +947,24 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 .tl-close:hover { color: #7a2f3d; }
 
 .tl-hint-label {
-  position: fixed;
-  bottom: 22px; left: 38px;
   font-size: 8px;
   font-family: 'DM Sans', sans-serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #877276;
   opacity: 0.28;
-  pointer-events: none;
-  z-index: 20;
   white-space: nowrap;
   transition: opacity 0.6s;
 }
 .tl-hint-label.fading { opacity: 0; }
-@supports (bottom: env(safe-area-inset-bottom)) {
-  .tl-hint-label { bottom: calc(22px + env(safe-area-inset-bottom)); }
-}
-@media (max-width: 600px) { .tl-hint-label { left: 38px; } }
 
 /* ── Timeline Scrubber ── */
-.timeline-toggle {
-  background: none; border: none; padding: 0;
-  cursor: pointer; font-size: 15px; opacity: 0.35;
-  transition: opacity 0.2s;
-  line-height: 1; color: #544246;
-  touch-action: manipulation;
+.timeline-toggle-icon {
+  font-size: 14px; opacity: 0.35; color: #544246;
+  line-height: 1; transition: opacity 0.2s;
 }
-.timeline-toggle:hover { opacity: 0.6; }
-.timeline-toggle.active { opacity: 0.88; color: #7a2f3d; }
+.bottom-btn-group:hover .timeline-toggle-icon { opacity: 0.6; }
+.bottom-btn-group.active .timeline-toggle-icon { opacity: 0.88; color: #7a2f3d; }
 
 #timeline-bar {
   position: fixed;
@@ -2818,10 +2811,10 @@ if (!localStorage.getItem('tessa_visited')) {
 
 </script>
 <!-- Build timeline button -->
-<div class="bottom-btn-group">
-  <button class="timeline-toggle" id="timeline-toggle" onclick="toggleTimeline()" title="Build timeline" aria-label="Build timeline">◷</button>
+<div class="bottom-btn-group" id="timeline-toggle" onclick="toggleTimeline()" role="button" tabindex="0" title="Build timeline" aria-label="Build timeline">
+  <span class="timeline-toggle-icon">◷</span>
+  <span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 </div>
-<span class="tl-hint-label" id="tl-hint-label">build timeline</span>
 
 <div id="timeline-bar">
   <button class="tl-close" onclick="toggleTimeline()" title="Close timeline">✕</button>
