@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>Client Dash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #112250;
+      min-height: 100vh;
+      color: #F5F0E9;
+    }
+
+    /* ── Header ───────────────────────────────────────── */
+    .app-header {
+      background: #162a52;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #F5F0E9;
+      letter-spacing: 0.02em;
+      margin-right: auto;
+    }
+
+    .app-title span {
+      color: #E0C58F;
+    }
+
+    .home-btn {
+      color: rgba(245,240,233,0.5);
+      text-decoration: none;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .home-btn:hover {
+      color: #F5F0E9;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="date"] {
+      padding: 7px 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      background: #1e3464;
+      color: #F5F0E9;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      min-width: 0;
+    }
+
+    select:focus, input[type="date"]:focus {
+      outline: 2px solid #E0C58F;
+      outline-offset: 1px;
+    }
+
+    .custom-range {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #F5F0E9;
+    }
+
+    .custom-range input[type="date"] {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+    }
+
+    .btn {
+      padding: 7px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: #E0C58F;
+      color: #112250;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.07);
+      color: #F5F0E9;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .app-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 57px);
+      gap: 0;
+    }
+
+    /* ── Hamburger button (mobile only) ──────────────── */
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #F5F0E9;
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .hamburger-btn:hover { background: rgba(255,255,255,0.07); }
+
+    /* Sidebar overlay backdrop */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 199;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    @media (max-width: 700px) {
+      /* Show hamburger, hide nothing else in header */
+      .hamburger-btn { display: block; }
+
+      /* Sidebar becomes a fixed drawer */
+      .app-body { grid-template-columns: 1fr; }
+      aside.sidebar {
+        position: fixed;
+        top: 0;
+        left: -240px;
+        width: 240px;
+        height: 100vh;
+        z-index: 200;
+        transition: left 0.25s ease;
+        padding-top: 16px;
+        overflow-y: auto;
+      }
+      aside.sidebar.open { left: 0; }
+
+      /* Main content full width with comfortable padding */
+      .main-content { padding: 16px 14px; }
+
+      /* Article cards: slightly less padding */
+      .article-card { padding: 12px 14px; }
+
+      /* Header: tighten up */
+      .app-header { padding: 10px 14px; gap: 10px; }
+      .header-controls { gap: 8px; flex-wrap: wrap; }
+      .header-controls select { min-width: 0; }
+      .custom-range { flex-wrap: wrap; }
+
+      /* Client section header wrap */
+      .client-section-header { flex-wrap: wrap; gap: 6px; }
+      .client-name-title { font-size: 1rem; }
+      .reorder-btns { margin-left: 0; }
+
+      /* Themes grid single column */
+      .themes-grid { grid-template-columns: 1fr; }
+
+      /* Modal comfortable on mobile */
+      .modal { max-width: calc(100vw - 24px); margin: 0 12px; border-radius: 14px; }
+      .modal-overlay { padding: 12px; align-items: flex-start; padding-top: 50px; }
+    }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      background: #162a52;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      padding: 20px 0;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+    }
+
+    .sidebar-section-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.8rem;
+      font-variant: small-caps;
+      letter-spacing: 0.12em;
+      color: #D9CBC2;
+      padding: 0 18px 8px;
+      font-weight: 600;
+    }
+
+    .view-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 18px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: #F5F0E9;
+      cursor: pointer;
+      text-align: left;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .view-btn:hover { background: rgba(224,197,143,0.08); }
+
+    .view-btn.active {
+      border-left-color: #E0C58F;
+      background: rgba(224,197,143,0.12);
+      font-weight: 600;
+      color: #E0C58F;
+    }
+
+    .badge {
+      background: #D9CBC2;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .view-btn.active .badge { background: #E0C58F; color: #112250; }
+
+    .sidebar-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin: 12px 18px;
+    }
+
+    .client-jump {
+      display: block;
+      padding: 6px 18px 6px 22px;
+      font-size: 0.8rem;
+      color: #F5F0E9;
+      text-decoration: none;
+      transition: color 0.12s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .client-jump:hover { color: #E0C58F; }
+
+    /* ── Main ─────────────────────────────────────────── */
+    .main-content {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: rgba(245,240,233,0.45);
+      text-align: center;
+      gap: 10px;
+    }
+
+    .empty-state .icon { font-size: 2.5rem; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; color: #D9CBC2; }
+    .empty-state p { font-size: 0.85rem; max-width: 320px; line-height: 1.5; }
+
+    /* ── Client Section ───────────────────────────────── */
+    .client-section {
+      margin-bottom: 36px;
+    }
+
+    .client-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .client-section-header:hover .client-name-title { color: #E0C58F; }
+
+    .collapse-chevron {
+      font-size: 0.7rem;
+      color: rgba(245,240,233,0.45);
+      transition: transform 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    .client-section.collapsed .collapse-chevron { transform: rotate(-90deg); }
+    .client-section.collapsed .collapse-body { display: none; }
+
+    .client-name-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #F5F0E9;
+    }
+
+    .client-count {
+      font-size: 0.8rem;
+      color: #D9CBC2;
+      font-weight: 600;
+    }
+
+    .client-summary {
+      font-size: 0.82rem;
+      color: #D9CBC2;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    /* ── Article Card ─────────────────────────────────── */
+    .article-card {
+      background: #162a52;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: box-shadow 0.15s;
+    }
+
+    .article-card:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-source {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.82rem;
+      font-variant: small-caps;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #E0C58F;
+    }
+
+    .card-dot {
+      color: rgba(255,255,255,0.1);
+      font-size: 0.7rem;
+    }
+
+    .card-date {
+      font-size: 0.75rem;
+      color: rgba(245,240,233,0.45);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #F5F0E9;
+      margin-bottom: 5px;
+      line-height: 1.45;
+    }
+
+    .card-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card-title a:hover { color: #E0C58F; text-decoration: underline; }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: rgba(245,240,233,0.65);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      background: rgba(224,197,143,0.1);
+      color: #D9CBC2;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Theme View ───────────────────────────────────── */
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .theme-card {
+      background: #162a52;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .theme-card-header {
+      background: linear-gradient(135deg, rgba(212,136,42,0.15), rgba(60,80,125,0.25));
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .theme-label {
+      display: inline-block;
+      background: #E0C58F;
+      color: #112250;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .theme-count {
+      font-size: 0.8rem;
+      color: #D9CBC2;
+      font-weight: 600;
+    }
+
+    .theme-summary {
+      font-size: 0.78rem;
+      color: #D9CBC2;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    .theme-articles {
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theme-article-item {
+      font-size: 0.8rem;
+    }
+
+    .theme-article-source {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #D9CBC2;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .theme-article-title a {
+      color: #F5F0E9;
+      text-decoration: none;
+      line-height: 1.35;
+    }
+
+    .theme-article-title a:hover { color: #E0C58F; text-decoration: underline; }
+
+    /* ── Loading / Error ──────────────────────────────── */
+    .loading-bar {
+      display: none;
+      text-align: center;
+      padding: 48px;
+      color: rgba(245,240,233,0.45);
+      font-size: 0.9rem;
+    }
+
+    .loading-bar.visible { display: block; }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #E0C58F;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(224,197,143,0.1);
+      border: 1px solid #E0C58F;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: #F5F0E9;
+      line-height: 1.6;
+    }
+
+    .error-box strong { color: #E0C58F; }
+
+    /* ── Settings Modal ───────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #162a52;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      background: #162a52;
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #F5F0E9;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: rgba(245,240,233,0.45);
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .modal-close:hover { background: rgba(255,255,255,0.07); }
+
+    .modal-body { padding: 20px 24px; }
+
+    .settings-section {
+      margin-bottom: 28px;
+    }
+
+    .settings-section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+      font-variant: small-caps;
+      letter-spacing: 0.12em;
+      color: #E0C58F;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .api-instructions {
+      font-size: 0.82rem;
+      color: rgba(245,240,233,0.65);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .api-instructions a {
+      color: #E0C58F;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .api-instructions a:hover { text-decoration: underline; }
+
+    .api-note {
+      font-size: 0.75rem;
+      color: rgba(245,240,233,0.45);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      background: #1e3464;
+      color: #F5F0E9;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+
+    .text-input::placeholder { color: rgba(245,240,233,0.35); }
+
+    .text-input:focus {
+      outline: 2px solid #E0C58F;
+      outline-offset: 1px;
+    }
+
+    .tag-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tag-input-row .text-input { flex: 1; }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .removable-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(224,197,143,0.1);
+      border: 1px solid rgba(224,197,143,0.2);
+      color: #D9CBC2;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 4px 10px 4px 8px;
+      cursor: grab;
+      user-select: none;
+      transition: opacity 0.15s, box-shadow 0.15s;
+    }
+
+    .removable-tag.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+
+    .removable-tag.drag-over {
+      box-shadow: -3px 0 0 #E0C58F;
+    }
+
+    .drag-handle {
+      color: rgba(245,240,233,0.25);
+      font-size: 0.8rem;
+      cursor: grab;
+      margin-right: 2px;
+    }
+
+    .removable-tag button {
+      background: none;
+      border: none;
+      color: #D9CBC2;
+      cursor: pointer;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.6;
+    }
+
+    .removable-tag button:hover { opacity: 1; }
+
+    .suggest-btn {
+      background: none;
+      border: 1px solid rgba(224,197,143,0.35);
+      color: #E0C58F;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      padding: 3px 9px;
+      cursor: pointer;
+      font-family: inherit;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .suggest-btn:hover { opacity: 1; }
+    .suggest-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .suggestions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .suggestion-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(224,197,143,0.08);
+      border: 1px dashed rgba(224,197,143,0.35);
+      color: #E0C58F;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .suggestion-chip:hover { background: rgba(224,197,143,0.18); }
+    .suggestion-chip.added {
+      border-style: solid;
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      background: #162a52;
+    }
+
+    /* ── Feature Badges ───────────────────────────────── */
+    .client-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-positive { background: rgba(100,196,143,0.15); color: #64C48F; }
+    .badge-neutral  { background: rgba(217,203,194,0.1);  color: #D9CBC2; }
+    .badge-negative { background: rgba(229,100,100,0.15); color: #E57373; }
+    .badge-quiet    { background: rgba(224,197,143,0.1);  color: #E0C58F; border: 1px solid rgba(224,197,143,0.2); }
+    .badge-earnings { background: rgba(130,180,255,0.15); color: #8AB4FF; }
+
+    /* ── Client Tabs ──────────────────────────────────── */
+    .client-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .client-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      color: rgba(245,240,233,0.4);
+      padding: 6px 16px 8px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+
+    .client-tab:hover { color: #F5F0E9; }
+    .client-tab.active { color: #E0C58F; border-bottom-color: #E0C58F; font-weight: 600; }
+
+    /* ── Mark as Read ─────────────────────────────────── */
+    .article-card { position: relative; }
+
+    .article-card.is-read { opacity: 0.3; }
+
+    .read-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 0.72rem;
+      color: rgba(245,240,233,0.2);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.12s, background 0.12s;
+      line-height: 1;
+    }
+
+    .read-btn:hover { color: #E0C58F; background: rgba(224,197,143,0.1); }
+    .article-card.is-read .read-btn { color: rgba(224,197,143,0.5); }
+
+    .show-read-toggle {
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem;
+      color: rgba(245,240,233,0.3);
+      cursor: pointer;
+      padding: 6px 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .show-read-toggle:hover { color: rgba(245,240,233,0.6); }
+
+    .mark-all-read-btn {
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem;
+      color: rgba(245,240,233,0.3);
+      cursor: pointer;
+      padding: 6px 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .mark-all-read-btn:hover { color: rgba(245,240,233,0.6); }
+
+    /* ── Reorder Arrows ───────────────────────────────── */
+    .reorder-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .reorder-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,233,0.2);
+      cursor: pointer;
+      font-size: 0.65rem;
+      line-height: 1;
+      padding: 1px 4px;
+      border-radius: 3px;
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .reorder-btn:hover { color: #E0C58F; background: rgba(224,197,143,0.1); }
+    .reorder-btn:disabled { opacity: 0.1; cursor: default; background: none; }
+
+    /* ── Per-client Settings Rows ─────────────────────── */
+    .per-client-row { margin-bottom: 14px; }
+
+    .per-client-label {
+      font-size: 0.78rem;
+      color: #D9CBC2;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input.per-client-date {
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      background: #1e3464;
+      color: #F5F0E9;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+
+    input.per-client-date:focus { outline: 2px solid #E0C58F; outline-offset: 1px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <header class="app-header">
+    <button class="hamburger-btn" id="hamburger-btn" title="Menu" aria-label="Open menu">☰</button>
+    <a href="index.html" class="home-btn" title="Home">←</a>
+    <div class="app-title">Client <span>Dash</span></div>
+    <div class="header-controls">
+      <select id="date-range-select" title="Date range">
+        <option value="1">Today</option>
+        <option value="7" selected>Past 7 days</option>
+        <option value="14">Past 14 days</option>
+        <option value="30">Past 30 days</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <div class="custom-range" id="custom-range-inputs" style="display:none">
+        <input type="date" id="date-from" title="From">
+        <span>→</span>
+        <input type="date" id="date-to" title="To">
+      </div>
+      <button class="btn btn-primary" id="fetch-btn">Fetch News</button>
+      <button class="btn btn-secondary" id="settings-btn">⚙ Settings</button>
+    </div>
+  </header>
+
+  <!-- ── App Body ── -->
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section-label">View</div>
+      <button class="view-btn active" data-view="by-client">
+        By Client <span class="badge" id="badge-client">—</span>
+      </button>
+      <button class="view-btn" data-view="by-theme">
+        By Theme <span class="badge" id="badge-theme">—</span>
+      </button>
+      <button class="view-btn" data-view="all-news">
+        All News <span class="badge" id="badge-all">—</span>
+      </button>
+
+      <hr class="sidebar-divider" id="client-jump-divider" style="display:none">
+      <div class="sidebar-section-label" id="client-jump-label" style="display:none">Jump to</div>
+      <div id="client-jumps"></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content" id="main-content">
+      <div class="empty-state" id="empty-state">
+        <div class="icon">📰</div>
+        <h3>No articles loaded yet</h3>
+        <p>Add your clients in Settings, then click <strong>Fetch News</strong> to pull the latest coverage.</p>
+      </div>
+      <div class="loading-bar" id="loading-bar">
+        <div><div class="spinner"></div></div>
+        Fetching articles from GNews…
+      </div>
+      <div id="error-container"></div>
+      <div id="content-area" style="display:none"></div>
+    </main>
+  </div>
+
+  <!-- ── Settings Modal ── -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title-text">Settings</div>
+        <button class="modal-close" id="modal-close-btn" title="Close">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- API Setup -->
+        <div class="settings-section">
+          <div class="settings-section-title">API Setup</div>
+          <p class="api-instructions">
+            Get a free API key at <a href="https://gnews.io/register" target="_blank" rel="noopener">gnews.io/register</a>.
+            Paste it below — it's stored only in your browser.
+          </p>
+          <input type="text" class="text-input" id="api-key-input" placeholder="Paste GNews API key…" autocomplete="off" spellcheck="false">
+          <p class="api-note">Free tier: 100 requests/day · Up to 10 articles/request · No commercial use</p>
+        </div>
+
+        <!-- Clients -->
+        <div class="settings-section">
+          <div class="settings-section-title">Clients</div>
+          <div class="tag-input-row">
+            <input type="text" class="text-input" id="client-input" placeholder="Add client name…">
+            <button class="btn btn-primary" id="add-client-btn">Add</button>
+          </div>
+          <div class="tags-container" id="clients-tags"></div>
+        </div>
+
+        <!-- Earnings Dates -->
+        <div class="settings-section">
+          <div class="settings-section-title">Earnings Dates</div>
+          <p class="api-note" style="margin-bottom:12px;">Next earnings date per client — shows a countdown badge when within 14 days.</p>
+          <div id="earnings-inputs"></div>
+        </div>
+
+        <!-- Competitors -->
+        <div class="settings-section">
+          <div class="settings-section-title">Competitors</div>
+          <p class="api-note" style="margin-bottom:12px;">Competitor names per client — enables a Competitors tab on each client section.</p>
+          <div id="competitors-inputs"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="modal-save-btn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Constants ─────────────────────────────────────────────────────────────
+
+    const STOP_WORDS = new Set([
+      'the','and','for','are','but','not','you','all','can','had','her','was',
+      'one','our','out','day','get','has','him','his','how','its','may','new',
+      'now','old','see','two','way','who','been','from','have','here','more',
+      'over','said','than','that','them','they','this','were','with','will',
+      'also','back','each','into','just','like','long','make','many','most',
+      'much','only','open','same','some','such','time','very','well','when',
+      'your','after','about','could','first','other','their','these','those',
+      'under','using','which','would','should','being','there','since','while',
+      // generic business terms
+      'company','companies','market','markets','business','report','quarter',
+      'year','years','month','months','week','weeks','says','said','people',
+      'percent','million','billion','share','shares','stock','stocks','data',
+      'news','media','global','world','international','government','group',
+      'president','chief','executive','officer','director','official',
+      'according','sources','told','reuters','bloomberg','associated','press',
+    ]);
+
+    // ── State ─────────────────────────────────────────────────────────────────
+
+    let state = {
+      clients: [],
+      apiKey: '',
+      articles: [],
+      clientGoogleNews: {},
+      clientCollapsed: {},
+      currentView: 'by-client',
+      earnings: {},        // client → 'YYYY-MM-DD'
+      competitors: {},     // client → [names]
+      competitorNews: {},  // client → articles
+      clientActiveTab: {}, // client → 'news'|'competitors'
+      readUrls: new Set(), // read article URLs
+      showRead: {},        // client → boolean
+    };
+
+    // ── Storage ───────────────────────────────────────────────────────────────
+
+    function loadStorage() {
+      try {
+        const c = localStorage.getItem('cd_clients');
+        if (c) state.clients = JSON.parse(c);
+        state.apiKey = localStorage.getItem('cd_apikey') || '';
+        const e = localStorage.getItem('cd_earnings');
+        if (e) state.earnings = JSON.parse(e);
+        const comp = localStorage.getItem('cd_competitors');
+        if (comp) state.competitors = JSON.parse(comp);
+        const r = localStorage.getItem('cd_read');
+        if (r) state.readUrls = new Set(JSON.parse(r));
+      } catch(e) {}
+    }
+
+    function saveStorage() {
+      localStorage.setItem('cd_clients', JSON.stringify(state.clients));
+      localStorage.setItem('cd_apikey', state.apiKey);
+      localStorage.setItem('cd_earnings', JSON.stringify(state.earnings));
+      localStorage.setItem('cd_competitors', JSON.stringify(state.competitors));
+      localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
+    }
+
+    // ── Date Helpers ──────────────────────────────────────────────────────────
+
+    function getDateRange() {
+      const sel = document.getElementById('date-range-select').value;
+      const to = new Date();
+      to.setHours(23, 59, 59, 999);
+
+      if (sel === 'custom') {
+        const fromVal = document.getElementById('date-from').value;
+        const toVal   = document.getElementById('date-to').value;
+        if (!fromVal || !toVal) return null;
+        return {
+          from: new Date(fromVal + 'T00:00:00'),
+          to:   new Date(toVal   + 'T23:59:59'),
+        };
+      }
+
+      const days = parseInt(sel, 10);
+      const from = new Date();
+      from.setDate(from.getDate() - (days - 1));
+      from.setHours(0, 0, 0, 0);
+      return { from, to };
+    }
+
+    function toISODateTime(d) {
+      // returns full ISO 8601 string required by GNews (e.g. 2024-01-01T00:00:00Z)
+      return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // ── GNews Fetch ───────────────────────────────────────────────────────────
+
+    async function fetchNews() {
+      const range = getDateRange();
+      if (!range) {
+        showError('Please select a valid custom date range.');
+        return;
+      }
+
+      if (!state.apiKey) {
+        openModal();
+        return;
+      }
+
+      if (state.clients.length === 0) {
+        showError('Add at least one client name in <strong>Settings</strong> before fetching.');
+        return;
+      }
+
+      showLoading(true);
+      clearError();
+
+      // Build query: "Client A" OR "Client B" OR ...
+      const q = state.clients.map(c => `"${c}"`).join(' OR ');
+
+      const params = new URLSearchParams({
+        q,
+        from:   toISODateTime(range.from),
+        to:     toISODateTime(range.to),
+        lang:   'en',
+        sortby: 'publishedAt',
+        max:    '10',
+        token:  state.apiKey,
+      });
+
+      try {
+        const gNewsUrl = `https://gnews.io/api/v4/search?${params}`;
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(gNewsUrl)}`);
+        const data = await res.json();
+
+        if (!res.ok || data.errors) {
+          const msg = (data.errors && data.errors[0]) || JSON.stringify(data) || `HTTP ${res.status}`;
+          showError(`<strong>GNews error (HTTP ${res.status}):</strong> ${escHtml(msg)}`);
+          showLoading(false);
+          return;
+        }
+
+        state.articles = (data.articles || [])
+          .filter(a => a.url && a.title)
+          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+        renderContent();
+        showLoading(false);
+      } catch(e) {
+        showError(`<strong>Network error.</strong> Could not reach GNews — check your internet connection.<br><small>${escHtml(e.message)}</small>`);
+        showLoading(false);
+      }
+    }
+
+    // ── Article Assignment ────────────────────────────────────────────────────
+
+    function getArticleClients(article) {
+      const text = [article.title || '', article.description || '', (article.content || '').slice(0, 300)].join(' ').toLowerCase();
+      return state.clients.filter(c => text.includes(c.toLowerCase()));
+    }
+
+    // ── Theme Detection ───────────────────────────────────────────────────────
+
+    function detectThemes(articles) {
+      if (!articles.length) return [];
+
+      // Collect all words from titles + descriptions
+      const wordMap = {};  // word → array of article indices
+      articles.forEach((art, idx) => {
+        const text = (art.title + ' ' + (art.description || '')).toLowerCase();
+        const words = text.match(/[a-z]{5,}/g) || [];
+        const seen = new Set();
+        words.forEach(w => {
+          if (!STOP_WORDS.has(w) && !seen.has(w)) {
+            seen.add(w);
+            wordMap[w] = wordMap[w] || [];
+            wordMap[w].push(idx);
+          }
+        });
+      });
+
+      // Sort by frequency descending
+      const ranked = Object.entries(wordMap)
+        .filter(([, idxs]) => idxs.length >= 2)
+        .sort((a, b) => b[1].length - a[1].length);
+
+      // Pick top 6 non-overlapping themes (greedy cover)
+      const themes = [];
+      const usedArticles = new Set();
+
+      for (const [word, idxs] of ranked) {
+        if (themes.length >= 6) break;
+        const novel = idxs.filter(i => !usedArticles.has(i));
+        if (novel.length < 2) continue;
+        novel.forEach(i => usedArticles.add(i));
+        themes.push({ word, articleIdxs: idxs });
+      }
+
+      return themes;
+    }
+
+    function themeSummary(articleIdxs, articles) {
+      const sources = [...new Set(articleIdxs.map(i => articles[i]?.source?.name).filter(Boolean))].slice(0, 4);
+      const count = articleIdxs.length;
+      return `${count} ${count === 1 ? 'story' : 'stories'} from ${sources.join(', ')}`;
+    }
+
+    // ── Client Summary ────────────────────────────────────────────────────────
+
+    function clientSummary(articles) {
+      const sources = [...new Set(articles.map(a => a.source?.name).filter(Boolean))].slice(0, 4);
+      const count = articles.length;
+      return `${count} ${count === 1 ? 'story' : 'stories'} from ${sources.join(', ')}`;
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+
+    function renderContent() {
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('content-area').style.display = 'block';
+
+      // Update badges
+      const total = state.articles.length;
+      document.getElementById('badge-all').textContent = total || '—';
+
+      const themes = detectThemes(state.articles);
+      document.getElementById('badge-theme').textContent = themes.length || '—';
+
+      // Client counts
+      let totalCliented = 0;
+      state.clients.forEach(c => {
+        const arts = state.articles.filter(a => getArticleClients(a).includes(c));
+        totalCliented = Math.max(totalCliented, arts.length);
+      });
+      document.getElementById('badge-client').textContent = state.articles.length || '—';
+
+      // Sidebar jump links
+      updateSidebarJumps();
+
+      renderView();
+    }
+
+    function renderView() {
+      const area = document.getElementById('content-area');
+      area.innerHTML = '';
+
+      if (state.currentView === 'by-client') renderByClient(area);
+      else if (state.currentView === 'by-theme') renderByTheme(area);
+      else renderAllNews(area);
+    }
+
+    // ── Sentiment Detection ───────────────────────────────────────────────────
+
+    const POSITIVE_WORDS = new Set([
+      'profit','profits','gain','gains','growth','record','beats','beat','exceeds',
+      'rises','rise','surges','surge','strong','wins','win','success','breakthrough',
+      'partnership','deal','launch','expands','expand','upgraded','upgrade','dividend',
+      'innovation','award','leading','boosts','boost','soars','soar','rebound','recovery',
+      'approved','agreement','higher','raised','increases','top','best',
+    ]);
+    const NEGATIVE_WORDS = new Set([
+      'loss','losses','drops','drop','falls','fall','crash','crisis','layoffs','layoff',
+      'cuts','cut','lawsuit','sued','scandal','investigation','fraud','decline','declines',
+      'warning','miss','misses','disappoints','disappointing','recession','bankruptcy',
+      'fine','penalty','breach','hack','hacked','recall','fails','fail','failed',
+      'slump','plunges','plunge','worst','deficit','downgrade','downgraded','lower',
+      'reduced','halts','halt','concern','concerns','risks','risk','trouble','troubled',
+    ]);
+
+    function detectSentiment(articles) {
+      if (!articles.length) return null;
+      let score = 0;
+      articles.forEach(a => {
+        const words = ((a.title || '') + ' ' + (a.description || '')).toLowerCase().match(/[a-z]+/g) || [];
+        words.forEach(w => {
+          if (POSITIVE_WORDS.has(w)) score++;
+          if (NEGATIVE_WORDS.has(w)) score--;
+        });
+      });
+      const label = score > 1 ? 'positive' : score < -1 ? 'negative' : 'neutral';
+      return { label, score };
+    }
+
+    // ── Earnings Countdown ────────────────────────────────────────────────────
+
+    function getEarningsCountdown(client) {
+      const dateStr = state.earnings[client];
+      if (!dateStr) return null;
+      const earningsDate = new Date(dateStr + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diff = Math.round((earningsDate - today) / (1000 * 60 * 60 * 24));
+      return (diff >= 0 && diff <= 14) ? diff : null;
+    }
+
+    // ── Competitor News Fetch ─────────────────────────────────────────────────
+
+    async function fetchCompetitorNews(client, btn) {
+      const competitors = state.competitors[client] || [];
+      if (!competitors.length) return;
+      btn.disabled = true;
+      btn.textContent = '↻ Loading…';
+
+      function parseCompetitorItems(xml, comp) {
+        const articles = [];
+        [...xml.getElementsByTagName('item')].forEach(item => {
+          const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+          const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
+          const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
+          const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim() || (srcMatch && srcMatch[1].trim()) || '';
+          const linkEl = item.getElementsByTagName('link')[0];
+          const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
+          const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+          const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          articles.push({
+            title, url, description: desc,
+            publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
+            source: { name: sourceName },
+            _competitor: comp,
+          });
+        });
+        return articles;
+      }
+
+      const results = await Promise.allSettled(competitors.map(async comp => {
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + comp + '"')}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) return [];
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) return [];
+        return parseCompetitorItems(xml, comp);
+      }));
+
+      const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+      state.competitorNews[client] = allArticles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      const existing = document.getElementById(`client-${slugify(client)}`);
+      if (existing) existing.replaceWith(buildClientSection(client));
+    }
+
+    function buildClientSection(client) {
+      const gnArts = state.clientGoogleNews[client];
+      const baseArts = gnArts || state.articles.filter(a => getArticleClients(a).includes(client));
+      const isGoogle = !!gnArts;
+      const collapsed = !!state.clientCollapsed[client];
+      const activeTab = state.clientActiveTab[client] || 'news';
+      const hasCompetitors = (state.competitors[client] || []).length > 0;
+      const showRead = !!state.showRead[client];
+
+      const section = document.createElement('div');
+      section.className = 'client-section' + (collapsed ? ' collapsed' : '');
+      section.id = `client-${slugify(client)}`;
+
+      // ── Header ──
+      const header = document.createElement('div');
+      header.className = 'client-section-header';
+      header.innerHTML = `
+        <span class="collapse-chevron">▼</span>
+        <div class="client-name-title">${escHtml(client)}</div>
+        <div class="client-count">${baseArts.length} ${baseArts.length === 1 ? 'article' : 'articles'}</div>
+      `;
+
+      // Reorder arrows
+      const clientIdx = state.clients.indexOf(client);
+      const reorderBtns = document.createElement('div');
+      reorderBtns.className = 'reorder-btns';
+      reorderBtns.style.marginLeft = 'auto';
+      const upBtn = document.createElement('button');
+      upBtn.className = 'reorder-btn';
+      upBtn.textContent = '▲';
+      upBtn.title = 'Move up';
+      upBtn.disabled = clientIdx === 0;
+      upBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        state.clients.splice(clientIdx, 1);
+        state.clients.splice(clientIdx - 1, 0, client);
+        saveStorage();
+        renderView();
+        updateSidebarJumps();
+      });
+      const downBtn = document.createElement('button');
+      downBtn.className = 'reorder-btn';
+      downBtn.textContent = '▼';
+      downBtn.title = 'Move down';
+      downBtn.disabled = clientIdx === state.clients.length - 1;
+      downBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        state.clients.splice(clientIdx, 1);
+        state.clients.splice(clientIdx + 1, 0, client);
+        saveStorage();
+        renderView();
+        updateSidebarJumps();
+      });
+      reorderBtns.appendChild(upBtn);
+      reorderBtns.appendChild(downBtn);
+      header.appendChild(reorderBtns);
+
+      const gnBtn = document.createElement('button');
+      gnBtn.className = 'btn btn-secondary';
+      gnBtn.style.cssText = 'font-size:0.73rem;padding:4px 10px;';
+      gnBtn.textContent = isGoogle ? '✓ Google News' : '↻ Google News';
+      if (isGoogle) gnBtn.style.color = '#D9CBC2';
+      gnBtn.addEventListener('click', e => { e.stopPropagation(); fetchClientGoogleNews(client, gnBtn); });
+      header.appendChild(gnBtn);
+      header.addEventListener('click', () => {
+        state.clientCollapsed[client] = !state.clientCollapsed[client];
+        section.classList.toggle('collapsed', state.clientCollapsed[client]);
+      });
+      section.appendChild(header);
+
+      // ── Collapsible body ──
+      const body = document.createElement('div');
+      body.className = 'collapse-body';
+
+      // Badges: sentiment, drought, earnings
+      const hasFetched = state.articles.length > 0 || gnArts;
+      const sentiment = detectSentiment(baseArts);
+      const drought = hasFetched && baseArts.length === 0;
+      const earningsDays = getEarningsCountdown(client);
+
+      if (sentiment || drought || earningsDays !== null) {
+        const badges = document.createElement('div');
+        badges.className = 'client-badges';
+        if (sentiment && baseArts.length > 0) {
+          const sb = document.createElement('span');
+          sb.className = `badge-pill badge-${sentiment.label}`;
+          sb.textContent = sentiment.label === 'positive' ? '↑ Positive' : sentiment.label === 'negative' ? '↓ Negative' : '→ Neutral';
+          badges.appendChild(sb);
+        }
+        if (drought) {
+          const qb = document.createElement('span');
+          qb.className = 'badge-pill badge-quiet';
+          qb.textContent = 'Quiet period';
+          badges.appendChild(qb);
+        }
+        if (earningsDays !== null) {
+          const eb = document.createElement('span');
+          eb.className = 'badge-pill badge-earnings';
+          eb.textContent = earningsDays === 0 ? 'Earnings today' : `Earnings in ${earningsDays}d`;
+          badges.appendChild(eb);
+        }
+        if (badges.children.length) body.appendChild(badges);
+      }
+
+      // Summary
+      const summary = document.createElement('div');
+      summary.className = 'client-summary';
+      summary.innerHTML = baseArts.length
+        ? escHtml(clientSummary(baseArts)) + (isGoogle ? ' <span style="color:#D9CBC2;font-style:normal;font-size:0.72rem;">· via Google News</span>' : '')
+        : 'No articles found — try <strong>↻ Google News</strong> for broader results.';
+      body.appendChild(summary);
+
+      // Tabs (News / Competitors) — only if competitors configured
+      if (hasCompetitors) {
+        const tabsDiv = document.createElement('div');
+        tabsDiv.className = 'client-tabs';
+        ['news', 'competitors'].forEach(tab => {
+          const btn = document.createElement('button');
+          btn.className = 'client-tab' + (activeTab === tab ? ' active' : '');
+          btn.textContent = tab === 'news' ? 'News' : 'Competitors';
+          btn.addEventListener('click', () => {
+            state.clientActiveTab[client] = tab;
+            const el = document.getElementById(`client-${slugify(client)}`);
+            if (el) el.replaceWith(buildClientSection(client));
+          });
+          tabsDiv.appendChild(btn);
+        });
+        body.appendChild(tabsDiv);
+      }
+
+      // Article list (tab-aware)
+      if (activeTab === 'competitors' && hasCompetitors) {
+        if (!state.competitorNews[client]) {
+          const fetchWrap = document.createElement('div');
+          fetchWrap.style.cssText = 'padding:24px 0;text-align:center;';
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-secondary';
+          btn.textContent = '↻ Fetch Competitor News';
+          btn.addEventListener('click', () => fetchCompetitorNews(client, btn));
+          fetchWrap.appendChild(btn);
+          body.appendChild(fetchWrap);
+        } else {
+          const compArts = state.competitorNews[client];
+          const unread = compArts.filter(a => !state.readUrls.has(a.url));
+          const read   = compArts.filter(a =>  state.readUrls.has(a.url));
+          (showRead ? compArts : unread).forEach(art => {
+            const tags = [art._competitor || client];
+            body.appendChild(buildArticleCard(art, tags, state.readUrls.has(art.url)));
+          });
+          appendShowReadToggle(body, client, read.length, showRead);
+          appendMarkAllReadBtn(body, client, unread);
+        }
+      } else {
+        const unread = baseArts.filter(a => !state.readUrls.has(a.url));
+        const read   = baseArts.filter(a =>  state.readUrls.has(a.url));
+        (showRead ? baseArts : unread).forEach(art => {
+          body.appendChild(buildArticleCard(art, isGoogle ? [client] : getArticleClients(art), state.readUrls.has(art.url)));
+        });
+        appendShowReadToggle(body, client, read.length, showRead);
+        appendMarkAllReadBtn(body, client, unread);
+      }
+
+      section.appendChild(body);
+      return section;
+    }
+
+    function appendShowReadToggle(container, client, readCount, showRead) {
+      if (readCount === 0) return;
+      const btn = document.createElement('button');
+      btn.className = 'show-read-toggle';
+      btn.textContent = showRead
+        ? 'Hide read articles'
+        : `Show ${readCount} read ${readCount === 1 ? 'article' : 'articles'}`;
+      btn.addEventListener('click', () => {
+        state.showRead[client] = !showRead;
+        const el = document.getElementById(`client-${slugify(client)}`);
+        if (el) el.replaceWith(buildClientSection(client));
+      });
+      container.appendChild(btn);
+    }
+
+    function appendMarkAllReadBtn(container, client, unreadArts) {
+      if (unreadArts.length === 0) return;
+      const btn = document.createElement('button');
+      btn.className = 'mark-all-read-btn';
+      btn.textContent = `Mark all ${unreadArts.length} as read`;
+      btn.addEventListener('click', () => {
+        unreadArts.forEach(a => state.readUrls.add(a.url));
+        localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
+        const el = document.getElementById(`client-${slugify(client)}`);
+        if (el) el.replaceWith(buildClientSection(client));
+      });
+      container.appendChild(btn);
+    }
+
+    function renderByClient(container) {
+      if (state.clients.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">👤</div><h3>No clients added</h3><p>Add client names in Settings, then fetch news.</p></div>`;
+        return;
+      }
+      state.clients.forEach(client => container.appendChild(buildClientSection(client)));
+    }
+
+    async function fetchClientGoogleNews(client, btn) {
+      btn.disabled = true;
+      btn.textContent = '↻ Loading…';
+
+      // Properly encode the quoted search phrase
+      const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent('"' + client + '"')}&hl=en-US&gl=US&ceid=US:en`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+
+      try {
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Invalid RSS response');
+
+        const items = [...xml.getElementsByTagName('item')];
+
+        state.clientGoogleNews[client] = items.map(item => {
+          const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+          // Google News titles end with " - Source Name"
+          const srcMatch = rawTitle.match(/\s+-\s+([^-]+)$/);
+          const title = srcMatch ? rawTitle.slice(0, rawTitle.lastIndexOf(srcMatch[0])).trim() : rawTitle.trim();
+          const sourceName = item.getElementsByTagName('source')[0]?.textContent?.trim()
+            || (srcMatch && srcMatch[1].trim()) || '';
+
+          // <link> in RSS XML is a text node sibling, not a child — use nextSibling
+          const linkEl = item.getElementsByTagName('link')[0];
+          const url = linkEl?.textContent?.trim() || linkEl?.nextSibling?.nodeValue?.trim() || '';
+
+          const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+          const desc = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+
+          return {
+            title,
+            url,
+            description: desc,
+            publishedAt: pubDate ? new Date(pubDate).toISOString() : '',
+            source: { name: sourceName },
+          };
+        }).sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+        const existing = document.getElementById(`client-${slugify(client)}`);
+        if (existing) existing.replaceWith(buildClientSection(client));
+
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '↻ Google News';
+        btn.title = `Error: ${e.message}`;
+      }
+    }
+
+    function renderByTheme(container) {
+      const themes = detectThemes(state.articles);
+
+      if (!themes.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">🏷️</div><h3>No themes detected yet</h3><p>Fetch news first — themes are auto-detected across articles.</p></div>`;
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'themes-grid';
+
+      themes.forEach(({ word, articleIdxs }) => {
+        const arts = articleIdxs.map(i => state.articles[i]).filter(Boolean);
+        const card = document.createElement('div');
+        card.className = 'theme-card';
+
+        const summary = themeSummary(articleIdxs, state.articles);
+        card.innerHTML = `
+          <div class="theme-card-header">
+            <span class="theme-label">${escHtml(word)}</span>
+            <div class="theme-count">${arts.length} ${arts.length === 1 ? 'article' : 'articles'}</div>
+            <div class="theme-summary">${escHtml(summary)}</div>
+          </div>
+          <div class="theme-articles">
+            ${arts.slice(0, 5).map(a => `
+              <div class="theme-article-item">
+                <div class="theme-article-source">${escHtml(a.source?.name || '')}</div>
+                <div class="theme-article-title"><a href="${escAttr(a.url)}" target="_blank" rel="noopener">${escHtml(a.title)}</a></div>
+              </div>
+            `).join('')}
+            ${arts.length > 5 ? `<div style="font-size:0.75rem;color:rgba(245,240,233,0.45);font-style:italic">+${arts.length - 5} more</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      container.appendChild(grid);
+    }
+
+    function renderAllNews(container) {
+      if (!state.articles.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📰</div><h3>No articles loaded</h3><p>Click Fetch News to pull articles.</p></div>`;
+        return;
+      }
+
+      // Sort newest first
+      const sorted = [...state.articles].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      sorted.forEach(art => {
+        const tags = getArticleClients(art);
+        container.appendChild(buildArticleCard(art, tags));
+      });
+    }
+
+    function buildArticleCard(art, clientTags, isRead = false) {
+      const card = document.createElement('div');
+      card.className = 'article-card' + (isRead ? ' is-read' : '');
+
+      const source = art.source?.name || '';
+      const date = formatDate(art.publishedAt);
+      const title = art.title || '';
+      const desc = art.description || '';
+
+      card.innerHTML = `
+        <div class="card-meta">
+          <span class="card-source">${escHtml(source)}</span>
+          ${date ? `<span class="card-dot">•</span><span class="card-date">${escHtml(date)}</span>` : ''}
+        </div>
+        <div class="card-title">
+          <a href="${escAttr(art.url)}" target="_blank" rel="noopener">${escHtml(title)}</a>
+        </div>
+        ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
+        ${clientTags.length ? `<div class="card-tags">${clientTags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      `;
+
+      // Mark as read button
+      const readBtn = document.createElement('button');
+      readBtn.className = 'read-btn';
+      readBtn.title = isRead ? 'Read' : 'Mark as read';
+      readBtn.textContent = '✓';
+      readBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!state.readUrls.has(art.url)) {
+          state.readUrls.add(art.url);
+          localStorage.setItem('cd_read', JSON.stringify([...state.readUrls]));
+          card.classList.add('is-read');
+          readBtn.style.color = '#E0C58F';
+        }
+      });
+      card.appendChild(readBtn);
+
+      return card;
+    }
+
+    // ── Sidebar ───────────────────────────────────────────────────────────────
+
+    function updateSidebarJumps() {
+      const divider = document.getElementById('client-jump-divider');
+      const label = document.getElementById('client-jump-label');
+      const jumps = document.getElementById('client-jumps');
+
+      if (state.currentView !== 'by-client' || !state.clients.length) {
+        divider.style.display = 'none';
+        label.style.display = 'none';
+        jumps.innerHTML = '';
+        return;
+      }
+
+      divider.style.display = 'block';
+      label.style.display = 'block';
+      jumps.innerHTML = state.clients.map(c => `
+        <button class="client-jump" onclick="scrollToClient('${slugify(c)}')">${escHtml(c)}</button>
+      `).join('');
+    }
+
+    function scrollToClient(slug) {
+      const el = document.getElementById(`client-${slug}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── View Switching ────────────────────────────────────────────────────────
+
+    function setView(view) {
+      state.currentView = view;
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+      updateSidebarJumps();
+      if (state.articles.length) renderView();
+    }
+
+    // ── Settings Modal ────────────────────────────────────────────────────────
+
+    // Temporary state while modal is open
+    let modalClients = [];
+    let modalEarnings = {};
+    let modalCompetitors = {};
+
+    function openModal() {
+      modalClients = [...state.clients];
+      modalEarnings = Object.assign({}, state.earnings);
+      modalCompetitors = {};
+      state.clients.forEach(c => { modalCompetitors[c] = [...(state.competitors[c] || [])]; });
+
+      document.getElementById('api-key-input').value = state.apiKey;
+      renderRemovableTags('clients-tags', modalClients);
+      renderEarningsInputs();
+      renderCompetitorInputs();
+
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('api-key-input').focus();
+    }
+
+    async function autoDetectEarnings(client, input, detectBtn) {
+      detectBtn.disabled = true;
+      detectBtn.textContent = 'Searching…';
+
+      try {
+        const query = `"${client}" earnings date 2025 OR 2026`;
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Bad RSS');
+
+        const corpus = [...xml.getElementsByTagName('item')].map(item => {
+          const t = item.getElementsByTagName('title')[0]?.textContent || '';
+          const d = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          return t + ' ' + d;
+        }).join(' ');
+
+        // Match dates like "January 28, 2026", "Jan 28, 2026", "28 January 2026", "2026-01-28"
+        const patterns = [
+          /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(202[5-9])\b/gi,
+          /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(202[5-9])\b/gi,
+          /\b(202[5-9])-(\d{2})-(\d{2})\b/g,
+        ];
+
+        const monthMap = {
+          january:0,february:1,march:2,april:3,may:4,june:5,
+          july:6,august:7,september:8,october:9,november:10,december:11,
+          jan:0,feb:1,mar:2,apr:3,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+        };
+
+        const candidates = [];
+        let m;
+
+        // Pattern 1: Month DD, YYYY
+        const re1 = /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(202[5-9])\b/gi;
+        while ((m = re1.exec(corpus)) !== null) {
+          const mo = monthMap[m[1].toLowerCase()];
+          if (mo !== undefined) candidates.push(new Date(+m[3], mo, +m[2]));
+        }
+        // Pattern 2: DD Month YYYY
+        const re2 = /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(202[5-9])\b/gi;
+        while ((m = re2.exec(corpus)) !== null) {
+          const mo = monthMap[m[2].toLowerCase()];
+          if (mo !== undefined) candidates.push(new Date(+m[3], mo, +m[1]));
+        }
+        // Pattern 3: YYYY-MM-DD
+        const re3 = /\b(202[5-9])-(\d{2})-(\d{2})\b/g;
+        while ((m = re3.exec(corpus)) !== null) {
+          candidates.push(new Date(+m[1], +m[2]-1, +m[3]));
+        }
+
+        // Pick the nearest future date
+        const today = new Date(); today.setHours(0,0,0,0);
+        const future = candidates.filter(d => d >= today).sort((a,b) => a-b);
+
+        if (future.length) {
+          const picked = future[0];
+          const iso = toISODate(picked);
+          input.value = iso;
+          modalEarnings[client] = iso;
+          detectBtn.textContent = '✓ Found';
+        } else {
+          detectBtn.textContent = 'Not found';
+        }
+      } catch(e) {
+        detectBtn.textContent = 'Error';
+      }
+
+      setTimeout(() => {
+        detectBtn.disabled = false;
+        detectBtn.textContent = '✦ Auto-detect';
+      }, 2500);
+    }
+
+    function renderEarningsInputs() {
+      const el = document.getElementById('earnings-inputs');
+      if (!modalClients.length) {
+        el.innerHTML = '<p class="api-note">Add clients above first.</p>';
+        return;
+      }
+      el.innerHTML = '';
+      modalClients.forEach(client => {
+        const row = document.createElement('div');
+        row.className = 'per-client-row';
+        const label = document.createElement('div');
+        label.className = 'per-client-label';
+        label.textContent = client;
+        const inputRow = document.createElement('div');
+        inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;';
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.className = 'per-client-date';
+        input.value = modalEarnings[client] || '';
+        input.addEventListener('change', () => { modalEarnings[client] = input.value; });
+        const detectBtn = document.createElement('button');
+        detectBtn.className = 'suggest-btn';
+        detectBtn.textContent = '✦ Auto-detect';
+        detectBtn.title = 'Search Google News for next earnings date';
+        detectBtn.addEventListener('click', () => autoDetectEarnings(client, input, detectBtn));
+        inputRow.appendChild(input);
+        inputRow.appendChild(detectBtn);
+        row.appendChild(label);
+        row.appendChild(inputRow);
+        el.appendChild(row);
+      });
+    }
+
+    const COMP_STOP = new Set([
+      'The','This','That','These','Those','Their','With','From','About','Into','Over',
+      'After','Before','More','Also','Will','When','What','Then','Than','Have','Been',
+      'Were','Said','Says','Like','Just','Some','Such','Both','They','Even','While',
+      'Here','Because','However','Which','There','Among','Other','And','For','But',
+      'New','Inc','Corp','Ltd','Group','Holdings','Company','Companies','Global',
+      'International','Financial','Services','Management','Capital','Markets',
+      'Report','Quarter','Earnings','Revenue','Profit','Share','Stock','Market',
+      'News','Business','Industry','Sector','Data','Year','Month','Week',
+      'First','Second','Third','Fourth','Annual','Monthly','Daily',
+      'Chief','Executive','Officer','President','Chairman',
+      'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
+      'January','February','March','April','May','June',
+      'July','August','September','October','November','December',
+    ]);
+
+    async function suggestCompetitors(client, suggestBtn, suggestionsRow) {
+      suggestBtn.disabled = true;
+      suggestBtn.textContent = 'Searching…';
+      suggestionsRow.innerHTML = '';
+
+      try {
+        const query = `"${client}" competitor OR rival OR versus`;
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Bad RSS');
+
+        const items = [...xml.getElementsByTagName('item')];
+
+        // Collect all title + description text
+        const corpus = items.map(item => {
+          const t = item.getElementsByTagName('title')[0]?.textContent || '';
+          const d = stripHtml(item.getElementsByTagName('description')[0]?.textContent || '');
+          return t + ' ' + d;
+        }).join(' ');
+
+        // Extract 1–4 word capitalized phrases (likely proper nouns / company names)
+        const phraseRe = /\b([A-Z][a-zA-Z&'.]{1,20}(?:\s+[A-Z][a-zA-Z&'.]{1,20}){0,3})\b/g;
+        const counts = {};
+        let m;
+        while ((m = phraseRe.exec(corpus)) !== null) {
+          const phrase = m[1].trim();
+          const words = phrase.split(/\s+/);
+          // Skip if any word is a stop word, or phrase is/contains the client name
+          if (words.some(w => COMP_STOP.has(w))) continue;
+          if (phrase.toLowerCase().includes(client.toLowerCase())) continue;
+          if (phrase.length < 3) continue;
+          counts[phrase] = (counts[phrase] || 0) + 1;
+        }
+
+        const suggestions = Object.entries(counts)
+          .filter(([, n]) => n >= 2)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([k]) => k);
+
+        if (!suggestions.length) {
+          suggestionsRow.innerHTML = '<span style="color:#D9CBC2;font-size:0.75rem;opacity:0.7">No suggestions found — try adding manually.</span>';
+        } else {
+          suggestions.forEach(name => {
+            const chip = document.createElement('button');
+            chip.className = 'suggestion-chip';
+            chip.textContent = '+ ' + name;
+            chip.title = 'Click to add as competitor';
+            chip.addEventListener('click', () => {
+              if (!modalCompetitors[client]) modalCompetitors[client] = [];
+              if (!modalCompetitors[client].includes(name)) {
+                modalCompetitors[client].push(name);
+                renderCompetitorInputs();
+              }
+            });
+            suggestionsRow.appendChild(chip);
+          });
+        }
+      } catch(e) {
+        suggestionsRow.innerHTML = `<span style="color:#D9CBC2;font-size:0.75rem;opacity:0.7">Error: ${escHtml(e.message)}</span>`;
+      }
+
+      suggestBtn.disabled = false;
+      suggestBtn.textContent = '✦ Suggest';
+    }
+
+    function renderCompetitorInputs() {
+      const el = document.getElementById('competitors-inputs');
+      el.innerHTML = '';
+      if (!modalClients.length) {
+        el.innerHTML = '<p class="api-note">Add clients above first.</p>';
+        return;
+      }
+      modalClients.forEach(client => {
+        if (!modalCompetitors[client]) modalCompetitors[client] = [];
+        const div = document.createElement('div');
+        div.className = 'per-client-row';
+        const label = document.createElement('div');
+        label.className = 'per-client-label';
+        label.textContent = client;
+        div.appendChild(label);
+
+        const row = document.createElement('div');
+        row.className = 'tag-input-row';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'text-input';
+        input.placeholder = 'Add competitor name…';
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-primary';
+        addBtn.textContent = 'Add';
+        addBtn.addEventListener('click', () => {
+          const val = input.value.trim();
+          if (val && !modalCompetitors[client].includes(val)) {
+            modalCompetitors[client].push(val);
+            renderCompetitorInputs();
+          }
+          input.value = '';
+        });
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { addBtn.click(); e.preventDefault(); } });
+
+        const suggestBtn = document.createElement('button');
+        suggestBtn.className = 'suggest-btn';
+        suggestBtn.textContent = '✦ Suggest';
+        suggestBtn.title = 'Auto-detect competitors from news';
+
+        const suggestionsRow = document.createElement('div');
+        suggestionsRow.className = 'suggestions-row';
+
+        suggestBtn.addEventListener('click', () => suggestCompetitors(client, suggestBtn, suggestionsRow));
+
+        row.appendChild(input);
+        row.appendChild(addBtn);
+        row.appendChild(suggestBtn);
+        div.appendChild(row);
+        div.appendChild(suggestionsRow);
+
+        const tagsDiv = document.createElement('div');
+        tagsDiv.className = 'tags-container';
+        tagsDiv.style.marginTop = '6px';
+        modalCompetitors[client].forEach((comp, i) => {
+          const span = document.createElement('span');
+          span.className = 'removable-tag';
+          const nameNode = document.createTextNode(comp + ' ');
+          const removeBtn = document.createElement('button');
+          removeBtn.title = 'Remove';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', () => {
+            modalCompetitors[client].splice(i, 1);
+            renderCompetitorInputs();
+          });
+          span.appendChild(nameNode);
+          span.appendChild(removeBtn);
+          tagsDiv.appendChild(span);
+        });
+        div.appendChild(tagsDiv);
+        el.appendChild(div);
+      });
+    }
+
+    function renderRemovableTags(containerId, arr) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+
+      let dragSrcIdx = null;
+
+      arr.forEach((item, i) => {
+        const span = document.createElement('span');
+        span.className = 'removable-tag';
+        span.draggable = true;
+        span.dataset.idx = i;
+
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '⠿';
+        handle.title = 'Drag to reorder';
+
+        const nameNode = document.createTextNode(item + ' ');
+
+        const removeBtn = document.createElement('button');
+        removeBtn.title = 'Remove';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          modalClients.splice(i, 1);
+          renderRemovableTags(containerId, modalClients);
+          renderEarningsInputs();
+          renderCompetitorInputs();
+        });
+
+        span.appendChild(handle);
+        span.appendChild(nameNode);
+        span.appendChild(removeBtn);
+
+        span.addEventListener('dragstart', e => {
+          dragSrcIdx = i;
+          span.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        span.addEventListener('dragend', () => {
+          span.classList.remove('dragging');
+          el.querySelectorAll('.removable-tag').forEach(t => t.classList.remove('drag-over'));
+        });
+        span.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          el.querySelectorAll('.removable-tag').forEach(t => t.classList.remove('drag-over'));
+          if (i !== dragSrcIdx) span.classList.add('drag-over');
+        });
+        span.addEventListener('dragleave', () => span.classList.remove('drag-over'));
+        span.addEventListener('drop', e => {
+          e.preventDefault();
+          if (dragSrcIdx === null || dragSrcIdx === i) return;
+          const moved = modalClients.splice(dragSrcIdx, 1)[0];
+          modalClients.splice(i, 0, moved);
+          renderRemovableTags(containerId, modalClients);
+          renderEarningsInputs();
+          renderCompetitorInputs();
+        });
+
+        el.appendChild(span);
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+
+    function saveModal() {
+      state.apiKey = document.getElementById('api-key-input').value.trim();
+      state.clients = [...modalClients];
+      state.earnings = Object.assign({}, modalEarnings);
+      state.competitors = Object.assign({}, modalCompetitors);
+      saveStorage();
+      closeModal();
+      updateSidebarJumps();
+    }
+
+    function addClientFromInput() {
+      const input = document.getElementById('client-input');
+      const val = input.value.trim();
+      if (val && !modalClients.includes(val)) {
+        modalClients.push(val);
+        if (!modalCompetitors[val]) modalCompetitors[val] = [];
+        renderRemovableTags('clients-tags', modalClients);
+        renderEarningsInputs();
+        renderCompetitorInputs();
+      }
+      input.value = '';
+      input.focus();
+    }
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escAttr(s) {
+      // Only allow http/https URLs; strip otherwise
+      if (!s || !/^https?:\/\//i.test(s)) return '#';
+      return escHtml(s);
+    }
+
+    function slugify(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    function showLoading(on) {
+      document.getElementById('loading-bar').classList.toggle('visible', on);
+      document.getElementById('content-area').style.display = on ? 'none' : (state.articles.length ? 'block' : 'none');
+      document.getElementById('empty-state').style.display = (!on && !state.articles.length) ? 'flex' : 'none';
+      document.getElementById('fetch-btn').disabled = on;
+      document.getElementById('fetch-btn').textContent = on ? 'Fetching…' : 'Fetch News';
+    }
+
+    function showError(html) {
+      document.getElementById('error-container').innerHTML = `<div class="error-box">${html}</div>`;
+    }
+
+    function clearError() {
+      document.getElementById('error-container').innerHTML = '';
+    }
+
+    // ── Event Wiring ──────────────────────────────────────────────────────────
+
+    document.getElementById('fetch-btn').addEventListener('click', fetchNews);
+    document.getElementById('settings-btn').addEventListener('click', openModal);
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-save-btn').addEventListener('click', saveModal);
+    document.getElementById('add-client-btn').addEventListener('click', addClientFromInput);
+
+    document.getElementById('client-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addClientFromInput();
+    });
+
+    document.getElementById('date-range-select').addEventListener('change', function() {
+      document.getElementById('custom-range-inputs').style.display = this.value === 'custom' ? 'flex' : 'none';
+    });
+
+    // Close modal on overlay click
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // View buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setView(btn.dataset.view);
+        closeSidebar();
+      });
+    });
+
+    // Hamburger / mobile sidebar drawer
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    function openSidebar() {
+      sidebarEl.classList.add('open');
+      sidebarBackdrop.classList.add('open');
+    }
+    function closeSidebar() {
+      sidebarEl.classList.remove('open');
+      sidebarBackdrop.classList.remove('open');
+    }
+    hamburgerBtn.addEventListener('click', () => {
+      sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    // Sidebar jump global helper
+    window.scrollToClient = scrollToClient;
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+
+    function toISODate(d) {
+      return d.toISOString().slice(0, 10);
+    }
+
+    function init() {
+      loadStorage();
+      // Fallback to hardcoded key so settings modal doesn't auto-open on new devices
+      if (!state.apiKey) {
+        state.apiKey = '8c208a2cea34650fab322c85f0e8e845';
+        saveStorage();
+      }
+      // Set default custom range dates
+      const today = new Date();
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 6);
+      document.getElementById('date-to').value = toISODate(today);
+      document.getElementById('date-from').value = toISODate(weekAgo);
+
+      // Auto-fetch if we already have an API key and clients configured
+      if (state.apiKey && state.clients.length > 0) {
+        fetchNews();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

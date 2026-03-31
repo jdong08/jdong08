@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>People I Talk To</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="conversation-tracker.css">
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>People I Talk To</h1>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="date" id="today-date"></div>
+      <a href="/" class="settings-btn" title="Home" style="text-decoration:none;">⌂</a>
+      <button class="settings-btn" onclick="openSettings()" title="Energy settings">⚙</button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <div class="left-col">
+
+  <div class="vibe-section">
+    <div class="vibe-header" onclick="toggleVibe()">
+      <span class="vibe-title">Tonight's sky</span>
+      <span class="vibe-toggle" id="vibe-toggle">▼</span>
+    </div>
+    <div id="vibe-body">
+
+  <!-- Candle widget: token info strip -->
+  <div class="candle-widget">
+    <div class="candle-svg-wrap">
+      <!-- Minimal candle SVG just for the widget -->
+      <svg viewBox="0 0 48 150" xmlns="http://www.w3.org/2000/svg" width="32" height="100">
+        <defs>
+          <linearGradient id="wax-g" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#1a0e04"/>
+            <stop offset="50%"  stop-color="#3a2008"/>
+            <stop offset="100%" stop-color="#1a0e04"/>
+          </linearGradient>
+          <linearGradient id="wax-fill-g" x1="10" y1="0" x2="38" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#8a6830"/>
+            <stop offset="50%"  stop-color="#c5a050"/>
+            <stop offset="100%" stop-color="#8a6830"/>
+          </linearGradient>
+          <clipPath id="wax-clip"><rect x="10" y="40" width="28" height="106" rx="6"/></clipPath>
+        </defs>
+        <rect x="10" y="40" width="28" height="106" rx="6" fill="url(#wax-g)"/>
+        <rect id="candle-fill" x="10" y="40" width="28" height="106" fill="url(#wax-fill-g)" clip-path="url(#wax-clip)"/>
+        <path d="M24 29 Q23.2 34 24 40" stroke="#3d4018" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <g id="candle-flame" class="flame-group" style="transform-origin:24px 28px; animation: flameDance 2.6s ease-in-out infinite;">
+          <path d="M24 30 C15 25 13 17 15 10 C16 4 20 1 24 2 C28 1 32 4 33 10 C35 17 33 25 24 30Z" fill="#d4822a" opacity="0.75"/>
+          <path d="M24 29 C17 23 16 16 17 11 C18.5 5 21 3 24 4 C27 3 29.5 5 31 11 C32 16 31 23 24 29Z" fill="#e07818"/>
+          <path d="M24 27 C19 21 18.5 15 20 11 C21 7 22.5 5 24 6 C25.5 5 27 7 28 11 C29.5 15 29 21 24 27Z" fill="#f7c14f"/>
+          <ellipse cx="24" cy="9" rx="2" ry="3" fill="white" opacity="0.55"/>
+        </g>
+        <g id="candle-puddle" style="display:none">
+          <ellipse cx="24" cy="146" rx="18" ry="4" fill="#8a6830" opacity="0.3"/>
+        </g>
+      </svg>
+    </div>
+    <div class="candle-info">
+      <div class="candle-tokens-row">
+        <button class="token-adj-btn" onclick="adjustTokens(-5)" title="-5 tokens">−</button>
+        <div class="candle-tokens" id="candle-tokens">— <span>tokens</span></div>
+        <button class="token-adj-btn" onclick="adjustTokens(+5)" title="+5 tokens">+</button>
+      </div>
+      <div class="candle-phase" id="candle-phase"></div>
+      <div class="token-bar-wrap">
+        <div class="token-bar-fill" id="token-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="candle-burnout" id="candle-burnout">recharge tomorrow</div>
+    </div>
+  </div>
+
+  <!-- Tarot card (replaces horoscope) -->
+  <div id="tarot-card">
+    <div class="tarot-header">
+      <div class="tarot-name" id="tarot-name"></div>
+      <button class="tarot-shuffle-btn" id="tarot-shuffle-btn" onclick="shuffleTarot()" title="Draw again">↺</button>
+    </div>
+    <div class="tarot-text" id="tarot-text"></div>
+  </div>
+
+  <!-- Scene canvas (night sky + stars + town + moon-boat) -->
+  <div id="crowd-section">
+    <div id="crowd-canvas">
+      <!-- scene SVG injected by JS -->
+    </div>
+    <div id="crowd-stats">no conversations yet today</div>
+  </div>
+
+    </div><!-- /#vibe-body -->
+  </div><!-- /.vibe-section -->
+
+    </div><!-- /.left-col -->
+    <div class="right-col">
+
+  <div id="groups-container" class="groups-container"></div>
+
+  <button class="add-group-btn" onclick="addGroup()">+ add group</button>
+
+  <div class="footer">
+    <div class="total">Total today: <span id="total-count">0</span></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="export-btn" onclick="exportData()" title="Download data as JSON">Export</button>
+      <button class="reset-btn" onclick="resetCounts()">Reset Today</button>
+    </div>
+  </div>
+
+    </div><!-- /.right-col -->
+  </div><!-- /.main-grid -->
+
+  <div class="history-section">
+    <div class="history-header" onclick="toggleHistory()">
+      <h2>Past Days</h2>
+      <span class="history-toggle" id="history-toggle">▼</span>
+    </div>
+    <div class="history-list" id="history-list" style="display:none"></div>
+  </div>
+
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal-box">
+    <h2>Energy Settings</h2>
+    <div class="settings-forecast">
+      <div class="forecast-row">
+        <span id="settings-moon-emoji">🌕</span>
+        <span class="forecast-row-label" id="settings-moon-name">Moon phase</span>
+        <span class="forecast-mod" id="settings-moon-mod">—</span>
+      </div>
+      <div class="forecast-row">
+        <span>🌸</span>
+        <span class="forecast-row-label" id="settings-cycle-name">Cycle phase</span>
+        <span class="forecast-mod" id="settings-cycle-mod">—</span>
+      </div>
+      <div class="forecast-divider"></div>
+      <div class="forecast-suggested">Suggested today: <strong id="settings-suggested">—</strong> tokens</div>
+    </div>
+    <div class="modal-field">
+      <label>Last period start date</label>
+      <input type="date" id="settings-period-date"/>
+    </div>
+    <div class="modal-field">
+      <label>Average cycle length (days)</label>
+      <input type="number" id="settings-cycle-length" min="21" max="45" value="28"/>
+    </div>
+    <button class="modal-btn" onclick="saveSettings()">Save changes</button>
+    <button class="modal-btn secondary" onclick="closeSettings()">Close</button>
+  </div>
+</div>
+
+<!-- Setup modal -->
+<div class="modal-overlay hidden" id="setup-modal">
+  <div class="modal-box">
+    <h2>Track your energy</h2>
+    <p>The candle syncs with your cycle and the moon to suggest your starting energy each morning. Your data stays on this device.</p>
+    <div class="modal-field">
+      <label>Last period start date</label>
+      <input type="date" id="setup-period-date"/>
+    </div>
+    <div class="modal-field">
+      <label>Average cycle length (days)</label>
+      <input type="number" id="setup-cycle-length" value="28" min="21" max="45"/>
+    </div>
+    <button class="modal-btn" onclick="saveSetupAndSuggest()">Continue</button>
+    <button class="modal-btn secondary" onclick="skipSetup()">Skip for now</button>
+  </div>
+</div>
+
+<!-- Daily suggestion modal -->
+<div class="modal-overlay hidden" id="suggest-modal">
+  <div class="modal-box">
+    <div class="suggestion-moon" id="suggest-moon">🕯️</div>
+    <div class="suggestion-label" id="suggest-label">Calculating your energy…</div>
+    <div class="token-nudge">
+      <button class="nudge-btn" onclick="nudgeTokens(-5)">−</button>
+      <div class="nudge-value" id="nudge-value">80</div>
+      <button class="nudge-btn" onclick="nudgeTokens(+5)">+</button>
+    </div>
+    <button class="modal-btn" onclick="confirmTokens()">Start with these tokens</button>
+    <button class="modal-btn secondary" onclick="dismissSuggest()">Not today</button>
+  </div>
+</div>
+
+<script src="conversation-tracker.js"></script>
+</body>
+</html>
