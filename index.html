@@ -2258,7 +2258,7 @@ function showLineHint() {
   _lineHintShown = true;
   const hint = document.getElementById('line-hint');
   if (!hint) return;
-  hint.style.display = '';
+  hint.style.display = 'block';
   hint.style.opacity = '0';
   requestAnimationFrame(() => { hint.style.opacity = '1'; });
   setTimeout(() => {
