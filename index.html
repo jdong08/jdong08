@@ -937,6 +937,22 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   white-space: nowrap;
   transition: opacity 0.2s;
 }
+#line-hint {
+  position: fixed;
+  bottom: 56px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  transition: opacity 0.6s;
+  display: none;
+}
 
 /* ── Timeline Scrubber ── */
 .timeline-toggle-icon {
@@ -1218,6 +1234,7 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <svg id="graph-svg"></svg>
 <div class="link-tooltip" id="link-tooltip"></div>
+<div id="line-hint">hover a line to see how they connect</div>
 <!-- Desktop search empty state -->
 <div class="search-empty" id="search-empty" style="position:fixed;top:65px;left:50%;transform:translateX(-50%);z-index:18;pointer-events:none;"></div>
 
@@ -2235,6 +2252,22 @@ function applySearch(q) {
 })();
 
 
+let _lineHintShown = !!localStorage.getItem('line-hint-seen');
+function showLineHint() {
+  if (_lineHintShown) return;
+  _lineHintShown = true;
+  localStorage.setItem('line-hint-seen', '1');
+  const hint = document.getElementById('line-hint');
+  if (!hint) return;
+  hint.style.display = '';
+  hint.style.opacity = '0';
+  requestAnimationFrame(() => { hint.style.opacity = '1'; });
+  setTimeout(() => {
+    hint.style.opacity = '0';
+    setTimeout(() => { hint.style.display = 'none'; }, 600);
+  }, 4000);
+}
+
 function openLightbox(d) {
   _lightboxTrigger = document.activeElement;
   currentNode = d;
@@ -2314,6 +2347,7 @@ function closeLightbox() {
   currentNode = null;
   resetHighlight();
   if (_lightboxTrigger) { _lightboxTrigger.focus(); _lightboxTrigger = null; }
+  showLineHint();
 }
 
 let _aboutTrigger = null;
