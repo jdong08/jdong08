@@ -2252,11 +2252,10 @@ function applySearch(q) {
 })();
 
 
-let _lineHintShown = !!localStorage.getItem('line-hint-seen');
+let _lineHintShown = false;
 function showLineHint() {
   if (_lineHintShown) return;
   _lineHintShown = true;
-  localStorage.setItem('line-hint-seen', '1');
   const hint = document.getElementById('line-hint');
   if (!hint) return;
   hint.style.display = '';
