@@ -1421,7 +1421,7 @@ const nodes = [
   { id: 'marco',           label: 'Marco',           type: 'agent',
     origin: 'Marco Polo — the Venetian who navigated the world before maps.',
     desc: 'Travel planning — logistics, geography, destination research.',
-    example: 'When I\'m planning a trip — anywhere — Marco handles the logistics: timing, what the dog needs, where to stay.' },
+    example: 'When I\'m planning a trip — anywhere — Marco handles the logistics: timing, where to stay, what to consider.' },
   { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
     origin: 'Professor Flitwick from Harry Potter — small, meticulous, teaches magic as craft.',
     desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
@@ -1445,7 +1445,7 @@ const nodes = [
   { id: 'lian',            label: 'Lian 连',         type: 'agent',
     origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
     desc: 'Bicultural navigation — family dynamics, document register, cultural context.',
-    example: 'When I want to reach my parents in their language — not just the words but the feeling — Lian helps me get it right, the way a bilingual childhood friend would.' },
+    example: 'When I want to reach my family in their language — not just the words but the feeling — Lian helps me get it right, the way a bilingual friend would.' },
   { id: 'bo',              label: 'Bo 博',           type: 'agent',
     origin: '博 Bó — broad, learned, generous with knowledge.',
     desc: 'Learning architect — source research across all modalities, curriculum design and commitment layer.',
@@ -1473,8 +1473,8 @@ const nodes = [
     desc: 'M365 Copilot + GitHub Copilot — Claude-to-Copilot translation for client environments.',
     example: 'When my clients use Microsoft\'s AI tools, Copilot Expert translates what I know into their environment.' },
   { id: 'sox-expert',      label: 'SOX Expert',      type: 'agent',
-    desc: 'SOX controls — ITGCs, business process, AI-in-SOX use cases.',
-    example: 'Helps me think through financial controls and audit questions — specialized work I do professionally.' },
+    desc: 'SOX controls — ITGCs, business process, AI-in-audit use cases.',
+    example: 'Helps me think through financial controls and audit questions in depth.' },
   { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
     origin: 'Named for function — closes what\'s open so I don\'t have to carry it.',
     desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
@@ -1521,7 +1521,7 @@ const nodes = [
     example: 'When I think I\'ve made up my mind, this argues the strongest case against my position — so I know exactly what I\'m deciding.' },
   { id: 'translate-skill', label: '/translate',      type: 'skill',
     desc: 'Translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
-    example: 'When I want to share something with my family, this translates the document and makes sure it sounds like it came from me — the way a daughter would actually say it.' },
+    example: 'When I want to share something with my family, this translates the document and makes sure it sounds like it came from me — not from a machine.' },
   { id: 'curriculum-skill',label: '/curriculum',     type: 'skill',
     desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.',
     example: 'Designs a complete learning plan: what to study, what materials to use, how to fit it into a schedule.' },
@@ -1555,7 +1555,7 @@ const nodes = [
     example: 'Connected to the editor I work in — can create charts, diagrams, commit code, and track sessions.' },
 
   // ── Real outputs ──
-  { id: 'parent-newsletter', label: 'Parents Newsletter', type: 'output',
+  { id: 'parent-newsletter', label: 'Family Newsletter', type: 'output',
     desc: 'Monthly AI briefing written for family members. Bilingual, delivered via messaging. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
     example: 'A newsletter explaining AI breakthroughs in plain language — written in the register of someone who actually knows this family.',
     screenshot: 'artifacts/parent-newsletter.png',
@@ -1674,14 +1674,14 @@ Step 3: The Drop — surface any unswept items from the day before.
 One line per step. Nothing hidden.` },
   // ── Knowledge Bases ──
   { id: 'italian-kb',      label: 'Cultural KB', type: 'doc',
-    desc: 'Companion reference for Cornelia — a specific family\'s dynamics, regional character, generational patterns, the embedded codes of belonging. A guide to the specific world I married into.',
+    desc: 'Companion reference for Cornelia — a specific family\'s dynamics, regional character, generational patterns, the embedded codes of belonging.',
     excerpt: `Not a cultural guidebook. What matters here is the texture of this particular family — when to bring wine, what's expected at the table, what being present actually requires. Cornelia reads this before every conversation.` },
   { id: 'chinese-kb',      label: 'Cultural KB', type: 'doc',
     desc: 'Companion reference for Lian — family register, filial communication patterns, and how to calibrate tone so every translation sounds like it actually came from me.',
     excerpt: `The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from me — not from a machine trying to be polite.` },
   { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
-    desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
-    excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what first-gen professionals miss that everyone else absorbed without noticing.` },
+    desc: 'Reference scripts for navigating professional and social situations — organizational dynamics, credit mechanics, sponsorship dynamics, institutional blind spots.',
+    excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what some people miss that everyone else absorbed without noticing.` },
 ];
 
 const links = [
@@ -1752,7 +1752,7 @@ const links = [
   // knowledge base connections
   { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Cultural KB before every conversation — it holds the specific family context she needs.' },
   { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Cultural KB to calibrate register and tone for my family.' },
-  { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
+  { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and institutional blind spots.' },
   { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what I want, but what the system rewards.' },
   { source: 'italian-kb',    target: 'soul-doc',         label: 'The Cultural KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the family relationship well.' },
   // skill connections
