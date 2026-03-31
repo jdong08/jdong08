@@ -326,25 +326,9 @@ header {
   .projects-toggle-row { order: -1; } /* toggle stays above the list */
   .projects-list { align-items: flex-end; flex-direction: column; order: 1; }
   .projects-list.open { max-height: 220px; }
-  /* Hide restore button on mobile — no dismiss means no restore needed */
-  .dock-restore { display: none !important; }
 }
 
-/* Dismiss button inside dock (mobile only) */
-.dock-dismiss {
-  display: none;
-  background: transparent;
-  border: none;
-  color: #b0a0a4;
-  font-size: 0.8rem;
-  cursor: pointer;
-  padding: 2px 4px;
-  line-height: 1;
-  transition: color 0.15s;
-}
-.dock-dismiss:hover { color: #7a2f3d; }
 @media (max-width: 600px) {
-  .dock-dismiss { display: none; }
   .projects-toggle-row { display: flex; align-items: center; gap: 4px; }
 }
 
@@ -377,7 +361,6 @@ header {
   .project-link { min-height: 44px; padding: 8px 14px; }
   .project-name { font-size: 0.82rem; }
   .project-date { font-size: 0.65rem; }
-  .dock-dismiss { min-width: 44px; min-height: 44px; font-size: 1rem; }
   .panel-desc { line-height: 1.8; }
   .panel-name { font-size: 1.5rem; }
   .node-label { font-size: 11px; }
@@ -745,8 +728,7 @@ header {
 }
 /* Re-enable pointer events on interactive dock children */
 .projects-list,
-.projects-toggle-row,
-.dock-restore {
+.projects-toggle-row {
   pointer-events: auto;
 }
 .projects-list {
@@ -812,7 +794,6 @@ header {
   transition: color 0.15s;
   box-shadow: 0 1px 6px rgba(28,28,23,0.06);
   white-space: nowrap;
-  border: none;
   border: 1px solid rgba(218, 192, 197, 0.5);
 }
 .projects-toggle:hover { color: #7a2f3d; }
@@ -952,19 +933,20 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #877276;
-  opacity: 0.28;
+  opacity: 0.3;
   white-space: nowrap;
-  transition: opacity 0.6s;
+  transition: opacity 0.2s;
 }
-.tl-hint-label.fading { opacity: 0; }
 
 /* ── Timeline Scrubber ── */
 .timeline-toggle-icon {
-  font-size: 14px; opacity: 0.35; color: #544246;
+  font-size: 14px; opacity: 0.5; color: #544246;
   line-height: 1; transition: opacity 0.2s;
 }
-.bottom-btn-group:hover .timeline-toggle-icon { opacity: 0.6; }
+.bottom-btn-group:hover .timeline-toggle-icon { opacity: 0.7; }
+.bottom-btn-group:hover .tl-hint-label { opacity: 0.45; }
 .bottom-btn-group.active .timeline-toggle-icon { opacity: 0.88; color: #7a2f3d; }
+.bottom-btn-group.active .tl-hint-label { opacity: 0.5; color: #7a2f3d; }
 
 #timeline-bar {
   position: fixed;
@@ -1300,20 +1282,21 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 
 <div class="hint" id="hint"></div>
 
-<button class="dock-restore" id="dock-restore" style="display:none" onclick="restoreDock()">Links ▸</button>
-
 <div class="projects-dock" id="projects-dock">
   <div class="projects-list" id="projects-list">
     <a class="project-link" href="https://github.com/jdong08/claude-life-os" target="_blank" rel="noopener">
       <span class="project-name">claude life OS</span>
       <span class="project-date">Mar 2026 · github</span>
     </a>
+    <a class="project-link" href="https://www.linkedin.com/in/justina-dong/" target="_blank" rel="noopener">
+      <span class="project-name">linkedin</span>
+      <span class="project-date">justina dong</span>
+    </a>
   </div>
   <div class="projects-toggle-row">
     <button class="projects-toggle" id="projects-toggle" onclick="toggleProjects()">
       Links <span class="toggle-arrow">▾</span>
     </button>
-    <button class="dock-dismiss" onclick="dismissDock()" title="Hide">✕</button>
   </div>
 </div>
 
@@ -1391,7 +1374,7 @@ const nodes = [
   { id: 'sox-expert',      label: 'Controls Expert',  type: 'agent',
     desc: 'Financial and operational controls — risk frameworks, business process, AI-in-audit use cases.',
     example: 'Helps me think through controls and risk questions in depth.' },
-  { id: 'loop-closer',     label: 'loop-closer',     type: 'agent',
+  { id: 'loop-closer',     label: 'Loop Closer',      type: 'agent',
     origin: 'Named for function — closes what\'s open so I don\'t have to carry it.',
     desc: 'Autonomous maintenance — scans open loops, closes what it can without human input.',
     example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
@@ -2251,15 +2234,6 @@ function applySearch(q) {
   });
 })();
 
-// ── Dock dismiss / restore (mobile) ──
-function dismissDock() {
-  document.getElementById('projects-dock').style.display = 'none';
-  document.getElementById('dock-restore').style.display = 'flex';
-}
-function restoreDock() {
-  document.getElementById('projects-dock').style.display = '';
-  document.getElementById('dock-restore').style.display = 'none';
-}
 
 function openLightbox(d) {
   _lightboxTrigger = document.activeElement;
@@ -2520,6 +2494,7 @@ const NODE_BUILT = {
   'chinese-kb':        new Date('2026-03-28'),
   'social-kb':         new Date('2026-03-28'),
   'nimbalyst-mcp':     new Date('2026-03-28'),
+  'julia':             new Date('2026-03-30'),
 };
 
 // Code build date markers (dots on the lower track)
@@ -2534,6 +2509,8 @@ const MILESTONES = [
 ];
 
 let timelineOpen = false;
+let tlWasBelow100 = false;
+let tlArrivalPulsed = false;
 let tlScrubPct   = 100;
 let tlDragInited = false;
 
@@ -2588,6 +2565,7 @@ function updateTlStats(pct) {
 
 function updateTlPosition(pct) {
   tlScrubPct = Math.max(0, Math.min(100, pct));
+  if (tlScrubPct < 90) tlWasBelow100 = true;
   scrubberDate = tlScrubPct >= 99.5 ? null : new Date(T_START + (tlScrubPct / 100) * T_RANGE);
   const visual = Math.max(0.5, Math.min(99.5, tlScrubPct));
   const filledEl = document.getElementById('tl-filled');
@@ -2596,6 +2574,33 @@ function updateTlPosition(pct) {
   if (handleEl) handleEl.style.left = visual + '%';
   applyTimelineVisibility();
   updateTlStats(tlScrubPct);
+
+  // Delight: pulse the most-connected node when arriving at "now" after scrubbing back
+  if (tlScrubPct >= 99.5 && tlWasBelow100 && !tlArrivalPulsed &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    tlArrivalPulsed = true;
+    const degreeMap = {};
+    links.forEach(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      degreeMap[s] = (degreeMap[s] || 0) + 1;
+      degreeMap[t] = (degreeMap[t] || 0) + 1;
+    });
+    const topId = Object.entries(degreeMap).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (topId) {
+      const topN = nodes.find(n => n.id === topId);
+      const topGroup = node.filter(d => d.id === topId);
+      if (topN && topGroup.size()) {
+        const ring = topGroup.insert('circle', '.hit-pad')
+          .attr('r', nodeR(topN) + 2).attr('fill', 'none')
+          .attr('stroke', '#7a2f3d').attr('stroke-width', 0.8).attr('opacity', 0.55)
+          .style('pointer-events', 'none');
+        ring.transition().duration(1800).ease(d3.easeQuadOut)
+          .attr('r', nodeR(topN) + 14).attr('opacity', 0)
+          .on('end', () => ring.remove());
+      }
+    }
+  }
 }
 
 function buildTlMilestones() {
@@ -2673,19 +2678,10 @@ function initTlDrag() {
   document.addEventListener('touchend',  () => { if (dragging) { dragging = false; handle.classList.remove('dragging'); } });
 }
 
-function dismissTlHint() {
-  if (localStorage.getItem('tl-hint-seen')) return;
-  localStorage.setItem('tl-hint-seen', '1');
-  const lbl = document.getElementById('tl-hint-label');
-  if (!lbl) return;
-  lbl.classList.add('fading');
-  setTimeout(() => { lbl.style.display = 'none'; }, 650);
-}
 
 function toggleTimeline() {
   const bar = document.getElementById('timeline-bar');
   const btn = document.getElementById('timeline-toggle');
-  dismissTlHint();
   timelineOpen = !timelineOpen;
   if (timelineOpen) {
     bar.classList.add('visible');
@@ -2710,20 +2706,6 @@ function toggleTimeline() {
 }
 window.toggleTimeline = toggleTimeline;
 
-// Timeline first-visit hint — auto-fade after 8s
-(function() {
-  if (localStorage.getItem('tl-hint-seen')) {
-    const lbl = document.getElementById('tl-hint-label');
-    if (lbl) lbl.style.display = 'none';
-    return;
-  }
-  setTimeout(() => {
-    const lbl = document.getElementById('tl-hint-label');
-    if (!lbl || localStorage.getItem('tl-hint-seen')) return;
-    lbl.classList.add('fading');
-    setTimeout(() => { if (lbl) lbl.style.display = 'none'; }, 650);
-  }, 8000);
-})();
 
 // Soul ring — three slow exhale cycles, then gone
 (function() {
@@ -2798,8 +2780,6 @@ window.closeAbout = closeAbout;
 window.toggleProjects = toggleProjects;
 window.openLightbox = openLightbox;
 window.closeLightbox = closeLightbox;
-window.dismissDock = dismissDock;
-window.restoreDock = restoreDock;
 window.openSearchOverlay = openSearchOverlay;
 window.closeSearchOverlay = closeSearchOverlay;
 
@@ -2819,7 +2799,7 @@ if (!localStorage.getItem('tessa_visited')) {
 <div id="timeline-bar">
   <button class="tl-close" onclick="toggleTimeline()" title="Close timeline">✕</button>
   <div class="tl-stats">
-    <span class="tl-stats-main" id="tl-stats-main">57 things built · 275 conversations</span>
+    <span class="tl-stats-main" id="tl-stats-main"></span>
     <span class="tl-stats-note" id="tl-stats-note"></span>
   </div>
   <div class="tl-annotation-row" id="tl-float-labels"></div>
