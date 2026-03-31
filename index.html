@@ -1331,12 +1331,12 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
     <button class="about-close" onclick="closeAbout()" aria-label="Close about">✕</button>
     <div class="about-card-bg">
       <img src="artifacts/italy-fog.jpg" alt="" role="presentation"/>
-      <span class="about-caption">Valentine's Day. Val Gardena, Italy. February 2024.</span>
+      <span class="about-caption">February 2024.</span>
     </div>
     <div class="about-card-inner">
       <div class="about-title" id="about-title">Tessa OS</div>
       <div class="about-body">
-        <p>A personal AI system. Instead of using AI as a single chatbot, I built a team of 24 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs Italian practice.</p>
+        <p>A personal AI system. Instead of using AI as a single chatbot, I built a team of 24 specialists — each with a name, a role, and a domain. Cassandra helps with big life decisions. Cosimo runs the financial math. La Signora runs language practice.</p>
         <p>27 skills handle the recurring work: a weekly review every Sunday, a daily close-out, deep research on demand.</p>
         <p>5 integrations connect it to real life: email, calendar, files, browser, and the editor I work in.</p>
         <p>Everything in this graph is something I built and use daily.</p>
@@ -1421,7 +1421,7 @@ const nodes = [
   { id: 'marco',           label: 'Marco',           type: 'agent',
     origin: 'Marco Polo — the Venetian who navigated the world before maps.',
     desc: 'Travel planning — logistics, geography, destination research.',
-    example: 'When I\'m planning a trip — to Italy, or anywhere — Marco handles the logistics: timing, what the dog needs, where to stay.' },
+    example: 'When I\'m planning a trip — anywhere — Marco handles the logistics: timing, what the dog needs, where to stay.' },
   { id: 'flitwick',        label: 'Flitwick',        type: 'agent',
     origin: 'Professor Flitwick from Harry Potter — small, meticulous, teaches magic as craft.',
     desc: 'AI ecosystem explainer — all labs, weekly news reports, model comparisons.',
@@ -1435,16 +1435,16 @@ const nodes = [
     desc: 'Two modes: ethical conduct and existential questions across Taoist, Buddhist, Stoic traditions.',
     example: 'When I\'m wrestling with an ethical question — or asking what really matters — Confucius helps think it through with philosophical depth.' },
   { id: 'la-signora',      label: 'La Signora',      type: 'agent',
-    origin: 'Italian for "the lady" — a formal term of respect. The teacher you rise for.',
-    desc: 'Italian language — conversation practice, grammar, immersion toward fluency.',
-    example: 'I practice Italian every day. La Signora is my conversation partner — correcting me, pushing me further, making it feel real.' },
+    origin: '"The lady" — a formal term of respect. The teacher you rise for.',
+    desc: 'Language practice — conversation, grammar, immersion toward fluency.',
+    example: 'I practice a language every day. La Signora is my conversation partner — correcting me, pushing me further, making it feel real.' },
   { id: 'leonardo',        label: 'Leonardo',        type: 'agent',
     origin: 'Leonardo da Vinci — the polymath who mastered every practical domain he touched.',
     desc: 'Civilizational resilience — physical skills portfolio, geographic optionality, scenario planning.',
     example: 'Leonardo helps me think about being prepared for uncertain times: learning practical skills, thinking about where to live, building community.' },
   { id: 'lian',            label: 'Lian 连',         type: 'agent',
     origin: '连 Lián — connection, bridge. The friend who grew up in the same world you did.',
-    desc: 'Bicultural navigation — family dynamics, Chinese document register, cultural context.',
+    desc: 'Bicultural navigation — family dynamics, document register, cultural context.',
     example: 'When I want to reach my parents in their language — not just the words but the feeling — Lian helps me get it right, the way a bilingual childhood friend would.' },
   { id: 'bo',              label: 'Bo 博',           type: 'agent',
     origin: '博 Bó — broad, learned, generous with knowledge.',
@@ -1481,8 +1481,8 @@ const nodes = [
     example: 'Every day, loop-closer quietly reviews what\'s open and closes anything it can handle on its own — like a silent assistant working in the background.' },
   { id: 'zhengming',       label: 'Zhengming 正名',  type: 'agent',
     origin: '正名 Zhèngmíng — Confucian concept: to rectify names, so things can be what they actually are.',
-    desc: 'Naming — new agents get names from Chinese, Italian, historical, and mystical traditions.',
-    example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from Chinese, Italian, historical, and other traditions.' },
+    desc: 'Naming — new agents get names from history, mythology, and global traditions.',
+    example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from history, mythology, and global traditions.' },
   { id: 'grace',           label: 'Grace',           type: 'agent',
     origin: 'Grace Paley — the writer who paid attention to small things until they told her everything.',
     desc: 'Aesthetic watcher — logs what I find beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
@@ -1493,7 +1493,7 @@ const nodes = [
     example: 'I try on two options before a meeting. Azzedine has already seen what I\'ve been drawn to lately. He says: "The second one. The first one is performing."' },
   { id: 'cornelia',        label: 'Cornelia',        type: 'agent',
     origin: 'Cornelia Africana — the Roman matriarch who, when asked about her jewels, gestured to her children.',
-    desc: 'Italian cultural bridge — navigating my husband\'s family, the codes embedded in Italian domestic life, bella figura, what behavior actually signals beneath the surface.',
+    desc: 'Cross-cultural bridge — navigating a specific family\'s embedded codes and domestic dynamics, what behavior actually signals beneath the surface.',
     example: 'When the room shifts and I can\'t read why, Cornelia reads the signals — the extra food pushed, the silence at the right moment — and explains what\'s actually happening.' },
   { id: 'julia',           label: 'Julia',           type: 'agent',
     desc: 'Cooking tutor — technique, diagnosis, recipe adaptation, and a running knowledge log of every dish I cook.',
@@ -1520,8 +1520,8 @@ const nodes = [
     desc: 'Adversarial mode — argues strongest case against your stated plan. No hedging.',
     example: 'When I think I\'ve made up my mind, this argues the strongest case against my position — so I know exactly what I\'m deciding.' },
   { id: 'translate-skill', label: '/translate',      type: 'skill',
-    desc: 'Chinese translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
-    example: 'When I want to share something with my parents in Chinese, this translates the document and makes sure it sounds like it came from me — the way a daughter would actually say it.' },
+    desc: 'Translation pipeline — Nadia drafts, Lian reviews cultural register, builds HTML.',
+    example: 'When I want to share something with my family, this translates the document and makes sure it sounds like it came from me — the way a daughter would actually say it.' },
   { id: 'curriculum-skill',label: '/curriculum',     type: 'skill',
     desc: 'Learning plan generator — multi-modal sources, schedule, commitment layer.',
     example: 'Designs a complete learning plan: what to study, what materials to use, how to fit it into a schedule.' },
@@ -1556,8 +1556,8 @@ const nodes = [
 
   // ── Real outputs ──
   { id: 'parent-newsletter', label: 'Parents Newsletter', type: 'output',
-    desc: 'Monthly AI briefing written for my Shanghai-based parents. Chinese and English, sent via WeChat. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
-    example: 'A newsletter explaining AI breakthroughs to my parents in Shanghai — in Chinese, in their register, with examples that actually land for a Shanghai audience.',
+    desc: 'Monthly AI briefing written for family members. Bilingual, delivered via messaging. Researched by Flitwick, translated and culturally reviewed by Nadia and Lian.',
+    example: 'A newsletter explaining AI breakthroughs in plain language — written in the register of someone who actually knows this family.',
     screenshot: 'artifacts/parent-newsletter.png',
     position: 'top',
     made: ['flitwick', 'nadia', 'lian'],
@@ -1638,7 +1638,7 @@ DAILY (end of night, manual — once)
   /closing-shift            ← day brief, loop maintenance, tomorrow's anchor` },
 
   { id: 'thesis-doc', label: 'life_thesis.md', type: 'doc',
-    desc: 'The why. Civilizational resilience — why I\'m learning to fix a boiler, studying Italian, keeping options open across geographies. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
+    desc: 'The why. Civilizational resilience — why I\'m learning to fix a boiler, building practical skills, keeping options open across geographies. Without this file, these look like scattered interests. With it, Claude understands they\'re a single architecture.',
     excerpt: `Civilizational resilience. Family, security, real options regardless of how the world changes.
 
 The thesis: build a life that holds regardless of what the system does. Skills with real-world value. Financial independence. Geographic optionality. Physical capability. Community.
@@ -1673,12 +1673,12 @@ Step 3: The Drop — surface any unswept items from the day before.
 
 One line per step. Nothing hidden.` },
   // ── Knowledge Bases ──
-  { id: 'italian-kb',      label: 'Italian Cultural KB', type: 'doc',
-    desc: 'Companion reference for Cornelia — Italian family dynamics, regional character, generational patterns, the embedded codes of belonging. Not a guide to Italy; a guide to the specific world I married into.',
-    excerpt: `A Tuscan family, not a Florentine postcard. What matters here isn't Italy in the abstract but the texture of this particular family — when to bring wine, what's expected at the table, what being present actually requires. Cornelia reads this before every conversation.` },
-  { id: 'chinese-kb',      label: 'Chinese Cultural KB', type: 'doc',
-    desc: 'Companion reference for Lian — Shanghainese family register, filial communication patterns, and how to calibrate tone so every translation sounds like it actually came from me.',
-    excerpt: `My parents are Shanghainese. The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from me — not from a machine trying to be polite.` },
+  { id: 'italian-kb',      label: 'Cultural KB', type: 'doc',
+    desc: 'Companion reference for Cornelia — a specific family\'s dynamics, regional character, generational patterns, the embedded codes of belonging. A guide to the specific world I married into.',
+    excerpt: `Not a cultural guidebook. What matters here is the texture of this particular family — when to bring wine, what's expected at the table, what being present actually requires. Cornelia reads this before every conversation.` },
+  { id: 'chinese-kb',      label: 'Cultural KB', type: 'doc',
+    desc: 'Companion reference for Lian — family register, filial communication patterns, and how to calibrate tone so every translation sounds like it actually came from me.',
+    excerpt: `The register matters: too formal reads cold, too casual reads disrespectful. Lian reads this to calibrate every translation so it sounds like it came from me — not from a machine trying to be polite.` },
   { id: 'social-kb',       label: 'Social Etiquette KB', type: 'doc',
     desc: 'Reference scripts for navigating professional and social situations — corporate politics, credit mechanics, sponsorship dynamics, first-gen blind spots, race and gender in consulting environments.',
     excerpt: `The unwritten rules. Not what HR says — what actually happens: how credit moves, how visibility works, how sponsorship differs from mentorship, what first-gen professionals miss that everyone else absorbed without noticing.` },
@@ -1690,7 +1690,7 @@ const links = [
   { source: 'cassandra',       target: 'nadia',          label: 'When something isn\'t ready to be a decision yet, it becomes a conversation with Nadia first.' },
   { source: 'confucius',       target: 'cassandra',      label: 'Confucius handles the philosophical layer; Cassandra handles what to actually do with it.' },
   { source: 'minerva',         target: 'ada',            label: 'Minerva decides what to build; Ada specs it so the build doesn\'t fail from vague requirements.' },
-  { source: 'lian',            target: 'nadia',          label: 'Chinese family dynamics sometimes need peer processing before they become decisions.' },
+  { source: 'lian',            target: 'nadia',          label: 'Family dynamics sometimes need peer processing before they become decisions.' },
   { source: 'feedback-skill',  target: 'minerva',        label: '/feedback routes to Minerva, who tracks what patterns keep appearing across sessions.' },
   { source: 'ecosystem-audit', target: 'minerva',        label: '/ecosystem-audit is a Minerva session — she runs the health check and issues verdicts.' },
   { source: 'board-skill',     target: 'cassandra',      label: 'The board convenes when a decision is too big for one domain — Cassandra holds the life architecture lens.' },
@@ -1699,8 +1699,8 @@ const links = [
   { source: 'board-skill',     target: 'confucius',      label: 'The board includes Confucius when the decision has an ethical or philosophical dimension.' },
   { source: 'board-skill',     target: 'leonardo',       label: 'The board includes Leonardo when resilience, geography, or long-horizon risk is involved.' },
   { source: 'ai-study-brief',  target: 'flitwick',       label: '/ai-study-brief invokes Flitwick to prioritize what to study given active certifications and ecosystem state.' },
-  { source: 'translate-skill', target: 'nadia',          label: 'Nadia drafts the translation first — she has the peer register and natural Chinese voice.' },
-  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register, family framing, and what lands for my parents.' },
+  { source: 'translate-skill', target: 'nadia',          label: 'Nadia drafts the translation first — she has the peer register and a natural voice.' },
+  { source: 'translate-skill', target: 'lian',           label: 'Lian reviews after Nadia — checking cultural register and family framing.' },
   { source: 'curriculum-skill',target: 'bo',             label: '/curriculum routes to Bo, who designs the full learning plan: sources, schedule, commitment layer.' },
   { source: 'closing-shift',   target: 'loop-closer',    label: '/closing-shift triggers loop-closer to scan open items and close what it can autonomously.' },
   { source: 'closing-shift',   target: 'minerva',        label: '/closing-shift includes a Minerva debrief — same as /feedback but at end-of-day rhythm.' },
@@ -1715,7 +1715,7 @@ const links = [
   { source: 'nimbalyst-mcp',   target: 'amelie',         label: 'Amélie uses Nimbalyst to preview and screenshot UI changes before declaring them delightful.' },
   // outputs ← producers
   { source: 'parent-newsletter', target: 'flitwick',     label: 'Flitwick researches the AI landscape and writes the first draft — always the starting point for the newsletter.' },
-  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for my Shanghai parents.' },
+  { source: 'parent-newsletter', target: 'lian',         label: 'Lian reviews after translation — ensuring the register and framing is right for my family.' },
   { source: 'instacart-analysis', target: 'cosimo',      label: 'Cosimo ran the 5-year Instacart analysis — his financial modeling applies to personal spending too.' },
   { source: 'board-app',          target: 'minerva',     label: 'Minerva made the architectural decisions for the board app — what to build, how to structure it.' },
   { source: 'board-app',          target: 'ada',         label: 'Ada specced the board app before it was built — the PRD kept the build scoped.' },
@@ -1746,15 +1746,15 @@ const links = [
   // aesthetic pair
   { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what I find beautiful shapes what I should wear.' },
   // cornelia handoffs
-  { source: 'cornelia',      target: 'cassandra',        label: 'Italian family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
-  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When I need to say something in Italian, they hand off.' },
+  { source: 'cornelia',      target: 'cassandra',        label: 'Family context sometimes becomes a life architecture question — Cornelia passes to Cassandra when it does.' },
+  { source: 'cornelia',      target: 'la-signora',       label: 'Cornelia reads culture; La Signora teaches language. When the cultural and linguistic domains overlap, they hand off.' },
   { source: 'cornelia',      target: 'marco',            label: 'Cornelia handles the family context and register; Marco handles getting there and what to bring.' },
   // knowledge base connections
-  { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Italian Cultural KB before every conversation — it holds the specific family and regional context she needs.' },
-  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Chinese Cultural KB to calibrate register and tone for my Shanghainese parents.' },
+  { source: 'cornelia',      target: 'italian-kb',       label: 'Cornelia reads the Cultural KB before every conversation — it holds the specific family context she needs.' },
+  { source: 'lian',          target: 'chinese-kb',       label: 'Lian reads the Cultural KB to calibrate register and tone for my family.' },
   { source: 'niccolo',       target: 'social-kb',        label: 'Niccolò draws on the Social Etiquette KB for corporate navigation, credit mechanics, and first-gen blind spots.' },
   { source: 'cassandra',     target: 'social-kb',        label: 'Cassandra reads the Social KB when life decisions involve navigating power, visibility, or institutional dynamics — not just what I want, but what the system rewards.' },
-  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Italian KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the family relationship well.' },
+  { source: 'italian-kb',    target: 'soul-doc',         label: 'The Cultural KB and soul.md together give Cornelia both the cultural frame and my own character — essential for navigating the family relationship well.' },
   // skill connections
   { source: 'check-in-skill',target: 'loops-doc',        label: '/check-in reads the relevant loops file to surface status without opening a full session.' },
   { source: 'capture-close', target: 'loops-doc',        label: '/capture-and-close writes artifacts and open items back to loops before ending the session.' },
