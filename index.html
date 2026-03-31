@@ -2351,6 +2351,16 @@ function toggleProjects() {
   list.classList.toggle('open');
   toggle.classList.toggle('open');
 }
+function closeProjects() {
+  const list = document.getElementById('projects-list');
+  const toggle = document.getElementById('projects-toggle');
+  if (list) list.classList.remove('open');
+  if (toggle) toggle.classList.remove('open');
+}
+document.addEventListener('click', e => {
+  const dock = document.getElementById('projects-dock');
+  if (dock && !dock.contains(e.target)) closeProjects();
+});
 
 // Keyboard
 document.addEventListener('keydown', e => {
