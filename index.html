@@ -134,12 +134,12 @@ header {
 
 /* About button */
 .about-btn {
-  width: 30px; height: 30px;
+  width: 38px; height: 38px;
   border-radius: 50%;
   border: 1.5px solid rgba(218, 192, 197, 0.7);
   background: rgba(252,249,240,0.85);
   color: #877276;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -1399,6 +1399,10 @@ const nodes = [
     origin: '正名 Zhèngmíng — Confucian concept: to rectify names, so things can be what they actually are.',
     desc: 'Naming — new agents get names from history, mythology, and global traditions.',
     example: 'When a new specialist needs a name, Zhengming suggests names with meaning — drawn from history, mythology, and global traditions.' },
+  { id: 'ting',            label: '挺 (Tǐng)',        type: 'agent',
+    origin: '挺 (tǐng) — to stand upright, to endure, to not bend. 挺你 means "I\'ve got your back." Named in the language that taught Jay to go quiet.',
+    desc: 'Pure advocate — surfaces what Jay already feels and translates it into the form the room needs to hear. Invoke when she knows what she wants but isn\'t saying it.',
+    example: 'Before a negotiation I\'ve been avoiding. 挺 doesn\'t coach me — she speaks the words I already have inside me but haven\'t let out.' },
   { id: 'grace',           label: 'Grace',           type: 'agent',
     origin: 'Grace Paley — the writer who paid attention to small things until they told her everything.',
     desc: 'Aesthetic watcher — logs what I find beautiful, surfaces patterns over time, holds the lived experience of beauty. Slow. Speaks rarely and precisely.',
@@ -1454,6 +1458,9 @@ const nodes = [
   { id: 'the-drop',        label: 'The Drop',        type: 'skill',
     desc: 'Daily intake — a living Google Doc where I log ideas, bugs, and observations throughout the day. Processed each morning during opening-shift.',
     example: 'I notice the node graph scatters too fast. I drop a line in The Drop. Next morning during opening-shift, it surfaces as a task.' },
+  { id: 'telegram-log',   label: 'Telegram Log',    type: 'skill',
+    desc: 'Voice capture pipeline — voice memos sent via Telegram are transcribed by a persistent background listener and routed to OPEN_LOOPS or AI_LOOPS automatically.',
+    example: 'I send a voice note from my phone mid-commute. The listener transcribes it and routes it to the right loop before I get home — nothing lost, no manual step.' },
   { id: 'gmail-mcp',       label: 'Gmail',           type: 'mcp',
     desc: 'Email triage, drafting replies, thread search and labeling.',
     example: 'Connected to my email — can search, draft replies, and organize my inbox.' },
@@ -1659,6 +1666,10 @@ const links = [
   { source: 'opening-doc',   target: 'soul-doc',         label: 'opening-shift loads soul.md to orient each day toward who I actually am, not just what\'s on the list.' },
   // process workflows
   { source: 'the-drop',      target: 'opening-doc',      label: 'The Drop is Step 3 of opening-shift — items logged the day before surface here for triage.' },
+  { source: 'telegram-log',  target: 'loops-doc',        label: 'Voice memos transcribed by the Telegram listener are routed into OPEN_LOOPS or AI_LOOPS automatically.' },
+  { source: 'telegram-log',  target: 'opening-doc',      label: 'The Telegram pipeline is checked during opening-shift — anything captured overnight surfaces for triage.' },
+  { source: 'ting',          target: 'cassandra',        label: 'When 挺 surfaces a decision Jay\'s been avoiding, Cassandra is the next conversation — clarity after advocacy.' },
+  { source: 'ting',          target: 'soul-doc',         label: '挺 reads soul.md to speak in Jay\'s actual register — not generic encouragement, but the words that land.' },
   // aesthetic pair
   { source: 'grace',         target: 'azzedine',         label: 'Azzedine reads Grace\'s inspiration log before every verdict — what I find beautiful shapes what I should wear.' },
   // cornelia handoffs
@@ -1712,18 +1723,18 @@ svg.call(zoom);
 
 // Seed nodes near center — tight cluster prevents violent scatter at startup
 nodes.forEach(n => {
-  n.x = W / 2 + (Math.random() - 0.5) * 70;
-  n.y = H / 2 + (Math.random() - 0.5) * 70;
+  n.x = W / 2 + (Math.random() - 0.5) * 50;
+  n.y = H / 2 + (Math.random() - 0.5) * 50;
 });
 
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
-  .force('charge', d3.forceManyBody().strength(-200))
+  .force('charge', d3.forceManyBody().strength(-180))
   .force('center', d3.forceCenter(W / 2, H / 2))
   .force('collision', d3.forceCollide().radius(d => nodeR(d) + 14))
-  .alpha(0.4)
-  .alphaDecay(isMobile ? 0.07 : 0.045)
-  .velocityDecay(0.62)
+  .alpha(0.25)
+  .alphaDecay(isMobile ? 0.07 : 0.05)
+  .velocityDecay(0.68)
   .force('bounds', () => {
     const pad = 80, top = 60;
     nodes.forEach(d => {
@@ -2538,6 +2549,8 @@ const NODE_BUILT = {
   'social-kb':         new Date('2026-03-28'),
   'nimbalyst-mcp':     new Date('2026-03-28'),
   'julia':             new Date('2026-03-30'),
+  'ting':              new Date('2026-03-30'),
+  'telegram-log':      new Date('2026-03-29'),
 };
 
 // Code build date markers (dots on the lower track)
