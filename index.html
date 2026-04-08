@@ -9,14 +9,38 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Noto+Sans+SC:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+#pw-gate {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #fcf9f0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+}
+#pw-gate form {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+#pw-gate input {
+  border: 1px solid #ccc; border-radius: 8px;
+  padding: 10px 16px; font-size: 16px; width: 220px;
+  background: #fff; outline: none;
+}
+#pw-gate input:focus { border-color: #888; }
+#pw-gate button {
+  background: #1a1a1a; color: #fff;
+  border: none; border-radius: 8px;
+  padding: 10px 24px; font-size: 15px; cursor: pointer; width: 100%;
+}
+#pw-gate .pw-error {
+  color: #c00; font-size: 13px; min-height: 18px;
+}
+</style>
 <script>
 (function(){
-  var k = sessionStorage.getItem('tessa_auth');
-  if(k !== '142911'){
-    var p = prompt('Password');
-    if(p !== '142911'){ location.replace('about:blank'); }
-    else { sessionStorage.setItem('tessa_auth','142911'); }
-  }
+  if(sessionStorage.getItem('tessa_auth') === '142911') return;
+  document.addEventListener('DOMContentLoaded', function(){
+    var gate = document.getElementById('pw-gate');
+    if(gate) gate.style.display = 'flex';
+  });
 })();
 </script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -1178,6 +1202,24 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
 </style>
 </head>
 <body>
+<div id="pw-gate" style="display:none">
+  <form onsubmit="(function(e){
+    e.preventDefault();
+    var p = document.getElementById('pw-input').value;
+    if(p === '142911'){
+      sessionStorage.setItem('tessa_auth','142911');
+      document.getElementById('pw-gate').style.display='none';
+    } else {
+      document.getElementById('pw-error').textContent='Incorrect password';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+    }
+  })(event)">
+    <input id="pw-input" type="password" placeholder="Password" autofocus autocomplete="current-password"/>
+    <div class="pw-error" id="pw-error"></div>
+    <button type="submit">Enter</button>
+  </form>
+</div>
 
 <header>
   <div class="header-left">
