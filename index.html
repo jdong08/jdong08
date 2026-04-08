@@ -14,7 +14,7 @@
   var k = sessionStorage.getItem('tessa_auth');
   if(k !== '142911'){
     var p = prompt('Password');
-    if(p !== '142911'){ document.write(''); document.body.innerHTML=''; location.href='about:blank'; }
+    if(p !== '142911'){ location.replace('about:blank'); }
     else { sessionStorage.setItem('tessa_auth','142911'); }
   }
 })();
