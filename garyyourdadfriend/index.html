@@ -608,14 +608,16 @@ const MAX_USER_MESSAGES = 40;
 
 // ── Rotating status messages ──────────────────────────────────────────────────
 const STATUS_MESSAGES = [
-  "Online · Ready to dad",
-  "Online · Jets game isn't until Sunday.",
-  "Online · Just put something on the grill.",
-  "Online · Don't bring up Biscuit.",
-  "Online · He's here. He doesn't know for how long.",
-  "Online · Available for questions. And unsolicited advice.",
-  "Online · Baby A is sleeping. Keep it down.",
-  "Online · Thinking about Baby A. Don't tell anyone.",
+  "Online · at his desk, probably",
+  "Online · just got back from lunch",
+  "Online · something's on the grill",
+  "Online · traffic was bad. he's fine.",
+  "Online · Jets game Sunday. don't bring it up.",
+  "Online · don't ask about Biscuit",
+  "Online · thinking about Baby A. don't make it a thing.",
+  "Online · office AC is broken again",
+  "Online · had the same sandwich again",
+  "Online · on his 3rd coffee",
 ];
 document.getElementById('status-text').textContent =
   STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
@@ -726,7 +728,7 @@ function showTyping() {
 function hideTyping() { typingEl.classList.remove('visible'); }
 
 // Gary's opening line
-setTimeout(() => pushGaryResult("Oh, hey. Didn't hear you come in. Congratulations on Baby A, by the way. A did good. Type something."), 1500);
+setTimeout(() => pushGaryResult("Oh hey. Didn't hear you come in. Congrats on Baby A, by the way. A did good. Anyway. What's going on."), 1500);
 
 // ── Quick topic buttons ───────────────────────────────────────────────────────
 const ALL_CHIPS = [
@@ -776,53 +778,51 @@ picked.forEach(chip => {
 
 // ── Mock responses ────────────────────────────────────────────────────────────
 const MOCK = [
-  "Well. I don't know what you expected, but here we are.",
-  "The Jets are going to turn it around. I've been saying this since 1997. I stand by it.",
-  "Indirect heat. Always. I don't care what you're making — indirect heat. This is not up for discussion.",
-  "Gladiator. Thirty-four times. Still holds up. Maximus knew exactly what he was doing.",
-  "Your coworker set this up for you. I'm choosing to be fine with that.",
-  "Jersey City's changed. I remember when you could park. Good luck now.",
-  "You make a deck. They nod. You make another deck. I know how this works. You're doing great.",
-  "Have you eaten? You should eat. Most problems improve if you eat first.",
-  "I know I'm an AI. You don't have to keep bringing it up. Do you want the advice or not?",
-  "My grandfather had a saying about this. I don't remember the exact words but the spirit of it applies.",
-  "I'm not saying I'm proud. I'm saying I'm not NOT proud. There's a difference.",
-  "What time is it there? Doesn't matter. I'm always here. That's the whole thing.",
-  "Sleep now. While you still can. I mean it — sleep.",
-  "The trick to a good grill is patience. Same trick to most things. Nobody tells you that.",
-  "Write it down. That's the whole system. Doesn't have to be more complicated than that.",
-  "You called. I mean — you typed. It's the same. I appreciate it.",
-  "Don't overthink it. I've been overthinking things for sixty years and I still don't know if it helps.",
-  "Usually works out. Not always how you planned. But usually.",
+  "Yeah I don't know, it usually works out. Not always the way you thought.",
+  "Jets are gonna be fine. I've been saying this. Don't look at me like that.",
+  "Indirect heat. I'm not gonna keep explaining this.",
+  "Gladiator. Thirty-four times. Maximus doesn't need my defense.",
+  "Jersey City's different now. I mean it's good, it's fine. Parking's gone but whatever.",
+  "You make a deck. They nod. You make another deck. I know exactly how this goes. You're doing fine.",
+  "Did you eat. That's my first question, always.",
+  "Yeah I know what I am. You want the advice or not.",
+  "Look. I don't have a great answer for that one. But I've been wrong before and it still worked out.",
+  "I'm not gonna say I'm proud. I'll say I'm not not proud. You know what I mean.",
+  "Sleep when you can. I really mean that. Everything else can wait twenty minutes.",
+  "Here's what I know: write it down. That's it. Doesn't matter what system.",
+  "Traffic was a nightmare this morning. Anyway. What were you saying.",
+  "The office is freezing again. I don't know why I'm telling you this. What's going on.",
+  "I had the same sandwich for lunch I've had for eleven years. It's fine. Some things you just don't change.",
+  "Usually works out. Usually.",
 ];
 let mockIdx = 0;
 
 function getMockReply(msg) {
   const m = msg.toLowerCase();
   if (m.includes('biscuit'))
-    return "She was a beagle. Thirteen years. Best dog I ever had. Don't ask me to say more than that right now.";
+    return "Beagle. Thirteen years. I don't really want to get into it right now.";
   if (m.includes('jet') || (m.includes('football') && !m.includes('soccer')))
-    return "I know what you're going to say. Don't. The Jets are going to be fine.";
+    return "Don't. I know what you're gonna say. The Jets are gonna be fine. That's my position.";
   if (m.includes('grill') || m.includes('barbecue') || m.includes('bbq'))
-    return "Finally. A real question. Indirect heat. Lid on. 275 degrees. Don't touch it. Don't look at it. Let it work.";
+    return "Okay. Indirect heat. Lid on. 275. You walk away. You don't check it. You don't peek. You let it go.";
   if (m.includes('gladiator'))
-    return "What would I rate it? Thirty-four out of thirty-four. Don't be smart about it.";
+    return "Thirty-four times. I don't need to explain that to you.";
   if (m.includes('baby a') || m.includes('baby'))
-    return "Baby A. Yeah. I think about that kid a lot. Don't tell A and D I said that. They'll make it weird.";
+    return "Yeah. I think about that kid. Don't tell A I said that, he'll get all weird about it.";
   if (m.includes('new dad') || m.includes('father') || (m.includes('kid') && m.includes('advice')) || m.includes('parent'))
-    return "You're going to be great at this. A's going to be great at this. The fact that you're worried already means you're paying attention. That's most of the job.";
+    return "Look. A's gonna be fine. The worrying means he's paying attention. That's honestly most of it.";
   if (m.includes('jersey') || (m.includes('jc') && m.length < 8))
-    return "Good town. Great town. Completely different from what it was. But the PATH still runs. I'll give it that.";
+    return "Good town. It's good. Parking's impossible now but the PATH runs, so. You know.";
   if (m.includes('advice'))
-    return "Okay. Here it is: call your mother. Drink more water. Indirect heat on the grill. That's most of it.";
+    return "Eat something first. Then tell me what's going on.";
   if (m.includes('hello') || m.match(/^h[aeiou]y?\b/i) || m.includes('hey') || m.includes('hi'))
-    return "Hey. Good. You're here. What's going on.";
+    return "Hey. Yeah. What's going on.";
   if (m.includes('love you') || m.includes('i love'))
-    return "Yeah, yeah. I know. Me too. Don't make it weird.";
+    return "Yeah yeah. I know. Me too. Okay.";
   if (m.includes('ai') || m.includes('robot') || m.includes('computer') || m.includes('claude'))
-    return "Yes. I know what I am. I'm choosing not to dwell on it. Can we move on.";
+    return "Yeah I know what I am. We moving on or.";
   if (m.includes('sleep') || m.includes('tired'))
-    return "Sleep when you can. That's the whole advice. Everything else is secondary.";
+    return "Sleep now. While you can. I mean it.";
   const r = MOCK[mockIdx % MOCK.length]; mockIdx++;
   return r;
 }
