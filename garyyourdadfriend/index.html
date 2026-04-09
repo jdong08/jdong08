@@ -558,7 +558,7 @@
     <div id="mobile-gary-file" style="border:1px solid #c8b89a;border-left:3px solid #2c5f8a;margin-bottom:12px;font-family:'Times New Roman',serif;font-size:12px;">
       <button onclick="this.parentElement.querySelector('#mobile-gary-body').style.display=this.parentElement.querySelector('#mobile-gary-body').style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▾')?'Who\'s Gary? ▸':'Who\'s Gary? ▾';" style="background:#2c5f8a;color:#fff;border:none;width:100%;text-align:left;padding:6px 10px;font-family:'Times New Roman',serif;font-size:11px;cursor:pointer;letter-spacing:0.5px;">Who's Gary? ▾</button>
       <div id="mobile-gary-body" style="padding:8px 12px;color:#3a2a1a;line-height:1.8;">
-        Father. 30 yrs in "business." Good friend to A — A and D just had Baby A, kid's doing great. Jets fan. Indirect heat only. <em>Gladiator</em> — 34 times. Jersey City local. AI. Don't bring it up.
+        Father. 30 yrs in "business." Good friend to A — A and D just had Baby A, she's doing great. Jets fan. Indirect heat only. <em>Gladiator</em> — 34 times. Jersey City local. AI. Don't bring it up.
       </div>
     </div>
 
@@ -912,7 +912,7 @@ function getMockReply(msg) {
   if (m.includes('gladiator'))
     return "Thirty-four times. I don't need to explain that to you.";
   if (m.includes('baby a') || m.includes('baby'))
-    return "Baby A! Yeah. I think about that kid all the time. D is incredible, A is doing great — I'm just really happy for both of them. Really.";
+    return "Baby A! Yeah. I think about that girl all the time. D is incredible, A is doing great — I'm just really happy for all of them. Really.";
   if (m.includes('new dad') || m.includes('father') || (m.includes('kid') && m.includes('advice')) || m.includes('parent'))
     return "Okay so here's the thing — A is going to be a great dad. I know this. D is already crushing it. The fact that he's asking means he cares, and caring is most of the job.";
   if (m.includes('jersey') || (m.includes('jc') && m.length < 8))
@@ -1014,7 +1014,7 @@ const GARY_PAGES = {
       <hr style="border:none;border-top:1px solid #e8eaed;margin:0 0 32px;">
       <table style="width:100%;border-collapse:collapse;font-size:15px;line-height:2;">
         <tr><td style="color:#70757a;width:160px;vertical-align:top;padding:6px 0;">Status</td><td style="padding:6px 0;">Father. 30 years in the business.</td></tr>
-        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Personal</td><td style="padding:6px 0;">Good friend to A. Proud of him. A and D just had Baby A — kid's doing great.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Personal</td><td style="padding:6px 0;">Good friend to A. Proud of him. A and D just had Baby A — she's doing great.</td></tr>
         <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Sports</td><td style="padding:6px 0;">Jets fan. He knows what he signed up for.</td></tr>
         <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Grilling</td><td style="padding:6px 0;">Indirect heat only. This is not negotiable.</td></tr>
         <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Film</td><td style="padding:6px 0;"><em>Gladiator</em> — 34 times and counting.</td></tr>
