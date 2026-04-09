@@ -161,6 +161,23 @@
       background: #2c5f8a;
       color: #fff;
     }
+    .reply-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .reply-btn {
+      background: #f5f0e8;
+      border: 1px solid #b8a88a;
+      color: #5a4a30;
+      font-family: 'Times New Roman', serif;
+      font-size: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .reply-btn:hover { background: #e8dfc8; }
     .quick-label {
       font-size: 11px;
       color: #888;
@@ -711,12 +728,58 @@ function pushQueryLine(text) {
   scrollResults();
 }
 
-function pushGaryResult(text) {
+function getReplySuggestions(reply) {
+  const r = reply.toLowerCase();
+  if (r.includes('jet') || r.includes('football'))
+    return ["Are they actually gonna be fine?", "Convince me."];
+  if (r.includes('indirect') || r.includes('grill') || r.includes('275'))
+    return ["What are you grilling right now?", "What's your go-to?"];
+  if (r.includes('biscuit'))
+    return ["Tell me about her.", "I'm sorry, Gary."];
+  if (r.includes('baby a') || r.includes('baby') || r.includes("a's a dad"))
+    return ["How's A holding up?", "How's D doing?"];
+  if (r.includes('sleep') || r.includes('tired'))
+    return ["Any other advice?", "What if I really can't?"];
+  if (r.includes('eat') || r.includes('lunch') || r.includes('sandwich'))
+    return ["What did you have?", "Yeah, good call."];
+  if (r.includes('gladiator'))
+    return ["What's your favorite scene?", "Okay I have to watch it again."];
+  if (r.includes('deck') || r.includes('consulting') || r.includes('business'))
+    return ["You've seen a lot.", "That tracks."];
+  if (r.includes('jersey') || r.includes('path') || r.includes('parking'))
+    return ["Do you miss the old days?", "Still worth living there?"];
+  const fallbacks = [
+    ["That's fair.", "What else you got?"],
+    ["You're probably right.", "What would you do?"],
+    ["I needed to hear that.", "Tell me more."],
+    ["Okay but what about—", "What does D think?"],
+    ["Yeah, okay.", "Any other advice?"],
+  ];
+  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+}
+
+function pushGaryResult(text, withReplies = false) {
   totalResults++;
   resultCount.textContent = `${totalResults} answer${totalResults !== 1 ? 's' : ''}`;
   const div = document.createElement('div');
   div.className = 'result-card';
   div.innerHTML = `<div class="result-title">Gary</div><div class="result-body">${escHtml(text)}</div>`;
+  if (withReplies) {
+    const chips = document.createElement('div');
+    chips.className = 'reply-chips';
+    getReplySuggestions(text).forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'reply-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.reply-chips').forEach(el => el.remove());
+        inputEl.value = label;
+        send();
+      });
+      chips.appendChild(btn);
+    });
+    div.appendChild(chips);
+  }
   resultsEl.appendChild(div);
   scrollResults();
 }
@@ -850,6 +913,7 @@ async function send() {
   inputEl.value = '';
   sendBtn.disabled = true;
   userMsgCount++;
+  document.querySelectorAll('.reply-chips').forEach(el => el.remove());
 
   pushQueryLine(text);
   history.push({ role: 'user', content: text });
@@ -882,7 +946,7 @@ async function send() {
 
   history.push({ role: 'assistant', content: reply });
   hideTyping();
-  pushGaryResult(reply);
+  pushGaryResult(reply, true);
   setGaryState(STATES.AWAKE);
   sendBtn.disabled = false;
 
