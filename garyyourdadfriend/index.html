@@ -788,16 +788,17 @@ function updateResultCount() {
   resultCount.textContent = 'he hasn\'t taken a bathroom break yet';
 }
 
-function pushGaryResult(text, withReplies = false) {
+function pushGaryResult(text, withReplies = false, suggestions = null) {
   totalResults++;
   updateResultCount();
   const div = document.createElement('div');
   div.className = 'result-card';
   div.innerHTML = `<div class="result-title">Gary</div><div class="result-body">${escHtml(text)}</div>`;
   if (withReplies) {
+    const labels = suggestions || getReplySuggestions(text);
     const chips = document.createElement('div');
     chips.className = 'reply-chips';
-    getReplySuggestions(text).forEach(label => {
+    labels.forEach(label => {
       const btn = document.createElement('button');
       btn.className = 'reply-btn';
       btn.textContent = label;
@@ -953,7 +954,7 @@ async function send() {
   showTyping();
   setGaryState(STATES.TALKING);
 
-  let reply;
+  let reply, suggestions = null;
   if (!WORKER_URL) {
     await new Promise(r => setTimeout(r, delay));
     reply = getMockReply(text);
@@ -968,6 +969,7 @@ async function send() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       reply = data.content;
+      suggestions = data.suggestions || null;
     } catch {
       reply = "Hold on. Something happened on my end. Try again in a minute. I'll be here.";
     }
@@ -975,7 +977,7 @@ async function send() {
 
   history.push({ role: 'assistant', content: reply });
   hideTyping();
-  pushGaryResult(reply, true);
+  pushGaryResult(reply, true, suggestions);
   setGaryState(STATES.AWAKE);
   sendBtn.disabled = false;
 
