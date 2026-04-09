@@ -418,8 +418,16 @@
 </head>
 <body>
 
-<!-- Toast overlay -->
-<div id="gary-toast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3d5c;color:#f5f0e8;padding:14px 22px;font-family:'Times New Roman',serif;font-size:14px;max-width:380px;text-align:center;z-index:9999;border-top:3px solid #f0c060;line-height:1.5;"></div>
+<!-- Gary Modal -->
+<div id="gary-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);overflow-y:auto;">
+  <div id="gary-modal-inner" style="background:#fff;min-height:100vh;max-width:900px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;box-shadow:0 0 40px rgba(0,0,0,0.3);">
+    <div style="background:#f1f3f4;border-bottom:1px solid #dadce0;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;">
+      <button id="gary-modal-close" style="background:none;border:none;cursor:pointer;font-size:22px;color:#5f6368;line-height:1;padding:2px 8px;border-radius:4px;" title="Close">&#8592;</button>
+      <div style="background:#fff;border:1px solid #dadce0;border-radius:20px;flex:1;padding:5px 14px;font-size:12px;color:#555;font-family:'Courier New',monospace;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" id="gary-modal-url"></div>
+    </div>
+    <div id="gary-modal-content" style="padding:48px 72px 80px;max-width:700px;color:#202124;"></div>
+  </div>
+</div>
 
 <!-- NAV BAR -->
 <div class="nav-bar">
@@ -850,29 +858,143 @@ inputEl.addEventListener('keydown', e => {
 
 setGaryState(STATES.WAVING);
 
-// ── Nav / footer link surprises ───────────────────────────────────────────────
-const GARY_LINKS = {
-  home:    "You're already here. This is home. Pull up a chair.",
-  file:    "Father. My buddy A just had Baby A. D is handling it better than A is, honestly. Jets fan. Indirect heat. Gladiator 34 times. Biscuit (2019). That's the whole file.",
-  help:    "Help. Sure. What kind of trouble did you get into.",
-  about:   "I'm Gary. I've been here a while. I have opinions about grilling and the Jets. My buddy A just became a dad. I'm not going to pretend I'm not a little proud of him. That's about it.",
-  privacy: "Gary's Privacy Policy: Gary remembers everything. There is no privacy. He's a dad. This is what dads do. By continuing to use this site you agree that Gary can bring this up at dinner.",
-  terms:   "Terms of Gary:\n1. Gary gives advice. You don't have to take it.\n2. Indirect heat. Always.\n3. Don't bring up Biscuit unless you mean it.\n4. Baby A is off limits for jokes.\n5. The Jets are going to be fine.\n6. These terms are subject to change. Gary will not notify you.",
+// ── Nav / footer link modal pages ─────────────────────────────────────────────
+const GARY_PAGES = {
+  home: {
+    url: 'www.askgary.com/',
+    html: `
+      <p style="font-size:13px;color:#70757a;margin-bottom:40px;">404</p>
+      <h1 style="font-size:96px;font-weight:700;color:#202124;margin:0 0 8px;letter-spacing:-3px;">404</h1>
+      <h2 style="font-size:24px;font-weight:400;color:#202124;margin:0 0 16px;">That page doesn't exist.</h2>
+      <p style="font-size:16px;color:#70757a;line-height:1.7;margin:0 0 32px;">You're already here. This is home. There's nowhere else to go.<br>Pull up a chair.</p>
+      <p style="font-size:13px;color:#aaa;">Error 404 &nbsp;·&nbsp; AskGary Inc. &nbsp;·&nbsp; Jersey City, NJ</p>
+    `
+  },
+  file: {
+    url: 'www.askgary.com/about/file',
+    html: `
+      <p style="font-size:12px;color:#70757a;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;">Internal Profile</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0 0 4px;">Gary</h1>
+      <p style="font-size:15px;color:#70757a;margin:0 0 40px;">Resident Advisor &nbsp;·&nbsp; AskGary Inc.</p>
+      <hr style="border:none;border-top:1px solid #e8eaed;margin:0 0 32px;">
+      <table style="width:100%;border-collapse:collapse;font-size:15px;line-height:2;">
+        <tr><td style="color:#70757a;width:160px;vertical-align:top;padding:6px 0;">Status</td><td style="padding:6px 0;">Father. 30 years in the business.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Personal</td><td style="padding:6px 0;">Good friend to A. Proud of him. A and D just had Baby A — kid's doing great.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Sports</td><td style="padding:6px 0;">Jets fan. He knows what he signed up for.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Grilling</td><td style="padding:6px 0;">Indirect heat only. This is not negotiable.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Film</td><td style="padding:6px 0;"><em>Gladiator</em> — 34 times and counting.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Dog</td><td style="padding:6px 0;">Biscuit. Beagle. 2019. We don't talk about it.</td></tr>
+        <tr><td style="color:#70757a;vertical-align:top;padding:6px 0;">Location</td><td style="padding:6px 0;">Jersey City, NJ</td></tr>
+      </table>
+      <hr style="border:none;border-top:1px solid #e8eaed;margin:32px 0 24px;">
+      <p style="font-size:13px;color:#aaa;">Last updated by Gary. Gary does not indicate when.</p>
+    `
+  },
+  help: {
+    url: 'www.askgary.com/help',
+    html: `
+      <p style="font-size:12px;color:#70757a;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;">Help Center</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0 0 32px;">How can we help?</h1>
+      <div style="background:#f8f9fa;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+        <h3 style="font-size:16px;margin:0 0 8px;">How do I ask Gary something?</h3>
+        <p style="font-size:14px;color:#555;margin:0;line-height:1.6;">Type it in the box. Gary will answer. If he doesn't answer the way you wanted, that is also an answer.</p>
+      </div>
+      <div style="background:#f8f9fa;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+        <h3 style="font-size:16px;margin:0 0 8px;">Is Gary a real person?</h3>
+        <p style="font-size:14px;color:#555;margin:0;line-height:1.6;">Gary is an AI. Gary would like you to know this does not diminish his opinions about the Jets.</p>
+      </div>
+      <div style="background:#f8f9fa;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+        <h3 style="font-size:16px;margin:0 0 8px;">What kind of trouble did you get into.</h3>
+        <p style="font-size:14px;color:#555;margin:0;line-height:1.6;">That's not a question. That's Gary asking you directly. You should answer him.</p>
+      </div>
+      <p style="font-size:13px;color:#aaa;margin-top:32px;">AskGary Help Center &nbsp;·&nbsp; Jersey City, NJ &nbsp;·&nbsp; Response time: whenever Gary gets to it</p>
+    `
+  },
+  about: {
+    url: 'www.askgary.com/about',
+    html: `
+      <p style="font-size:12px;color:#70757a;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;">About</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0 0 16px;">About AskGary</h1>
+      <p style="font-size:16px;line-height:1.8;color:#3c4043;margin:0 0 24px;">AskGary was founded on the belief that what the internet has always needed is one more guy with opinions.</p>
+      <p style="font-size:16px;line-height:1.8;color:#3c4043;margin:0 0 24px;">Gary has been around a while. He has raised children, attended Jets games under difficult circumstances, and achieved something close to mastery in the field of indirect-heat grilling.</p>
+      <p style="font-size:16px;line-height:1.8;color:#3c4043;margin:0 0 24px;">His buddy A just became a dad. Gary is not going to pretend he's not a little proud of him.</p>
+      <p style="font-size:16px;line-height:1.8;color:#3c4043;margin:0 0 40px;">AskGary does not have a mission statement. Gary finds them performative.</p>
+      <hr style="border:none;border-top:1px solid #e8eaed;margin:0 0 24px;">
+      <p style="font-size:13px;color:#aaa;">AskGary Inc. &nbsp;·&nbsp; Jersey City, NJ &nbsp;·&nbsp; Est. recently</p>
+    `
+  },
+  privacy: {
+    url: 'www.askgary.com/privacy',
+    html: `
+      <p style="font-size:12px;color:#70757a;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;">Legal</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0 0 8px;">Privacy Policy</h1>
+      <p style="font-size:13px;color:#70757a;margin:0 0 40px;">Last updated: April 2025 &nbsp;·&nbsp; Effective immediately</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">1. Data Collection</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Gary collects everything. He remembers the thing you said three Thanksgivings ago that you thought everyone forgot. He did not forget.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">2. Data Use</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Collected data is used to give advice, form opinions, and occasionally bring things up at dinner. There is no other use case. Gary is not running ads.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">3. Sharing</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Gary does not sell your data. He does talk about you. This is different.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">4. Your Rights</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">You have the right to ask Gary anything. You do not have the right to a different answer than the one Gary gives you.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">5. Contact</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 40px;">Privacy concerns can be raised with Gary directly. He will listen. He will then tell you about Biscuit.</p>
+      <hr style="border:none;border-top:1px solid #e8eaed;margin:0 0 24px;">
+      <p style="font-size:13px;color:#aaa;">AskGary Inc. &nbsp;·&nbsp; Jersey City, NJ &nbsp;·&nbsp; By continuing to use this site you agree that Gary can bring this up at dinner.</p>
+    `
+  },
+  terms: {
+    url: 'www.askgary.com/terms',
+    html: `
+      <p style="font-size:12px;color:#70757a;text-transform:uppercase;letter-spacing:1px;margin-bottom:24px;">Legal</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0 0 8px;">Terms of Service</h1>
+      <p style="font-size:13px;color:#70757a;margin:0 0 40px;">Last updated: April 2025 &nbsp;·&nbsp; Subject to change without notice from Gary</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">1. Advice</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Gary gives advice. You do not have to take it. Gary will still be right.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">2. Grilling</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Indirect heat. Always. Direct heat is for emergencies only. Gary does not recognize "it's just hot dogs" as a valid defense.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">3. Biscuit</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Do not bring up Biscuit unless you mean it. If you bring up Biscuit, Gary will talk about Biscuit for a while. You agreed to this.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">4. Baby A</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">Baby A is off limits for jokes. This is not negotiable. Gary will not engage.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">5. The Jets</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 28px;">The Jets are going to be fine. This is stated as fact. Gary does not take questions on this.</p>
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 12px;">6. Amendments</h2>
+      <p style="font-size:15px;line-height:1.8;color:#3c4043;margin:0 0 40px;">These terms are subject to change. Gary will not notify you. If Gary has updated his thinking, you will know because Gary told you directly.</p>
+      <hr style="border:none;border-top:1px solid #e8eaed;margin:0 0 24px;">
+      <p style="font-size:13px;color:#aaa;">AskGary Inc. &nbsp;·&nbsp; Jersey City, NJ &nbsp;·&nbsp; Continued use of this site constitutes agreement with Gary.</p>
+    `
+  }
 };
 
-let toastTimer = null;
-function showToast(msg) {
-  const toast = document.getElementById('gary-toast');
-  toast.textContent = msg;
-  toast.style.display = 'block';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 6000);
+const garyModal    = document.getElementById('gary-modal');
+const garyModalUrl = document.getElementById('gary-modal-url');
+const garyModalContent = document.getElementById('gary-modal-content');
+
+function showModal(key) {
+  const page = GARY_PAGES[key];
+  if (!page) return;
+  garyModalUrl.textContent = page.url;
+  garyModalContent.innerHTML = page.html;
+  garyModal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
+
+function closeModal() {
+  garyModal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('gary-modal-close').addEventListener('click', closeModal);
+garyModal.addEventListener('click', e => {
+  if (e.target === garyModal) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 document.querySelectorAll('[data-gary]').forEach(el => {
   el.addEventListener('click', e => {
     e.preventDefault();
-    showToast(GARY_LINKS[el.dataset.gary]);
+    showModal(el.dataset.gary);
   });
 });
 </script>
