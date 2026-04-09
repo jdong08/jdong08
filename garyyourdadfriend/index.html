@@ -738,7 +738,6 @@ setTimeout(() => pushGaryResult("Oh, hey. Didn't hear you come in. Congratulatio
 document.querySelectorAll('.topic-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     inputEl.value = btn.dataset.q;
-    inputEl.focus();
     send();
   });
 });
