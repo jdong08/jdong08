@@ -513,13 +513,7 @@
       </div>
 
       <div class="quick-label">Try asking about:</div>
-      <div class="quick-topics">
-        <button class="topic-btn" data-q="I have a question about grilling.">Grill Questions</button>
-        <button class="topic-btn" data-q="What do you think about the Jets this season?">Jets Takes</button>
-        <button class="topic-btn" data-q="I just became a dad. Any advice?">Parenting Advice</button>
-        <button class="topic-btn" data-q="Have you eaten today?">Have you eaten?</button>
-        <button class="topic-btn" data-q="Tell me about Gladiator.">Gladiator (the film)</button>
-      </div>
+      <div class="quick-topics" id="quick-topics"></div>
     </div>
 
   </div>
@@ -735,11 +729,49 @@ function hideTyping() { typingEl.classList.remove('visible'); }
 setTimeout(() => pushGaryResult("Oh, hey. Didn't hear you come in. Congratulations on Baby A, by the way. A did good. Type something."), 1500);
 
 // ── Quick topic buttons ───────────────────────────────────────────────────────
-document.querySelectorAll('.topic-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    inputEl.value = btn.dataset.q;
-    send();
-  });
+const ALL_CHIPS = [
+  { label: "Grill Questions",        q: "I have a question about grilling." },
+  { label: "Jets Takes",             q: "What do you think about the Jets this season?" },
+  { label: "Parenting Advice",       q: "I just became a dad. Any advice?" },
+  { label: "Have you eaten?",        q: "Have you eaten today?" },
+  { label: "Gladiator (the film)",   q: "Tell me about Gladiator." },
+  { label: "Tell me about Biscuit",  q: "Who's Biscuit?" },
+  { label: "Marriage advice",        q: "Any advice on being a good husband?" },
+  { label: "Baby sleep",             q: "The baby won't sleep. What do I do." },
+  { label: "I made a mistake",       q: "I did something I probably shouldn't have." },
+  { label: "Work stuff",             q: "Things are weird at work right now." },
+  { label: "Should I buy it?",       q: "I'm thinking about buying something. Is it a good idea?" },
+  { label: "The commute",            q: "What do you think about commuting from Jersey City?" },
+  { label: "I'm stressed",           q: "I've been pretty stressed lately." },
+  { label: "What would you do?",     q: "What would you do if you were me?" },
+  { label: "Indirect heat",          q: "Explain indirect heat to me like I'm five." },
+  { label: "Pep talk",               q: "I need a pep talk." },
+  { label: "Change my mind",         q: "Convince me the Jets are going to be fine." },
+  { label: "Life advice",            q: "What's the most important thing you've figured out?" },
+  { label: "Rate my decision",       q: "Let me run a recent decision by you." },
+  { label: "I'm tired",              q: "I haven't slept in a while." },
+  { label: "What's for dinner?",     q: "What should I make for dinner?" },
+  { label: "Am I overreacting?",     q: "Tell me if I'm overreacting to something." },
+  { label: "Weekend plans",          q: "What would Gary do this weekend?" },
+  { label: "Fatherhood philosophy",  q: "What does being a dad actually mean to you?" },
+];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+const picked = shuffle([...ALL_CHIPS]).slice(0, 5);
+const chipsEl = document.getElementById('quick-topics');
+picked.forEach(chip => {
+  const btn = document.createElement('button');
+  btn.className = 'topic-btn';
+  btn.textContent = chip.label;
+  btn.addEventListener('click', () => { inputEl.value = chip.q; send(); });
+  chipsEl.appendChild(btn);
 });
 
 // ── Mock responses ────────────────────────────────────────────────────────────
