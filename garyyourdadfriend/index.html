@@ -729,16 +729,16 @@ function hideTyping() { typingEl.classList.remove('visible'); }
 
 // Gary's opening line
 const OPENING_LINES = [
-  "Oh hey. Didn't hear you come in. Congrats on Baby A, by the way. A did good. Anyway. What's going on.",
-  "Hey. Just got back from lunch. Congrats on Baby A — seriously, A did great. What's up.",
-  "Oh you're here. Yeah. Baby A. Wild. A's a dad now. I'm still processing that. Anyway — what do you need.",
-  "Hey. Traffic was a nightmare this morning, don't get me started. Congrats on Baby A though. What's going on.",
-  "Oh good, someone's here. I've been at this desk since 8. Congrats on Baby A — A did good. What's up.",
-  "Hey. Yeah. I heard about Baby A. A's a dad now. Good for him. You need something?",
-  "Oh hey. I was just thinking about A actually. New dad. Wild. Congrats. What's going on with you.",
-  "Yeah hey. Come in. Baby A is here, A's a dad, the whole thing. Crazy. Anyway — what do you got.",
-  "Hey. Sit down. You hear about Baby A? A did good. D did great. Okay. What's going on.",
-  "Oh you found this. Okay. Congrats on Baby A by the way — A's doing fine, I'm sure of it. What do you need.",
+  "Oh hey. Didn't hear you come in. Congrats on Baby A — A and D did good. D especially. Anyway. What's going on.",
+  "Hey. Just got back from lunch. Baby A. Wild. D handled the whole thing like a pro. A did great too. What's up.",
+  "Oh you're here. Yeah. Baby A. I'm still processing it. D's amazing, I'll say that. What do you need.",
+  "Hey. Traffic was a nightmare. Anyway — congrats on Baby A. D did great. A did good. What's going on.",
+  "Oh good, someone's here. I've been at this desk since 8. Congrats on Baby A — D carried that whole thing. What's up.",
+  "Hey. Yeah. Baby A's here. D is incredible, I'll tell you that right now. A's lucky. What do you need.",
+  "Oh hey. I was just thinking about D actually. She did great. A too. New baby. Wild. What's going on with you.",
+  "Yeah hey. Come in. Baby A is here. D was a rockstar. A's a dad now. The whole thing. What do you got.",
+  "Hey. Sit down. Congrats on Baby A. D did great — like, really great. A did good. Okay. What's going on.",
+  "Oh you found this. Okay. D had a baby. A's a dad. D's a superhero but we already knew that. What do you need.",
 ];
 setTimeout(() => pushGaryResult(OPENING_LINES[Math.floor(Math.random() * OPENING_LINES.length)]), 1500);
 
@@ -820,9 +820,9 @@ function getMockReply(msg) {
   if (m.includes('gladiator'))
     return "Thirty-four times. I don't need to explain that to you.";
   if (m.includes('baby a') || m.includes('baby'))
-    return "Yeah. I think about that kid. Don't tell A I said that, he'll get all weird about it.";
+    return "Yeah. I think about that kid. D's doing amazing — I mean really amazing. A too. Don't tell him I said all that.";
   if (m.includes('new dad') || m.includes('father') || (m.includes('kid') && m.includes('advice')) || m.includes('parent'))
-    return "Look. A's gonna be fine. The worrying means he's paying attention. That's honestly most of it.";
+    return "Look. D's got it. A's gonna figure it out. The worrying means he's paying attention, that's most of it.";
   if (m.includes('jersey') || (m.includes('jc') && m.length < 8))
     return "Good town. It's good. Parking's impossible now but the PATH runs, so. You know.";
   if (m.includes('advice'))
