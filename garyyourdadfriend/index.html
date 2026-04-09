@@ -1115,14 +1115,21 @@ function showModal(key) {
   garyModalContent.innerHTML = page.html;
   garyModal.style.display = 'block';
   document.body.style.overflow = 'hidden';
+  window.history.pushState({ garyModal: key }, '');
 }
 
-function closeModal() {
+function closeModal(viaPopstate = false) {
+  if (garyModal.style.display === 'none') return;
   garyModal.style.display = 'none';
   document.body.style.overflow = '';
+  if (!viaPopstate) window.history.back();
 }
 
-document.getElementById('gary-modal-close').addEventListener('click', closeModal);
+window.addEventListener('popstate', e => {
+  if (garyModal.style.display !== 'none') closeModal(true);
+});
+
+document.getElementById('gary-modal-close').addEventListener('click', () => closeModal());
 garyModal.addEventListener('click', e => {
   if (e.target === garyModal) closeModal();
 });
