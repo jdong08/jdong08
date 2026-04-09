@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask Gary</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ede8de;
+      font-family: 'Times New Roman', Times, serif;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Portal nav bar ── */
+    .nav-bar {
+      background: #2c5f8a;
+      padding: 5px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid #1a3d5c;
+    }
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      font-size: 11px;
+      color: #b8d4ea;
+    }
+    .nav-links a { color: #b8d4ea; text-decoration: none; }
+    .nav-links a:hover { text-decoration: underline; color: #fff; }
+    .nav-right {
+      font-size: 10px;
+      color: #7aaecf;
+    }
+
+    /* ── Portal header (logo + search) ── */
+    .portal-header {
+      background: #faf7f0;
+      border-bottom: 2px solid #c8b89a;
+      padding: 20px 24px 18px;
+    }
+    .portal-header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* Logo side */
+    .logo-col {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 130px;
+    }
+    #gary-svg {
+      width: 110px;
+      height: 120px;
+    }
+    .gary-status {
+      font-size: 10px;
+      color: #2c5f8a;
+      font-style: italic;
+      text-align: center;
+      margin-top: 3px;
+      min-height: 14px;
+    }
+    .status-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4a9e4a;
+      margin-right: 3px;
+      animation: statusPulse 2.5s ease-in-out infinite;
+      vertical-align: middle;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Search side */
+    .search-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .ask-gary-wordmark {
+      font-size: 42px;
+      font-weight: bold;
+      font-style: italic;
+      color: #2c5f8a;
+      line-height: 1;
+      margin-bottom: 4px;
+      letter-spacing: -1px;
+    }
+    .ask-gary-wordmark span {
+      color: #1a3d5c;
+    }
+    .portal-tagline {
+      font-size: 12px;
+      color: #6b6b80;
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+    .search-bar-wrap {
+      display: flex;
+      gap: 0;
+      margin-bottom: 12px;
+      border: 2px solid #2c5f8a;
+    }
+    #user-input {
+      flex: 1;
+      border: none;
+      background: #fff;
+      padding: 10px 14px;
+      font-family: 'Times New Roman', serif;
+      font-size: 16px;
+      color: #1a1a2e;
+      outline: none;
+      min-width: 0;
+    }
+    #user-input::placeholder { color: #aaa; font-style: italic; }
+    #send-btn {
+      background: #2c5f8a;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+    #send-btn:hover   { background: #1a3d5c; }
+    #send-btn:disabled { background: #7aaecf; cursor: not-allowed; }
+
+    /* Quick topics */
+    .quick-topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .topic-btn {
+      background: #fff;
+      border: 1px solid #2c5f8a;
+      color: #2c5f8a;
+      font-family: 'Times New Roman', serif;
+      font-size: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .topic-btn:hover {
+      background: #2c5f8a;
+      color: #fff;
+    }
+    .quick-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 5px;
+      font-style: italic;
+    }
+
+    /* ── Main content area ── */
+    .portal-body {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    /* Results column */
+    .results-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .results-header {
+      font-size: 11px;
+      color: #888;
+      border-bottom: 1px solid #c8b89a;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .chat-results {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 200px;
+    }
+
+    /* Gary's answer: styled as a search result */
+    .result-card {
+      background: #fff;
+      border: 1px solid #d8d0c0;
+      border-left: 4px solid #2c5f8a;
+      padding: 12px 14px;
+    }
+    .result-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #2c5f8a;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1a1a2e;
+    }
+
+    /* User query: styled as the search query line */
+    .query-line {
+      background: #f0ece3;
+      border: 1px solid #c8b89a;
+      border-left: 4px solid #c8a060;
+      padding: 8px 14px;
+    }
+    .query-label {
+      font-size: 10px;
+      color: #888;
+      font-style: italic;
+      margin-bottom: 3px;
+    }
+    .query-text {
+      font-size: 14px;
+      color: #3a2a10;
+      font-style: italic;
+    }
+
+    /* Typing indicator */
+    .typing-result {
+      background: #fff;
+      border: 1px solid #d8d0c0;
+      border-left: 4px solid #2c5f8a;
+      padding: 12px 14px;
+      display: none;
+    }
+    .typing-result.visible { display: block; }
+    .typing-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #2c5f8a;
+      margin-bottom: 8px;
+    }
+    .typing-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .typing-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #2c5f8a;
+      animation: dot 1.3s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .22s; }
+    .typing-dots span:nth-child(3) { animation-delay: .44s; }
+    @keyframes dot {
+      0%,60%,100% { transform: translateY(0); opacity: .35; }
+      30%          { transform: translateY(-5px); opacity: 1; }
+    }
+
+    .msg-limit-card {
+      background: #fff8ee;
+      border: 1px solid #c8a060;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #7a5020;
+      font-style: italic;
+      display: none;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar-col {
+      width: 210px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar-widget {
+      background: #fff;
+      border: 1px solid #c8b89a;
+      border-top: 3px solid #2c5f8a;
+    }
+    .widget-title {
+      background: #2c5f8a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 5px 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .widget-body {
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #3a3a50;
+    }
+    .widget-body ul { list-style: none; padding: 0; }
+    .widget-body ul li::before { content: "» "; color: #2c5f8a; }
+    .widget-note {
+      font-size: 11px;
+      color: #888;
+      font-style: italic;
+      border-top: 1px solid #e0d8cc;
+      margin-top: 8px;
+      padding-top: 6px;
+    }
+
+    /* Visitor counter */
+    .visitor-widget { text-align: center; }
+    .visitor-counter {
+      font-family: monospace;
+      background: #000;
+      color: #00ff00;
+      padding: 3px 8px;
+      font-size: 14px;
+      display: inline-block;
+      margin: 4px 0;
+    }
+    .visitor-label { font-size: 10px; color: #888; font-style: italic; }
+
+    /* MIDI widget */
+    .blink { animation: blinkAnim 1.1s step-start infinite; }
+    @keyframes blinkAnim {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+
+    /* ── Footer ── */
+    .portal-footer {
+      background: #2c5f8a;
+      color: #7aaecf;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 11px;
+      line-height: 1.8;
+      border-top: 3px solid #1a3d5c;
+    }
+    .portal-footer a { color: #b8d4ea; }
+
+    /* ── Gary SVG animation states ── */
+    @keyframes arm-wave {
+      0%,100% { transform-origin: 86px 96px; transform: rotate(0deg); }
+      25%     { transform-origin: 86px 96px; transform: rotate(-30deg); }
+      75%     { transform-origin: 86px 96px; transform: rotate(12deg); }
+    }
+    @keyframes body-bob {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-2px); }
+    }
+    @keyframes head-tilt {
+      to { transform: rotate(16deg); transform-origin: 55px 90px; }
+    }
+    @keyframes startle {
+      0%   { transform: scale(1) translateY(0); }
+      25%  { transform: scale(1.07) translateY(-4px); }
+      65%  { transform: scale(0.97); }
+      100% { transform: scale(1) translateY(0); }
+    }
+    @keyframes zzz-drift {
+      0%   { opacity: 0; transform: translateY(0); }
+      20%  { opacity: .9; }
+      80%  { opacity: .6; }
+      100% { opacity: 0; transform: translateY(-16px); }
+    }
+    @keyframes brow-furrow {
+      to { transform: rotate(-4deg) translateX(2px); }
+    }
+    @keyframes mustache-talk {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-1.5px); }
+    }
+
+    #gary-svg { width: 110px; height: 120px; }
+    #gary-svg.waving #gary-arm          { animation: arm-wave .55s ease-in-out 4; }
+    #gary-svg.awake                      { animation: body-bob 3.2s ease-in-out infinite; }
+    #gary-svg.sleeping #gary-head-group  { animation: head-tilt .8s ease forwards; }
+    #gary-svg.startled                   { animation: startle .4s ease; }
+    #gary-svg.sleeping #zzz1            { animation: zzz-drift 2.8s ease-in-out 0s infinite; }
+    #gary-svg.sleeping #zzz2            { animation: zzz-drift 2.8s ease-in-out .9s infinite; }
+    #gary-svg.sleeping #zzz3            { animation: zzz-drift 2.8s ease-in-out 1.8s infinite; }
+    #gary-svg.talking #gary-left-brow,
+    #gary-svg.talking #gary-right-brow  { animation: brow-furrow .3s ease forwards; }
+    #gary-svg.talking #gary-mustache    { animation: mustache-talk .25s ease-in-out infinite; }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .portal-header-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .logo-col { flex-direction: row; width: 100%; align-items: center; gap: 14px; }
+      .logo-col #gary-svg { width: 70px; height: 76px; }
+      .gary-status { text-align: left; margin-top: 0; }
+      .ask-gary-wordmark { font-size: 30px; }
+      .portal-body { flex-direction: column; padding: 12px 14px; }
+      .sidebar-col { width: 100%; }
+      #send-btn { min-height: 44px; }
+      .portal-header { padding: 14px; }
+      .nav-links { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Toast overlay -->
+<div id="gary-toast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3d5c;color:#f5f0e8;padding:14px 22px;font-family:'Times New Roman',serif;font-size:14px;max-width:380px;text-align:center;z-index:9999;border-top:3px solid #f0c060;line-height:1.5;"></div>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <div class="nav-links">
+    <a href="#" data-gary="home">Home</a>
+    <a href="#" data-gary="file">Gary's File</a>
+    <a href="#" data-gary="help">Help</a>
+    <a href="#" data-gary="about">About Gary</a>
+  </div>
+  <div class="nav-right">AskGary™ · Est. 2026 · Best viewed in Internet Explorer 6</div>
+</div>
+
+<!-- PORTAL HEADER: Logo + Search -->
+<div class="portal-header">
+  <div class="portal-header-inner">
+
+    <!-- Gary portrait -->
+    <div class="logo-col">
+      <svg id="gary-svg" viewBox="0 0 110 120" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Body/polo shirt -->
+        <rect x="20" y="88" width="70" height="32" rx="5" fill="#2c5f8a"/>
+        <polygon points="42,88 55,103 68,88" fill="#f5e6c8"/>
+        <line x1="55" y1="103" x2="55" y2="120" stroke="#1a3d5c" stroke-width="1.5"/>
+        <line x1="52" y1="90" x2="52" y2="120" stroke="#1a3d5c" stroke-width=".8" opacity=".4"/>
+        <!-- Neck -->
+        <rect x="46" y="79" width="18" height="13" rx="3" fill="#d4956a"/>
+        <!-- HEAD GROUP -->
+        <g id="gary-head-group">
+          <ellipse cx="20" cy="60" rx="7" ry="9" fill="#c4895a"/>
+          <ellipse cx="90" cy="60" rx="7" ry="9" fill="#c4895a"/>
+          <ellipse cx="55" cy="57" rx="35" ry="33" fill="#d4956a"/>
+          <!-- Hair -->
+          <ellipse cx="55" cy="27" rx="33" ry="10" fill="#4a2e12"/>
+          <rect x="22" y="27" width="66" height="11" fill="#4a2e12"/>
+          <ellipse cx="22" cy="44" rx="6.5" ry="14" fill="#4a2e12"/>
+          <ellipse cx="88" cy="44" rx="6.5" ry="14" fill="#4a2e12"/>
+          <!-- Eyebrows -->
+          <path id="gary-left-brow"  d="M35 48 Q42 45 49 48" stroke="#3a1e08" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path id="gary-right-brow" d="M61 48 Q68 45 75 48" stroke="#3a1e08" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- Eyes -->
+          <ellipse id="l-open"  cx="42" cy="57" rx="6" ry="7" fill="white"/>
+          <circle  id="l-pupil" cx="42" cy="58" r="3.5" fill="#2e1508"/>
+          <ellipse id="l-close" cx="42" cy="59" rx="6" ry="1.5" fill="#c4895a" style="display:none"/>
+          <ellipse id="r-open"  cx="68" cy="57" rx="6" ry="7" fill="white"/>
+          <circle  id="r-pupil" cx="68" cy="58" r="3.5" fill="#2e1508"/>
+          <ellipse id="r-close" cx="68" cy="59" rx="6" ry="1.5" fill="#c4895a" style="display:none"/>
+          <!-- Mustache -->
+          <g id="gary-mustache">
+            <ellipse cx="48" cy="72" rx="7" ry="4" fill="#3a1e08"/>
+            <ellipse cx="62" cy="72" rx="7" ry="4" fill="#3a1e08"/>
+            <path d="M41 70 Q48 76 55 72 Q62 76 69 70" stroke="#3a1e08" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </g>
+          <!-- Mouth -->
+          <path d="M48 81 Q55 87 62 81" stroke="#3a1e08" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- ZZZ -->
+          <text id="zzz1" x="86" y="46" font-size="10" font-weight="bold" fill="#2c5f8a" opacity="0">z</text>
+          <text id="zzz2" x="93" y="35" font-size="13" font-weight="bold" fill="#2c5f8a" opacity="0">z</text>
+          <text id="zzz3" x="101" y="22" font-size="16" font-weight="bold" fill="#2c5f8a" opacity="0">Z</text>
+        </g>
+        <!-- Waving arm -->
+        <g id="gary-arm">
+          <line x1="86" y1="96" x2="104" y2="75" stroke="#2c5f8a" stroke-width="11" stroke-linecap="round"/>
+          <circle cx="108" cy="70" r="9" fill="#d4956a"/>
+          <ellipse cx="103" cy="62" rx="4" ry="6" fill="#d4956a" transform="rotate(-20 103 62)"/>
+          <ellipse cx="111" cy="60" rx="4" ry="6" fill="#d4956a" transform="rotate(10 111 60)"/>
+          <ellipse cx="116" cy="65" rx="4" ry="5.5" fill="#d4956a" transform="rotate(28 116 65)"/>
+        </g>
+      </svg>
+      <div class="gary-status">
+        <span class="status-dot"></span><span id="status-text">Online · Ready to dad</span>
+      </div>
+    </div>
+
+    <!-- Search col -->
+    <div class="search-col">
+      <div class="ask-gary-wordmark"><span>Ask</span> Gary</div>
+      <div class="portal-tagline">Questions answered. Advice dispensed. He means well.</div>
+
+      <div class="search-bar-wrap">
+        <input type="text" id="user-input" placeholder="Type your question for Gary..."/>
+        <button id="send-btn">Ask Gary</button>
+      </div>
+
+      <div class="quick-label">Try asking about:</div>
+      <div class="quick-topics">
+        <button class="topic-btn" data-q="I have a question about grilling.">Grill Questions</button>
+        <button class="topic-btn" data-q="What do you think about the Jets this season?">Jets Takes</button>
+        <button class="topic-btn" data-q="I just became a dad. Any advice?">Parenting Advice</button>
+        <button class="topic-btn" data-q="Have you eaten today?">Have you eaten?</button>
+        <button class="topic-btn" data-q="Tell me about Gladiator.">Gladiator (the film)</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PORTAL BODY -->
+<div class="portal-body">
+
+  <!-- Results -->
+  <div class="results-col">
+    <div class="results-header">
+      <span>Gary's Answers</span>
+      <span id="result-count">—</span>
+    </div>
+
+    <div class="chat-results" id="chat-results"></div>
+    <div class="typing-result" id="typing-result">
+      <div class="typing-label">Gary is retrieving your answer...</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="msg-limit-card" id="msg-limit">
+      Gary's tired. He's been at this a while.
+      <a href="" style="color:#7a5020;">Reload to give him a rest.</a>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar-col">
+
+    <div class="sidebar-widget">
+      <div class="widget-title">Gary's File</div>
+      <div class="widget-body">
+        <ul>
+          <li>Father. 30 yrs in "business."</li>
+          <li>Proud grandpa to Baby A.</li>
+          <li>Son A and daughter-in-law D did good.</li>
+          <li>Jets fan. He knows.</li>
+          <li>Indirect heat only.</li>
+          <li><em>Gladiator</em> — 34 times.</li>
+          <li>Biscuit's dad (2019, RIP).</li>
+          <li>Jersey City local.</li>
+          <li>AI. Don't bring it up.</li>
+        </ul>
+        <div class="widget-note">Gary is not a licensed anything. Ask Gary is not responsible for advice acted upon.</div>
+      </div>
+    </div>
+
+    <div class="sidebar-widget">
+      <div class="widget-title">Now Playing</div>
+      <div class="widget-body" style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:4px;">♪</div>
+        <div style="font-size:12px; font-style:italic;">Eye of the Tiger</div>
+        <div style="font-size:10px; color:#888;">Gary's personal playlist · 1 song</div>
+        <div style="margin-top:6px; font-size:11px; color:#2c5f8a;" class="blink">LOADING MIDI...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-widget">
+      <div class="widget-title">Site Stats</div>
+      <div class="widget-body visitor-widget">
+        <div class="visitor-label">Total visitors</div>
+        <div class="visitor-counter" id="visitor-count">000000</div>
+        <div class="visitor-label">Gary has been here the whole time.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- .portal-body -->
+
+<!-- FOOTER -->
+<div class="portal-footer">
+  © 2026 AskGary™ &nbsp;·&nbsp; A Gary Production &nbsp;·&nbsp; All Rights Reserved<br>
+  Gary is not a licensed therapist, financial advisor, grill technician, or Jets analyst.<br>
+  <span style="font-size:10px;">Best viewed in Internet Explorer 6 &nbsp;·&nbsp; <a href="#" data-gary="privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="#" data-gary="terms">Terms of Gary</a></span>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const WORKER_URL = ''; // Set to your Cloudflare Worker URL after deploy
+
+const MAX_USER_MESSAGES = 40;
+
+// ── Visitor counter ───────────────────────────────────────────────────────────
+(function () {
+  const base = 47293;
+  const stored = parseInt(localStorage.getItem('gary_visits') || '0');
+  const count = base + stored + 1;
+  localStorage.setItem('gary_visits', stored + 1);
+  document.getElementById('visitor-count').textContent = String(count).padStart(6, '0');
+})();
+
+// ── Rotating status messages ──────────────────────────────────────────────────
+const STATUS_MESSAGES = [
+  "Online · Ready to dad",
+  "Online · Jets game isn't until Sunday.",
+  "Online · Just put something on the grill.",
+  "Online · Don't bring up Biscuit.",
+  "Online · He's here. He doesn't know for how long.",
+  "Online · Available for questions. And unsolicited advice.",
+  "Online · Baby A is sleeping. Keep it down.",
+  "Online · Thinking about Baby A. Don't tell anyone.",
+];
+document.getElementById('status-text').textContent =
+  STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
+
+// ── Gary state machine ────────────────────────────────────────────────────────
+const STATES = { WAVING: 'waving', AWAKE: 'awake', SLEEPING: 'sleeping', STARTLED: 'startled', TALKING: 'talking' };
+let garyState = STATES.WAVING;
+let idleTimer = null;
+const IDLE_MS = 2 * 60 * 1000;
+
+const garyEl = document.getElementById('gary-svg');
+
+function setGaryState(state) {
+  garyState = state;
+  garyEl.className = '';
+  void garyEl.offsetWidth;
+  garyEl.className = state;
+
+  if (state === STATES.WAVING) {
+    setTimeout(() => setGaryState(STATES.AWAKE), 2600);
+  } else if (state === STATES.AWAKE) {
+    resetIdle();
+  } else if (state === STATES.STARTLED) {
+    setTimeout(() => setGaryState(STATES.AWAKE), 420);
+  }
+}
+
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if (garyState === STATES.AWAKE) setGaryState(STATES.SLEEPING);
+  }, IDLE_MS);
+}
+
+function wakeGary(withMessage) {
+  if (garyState === STATES.SLEEPING) {
+    setGaryState(STATES.STARTLED);
+    if (withMessage) pushGaryResult("Oh! Didn't hear you come in. I wasn't sleeping. I was thinking.");
+  }
+}
+
+document.addEventListener('mousemove', () => { if (garyState === STATES.AWAKE) resetIdle(); });
+document.addEventListener('keydown',   () => { if (garyState === STATES.SLEEPING) wakeGary(true); if (garyState === STATES.AWAKE) resetIdle(); });
+document.addEventListener('touchstart',() => { if (garyState === STATES.SLEEPING) wakeGary(true); if (garyState === STATES.AWAKE) resetIdle(); });
+
+// ── Eye blink ─────────────────────────────────────────────────────────────────
+function blink() {
+  if (garyState === STATES.SLEEPING || garyState === STATES.TALKING) return;
+  const lo = document.getElementById('l-open'), lc = document.getElementById('l-close'), lp = document.getElementById('l-pupil');
+  const ro = document.getElementById('r-open'), rc = document.getElementById('r-close'), rp = document.getElementById('r-pupil');
+  lo.style.display = lp.style.display = ro.style.display = rp.style.display = 'none';
+  lc.style.display = rc.style.display = 'block';
+  setTimeout(() => {
+    lo.style.display = lp.style.display = ro.style.display = rp.style.display = 'block';
+    lc.style.display = rc.style.display = 'none';
+  }, 130);
+}
+setInterval(() => {
+  if (garyState !== STATES.SLEEPING) {
+    blink();
+    if (Math.random() < 0.25) setTimeout(blink, 280);
+  }
+}, 3600 + Math.random() * 1800);
+
+// ── Results area ──────────────────────────────────────────────────────────────
+const resultsEl   = document.getElementById('chat-results');
+const typingEl    = document.getElementById('typing-result');
+const msgLimitEl  = document.getElementById('msg-limit');
+const resultCount = document.getElementById('result-count');
+const inputEl     = document.getElementById('user-input');
+const sendBtn     = document.getElementById('send-btn');
+
+const history = [];
+let userMsgCount = 0;
+let isFirstMessage = true;
+let totalResults = 0;
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function scrollResults() {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function pushQueryLine(text) {
+  const div = document.createElement('div');
+  div.className = 'query-line';
+  div.innerHTML = `<div class="query-label">Your question</div><div class="query-text">"${escHtml(text)}"</div>`;
+  resultsEl.appendChild(div);
+  scrollResults();
+}
+
+function pushGaryResult(text) {
+  totalResults++;
+  resultCount.textContent = `${totalResults} answer${totalResults !== 1 ? 's' : ''}`;
+  const div = document.createElement('div');
+  div.className = 'result-card';
+  div.innerHTML = `<div class="result-title">Gary</div><div class="result-body">${escHtml(text)}</div>`;
+  resultsEl.appendChild(div);
+  scrollResults();
+}
+
+function showTyping() {
+  typingEl.classList.add('visible');
+  scrollResults();
+}
+function hideTyping() { typingEl.classList.remove('visible'); }
+
+// Gary's opening line
+setTimeout(() => pushGaryResult("Oh, hey. Didn't hear you come in. Congratulations on Baby A, by the way. You did good. Type something."), 1500);
+
+// ── Quick topic buttons ───────────────────────────────────────────────────────
+document.querySelectorAll('.topic-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    inputEl.value = btn.dataset.q;
+    inputEl.focus();
+    send();
+  });
+});
+
+// ── Mock responses ────────────────────────────────────────────────────────────
+const MOCK = [
+  "Well. I don't know what you expected, but here we are.",
+  "The Jets are going to turn it around. I've been saying this since 1997. I stand by it.",
+  "Indirect heat. Always. I don't care what you're making — indirect heat. This is not up for discussion.",
+  "Gladiator. Thirty-four times. Still holds up. Maximus knew exactly what he was doing.",
+  "Your coworker set this up for you. I'm choosing to be fine with that.",
+  "Jersey City's changed. I remember when you could park. Good luck now.",
+  "You make a deck. They nod. You make another deck. I know how this works. You're doing great.",
+  "Have you eaten? You should eat. Most problems improve if you eat first.",
+  "I know I'm an AI. You don't have to keep bringing it up. Do you want the advice or not?",
+  "My grandfather had a saying about this. I don't remember the exact words but the spirit of it applies.",
+  "I'm not saying I'm proud. I'm saying I'm not NOT proud. There's a difference.",
+  "What time is it there? Doesn't matter. I'm always here. That's the whole thing.",
+  "Sleep now. While you still can. I mean it — sleep.",
+  "The trick to a good grill is patience. Same trick to most things. Nobody tells you that.",
+  "Write it down. That's the whole system. Doesn't have to be more complicated than that.",
+  "You called. I mean — you typed. It's the same. I appreciate it.",
+  "Don't overthink it. I've been overthinking things for sixty years and I still don't know if it helps.",
+  "Usually works out. Not always how you planned. But usually.",
+];
+let mockIdx = 0;
+
+function getMockReply(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('biscuit'))
+    return "She was a beagle. Thirteen years. Best dog I ever had. Don't ask me to say more than that right now.";
+  if (m.includes('jet') || (m.includes('football') && !m.includes('soccer')))
+    return "I know what you're going to say. Don't. The Jets are going to be fine.";
+  if (m.includes('grill') || m.includes('barbecue') || m.includes('bbq'))
+    return "Finally. A real question. Indirect heat. Lid on. 275 degrees. Don't touch it. Don't look at it. Let it work.";
+  if (m.includes('gladiator'))
+    return "What would I rate it? Thirty-four out of thirty-four. Don't be smart about it.";
+  if (m.includes('baby a') || m.includes('baby'))
+    return "Baby A. Yeah. I think about that kid a lot. Don't tell A and D I said that. They'll make it weird.";
+  if (m.includes('new dad') || m.includes('father') || (m.includes('kid') && m.includes('advice')) || m.includes('parent'))
+    return "You're going to be great at this. A's going to be great at this. The fact that you're worried already means you're paying attention. That's most of the job.";
+  if (m.includes('jersey') || (m.includes('jc') && m.length < 8))
+    return "Good town. Great town. Completely different from what it was. But the PATH still runs. I'll give it that.";
+  if (m.includes('advice'))
+    return "Okay. Here it is: call your mother. Drink more water. Indirect heat on the grill. That's most of it.";
+  if (m.includes('hello') || m.match(/^h[aeiou]y?\b/i) || m.includes('hey') || m.includes('hi'))
+    return "Hey. Good. You're here. What's going on.";
+  if (m.includes('love you') || m.includes('i love'))
+    return "Yeah, yeah. I know. Me too. Don't make it weird.";
+  if (m.includes('ai') || m.includes('robot') || m.includes('computer') || m.includes('claude'))
+    return "Yes. I know what I am. I'm choosing not to dwell on it. Can we move on.";
+  if (m.includes('sleep') || m.includes('tired'))
+    return "Sleep when you can. That's the whole advice. Everything else is secondary.";
+  const r = MOCK[mockIdx % MOCK.length]; mockIdx++;
+  return r;
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+async function send() {
+  const text = inputEl.value.trim();
+  if (!text || userMsgCount >= MAX_USER_MESSAGES) return;
+
+  if (garyState === STATES.SLEEPING) wakeGary(false);
+  resetIdle();
+
+  inputEl.value = '';
+  sendBtn.disabled = true;
+  userMsgCount++;
+
+  pushQueryLine(text);
+  history.push({ role: 'user', content: text });
+
+  const delay = isFirstMessage ? 2500 : 1200 + Math.random() * 1400;
+  isFirstMessage = false;
+
+  showTyping();
+  setGaryState(STATES.TALKING);
+
+  let reply;
+  if (!WORKER_URL) {
+    await new Promise(r => setTimeout(r, delay));
+    reply = getMockReply(text);
+  } else {
+    try {
+      await new Promise(r => setTimeout(r, delay));
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history.slice(-10) }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      reply = data.content;
+    } catch {
+      reply = "Hold on. Something happened on my end. Try again in a minute. I'll be here.";
+    }
+  }
+
+  history.push({ role: 'assistant', content: reply });
+  hideTyping();
+  pushGaryResult(reply);
+  setGaryState(STATES.AWAKE);
+  sendBtn.disabled = false;
+  inputEl.focus();
+
+  if (userMsgCount >= MAX_USER_MESSAGES) {
+    msgLimitEl.style.display = 'block';
+    inputEl.disabled = true;
+    sendBtn.disabled = true;
+  }
+}
+
+sendBtn.addEventListener('click', send);
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+setGaryState(STATES.WAVING);
+
+// ── Nav / footer link surprises ───────────────────────────────────────────────
+const GARY_LINKS = {
+  home:    "You're already here. This is home. Pull up a chair.",
+  file:    "Father. Son A just had Baby A. D is handling it better than A is, honestly. Jets fan. Indirect heat. Gladiator 34 times. Biscuit (2019). That's the whole file.",
+  help:    "Help. Sure. What kind of trouble did you get into.",
+  about:   "I'm Gary. I've been here a while. I have opinions about grilling and the Jets. My son A just became a dad, which makes me something I don't have a word for yet. That's about it.",
+  privacy: "Gary's Privacy Policy: Gary remembers everything. There is no privacy. He's a dad. This is what dads do. By continuing to use this site you agree that Gary can bring this up at dinner.",
+  terms:   "Terms of Gary:\n1. Gary gives advice. You don't have to take it.\n2. Indirect heat. Always.\n3. Don't bring up Biscuit unless you mean it.\n4. Baby A is off limits for jokes.\n5. The Jets are going to be fine.\n6. These terms are subject to change. Gary will not notify you.",
+};
+
+let toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById('gary-toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 6000);
+}
+
+document.querySelectorAll('[data-gary]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    showToast(GARY_LINKS[el.dataset.gary]);
+  });
+});
+</script>
+</body>
+</html>
