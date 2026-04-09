@@ -728,7 +728,19 @@ function showTyping() {
 function hideTyping() { typingEl.classList.remove('visible'); }
 
 // Gary's opening line
-setTimeout(() => pushGaryResult("Oh hey. Didn't hear you come in. Congrats on Baby A, by the way. A did good. Anyway. What's going on."), 1500);
+const OPENING_LINES = [
+  "Oh hey. Didn't hear you come in. Congrats on Baby A, by the way. A did good. Anyway. What's going on.",
+  "Hey. Just got back from lunch. Congrats on Baby A — seriously, A did great. What's up.",
+  "Oh you're here. Yeah. Baby A. Wild. A's a dad now. I'm still processing that. Anyway — what do you need.",
+  "Hey. Traffic was a nightmare this morning, don't get me started. Congrats on Baby A though. What's going on.",
+  "Oh good, someone's here. I've been at this desk since 8. Congrats on Baby A — A did good. What's up.",
+  "Hey. Yeah. I heard about Baby A. A's a dad now. Good for him. You need something?",
+  "Oh hey. I was just thinking about A actually. New dad. Wild. Congrats. What's going on with you.",
+  "Yeah hey. Come in. Baby A is here, A's a dad, the whole thing. Crazy. Anyway — what do you got.",
+  "Hey. Sit down. You hear about Baby A? A did good. D did great. Okay. What's going on.",
+  "Oh you found this. Okay. Congrats on Baby A by the way — A's doing fine, I'm sure of it. What do you need.",
+];
+setTimeout(() => pushGaryResult(OPENING_LINES[Math.floor(Math.random() * OPENING_LINES.length)]), 1500);
 
 // ── Quick topic buttons ───────────────────────────────────────────────────────
 const ALL_CHIPS = [
