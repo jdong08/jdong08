@@ -885,7 +885,6 @@ async function send() {
   pushGaryResult(reply);
   setGaryState(STATES.AWAKE);
   sendBtn.disabled = false;
-  inputEl.focus();
 
   if (userMsgCount >= MAX_USER_MESSAGES) {
     msgLimitEl.style.display = 'block';
