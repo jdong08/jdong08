@@ -729,16 +729,16 @@ function hideTyping() { typingEl.classList.remove('visible'); }
 
 // Gary's opening line
 const OPENING_LINES = [
-  "Oh hey. Didn't hear you come in. Congrats on Baby A — A and D did good. D especially. Anyway. What's going on.",
-  "Hey. Just got back from lunch. Baby A. Wild. D handled the whole thing like a pro. A did great too. What's up.",
-  "Oh you're here. Yeah. Baby A. I'm still processing it. D's amazing, I'll say that. What do you need.",
-  "Hey. Traffic was a nightmare. Anyway — congrats on Baby A. D did great. A did good. What's going on.",
-  "Oh good, someone's here. I've been at this desk since 8. Congrats on Baby A — D carried that whole thing. What's up.",
-  "Hey. Yeah. Baby A's here. D is incredible, I'll tell you that right now. A's lucky. What do you need.",
-  "Oh hey. I was just thinking about D actually. She did great. A too. New baby. Wild. What's going on with you.",
-  "Yeah hey. Come in. Baby A is here. D was a rockstar. A's a dad now. The whole thing. What do you got.",
-  "Hey. Sit down. Congrats on Baby A. D did great — like, really great. A did good. Okay. What's going on.",
-  "Oh you found this. Okay. D had a baby. A's a dad. D's a superhero but we already knew that. What do you need.",
+  "Oh hey! Come in, come in. Baby A — can you believe it? A and D did amazing. I'm so happy for them. What's going on with you.",
+  "Hey! Good, you're here. I gotta tell you, Baby A — I mean, wow. A's a dad. D's incredible. The whole thing just gets me. What do you need.",
+  "Oh hey! Sit down. I keep thinking about Baby A and I just — yeah. A and D did great. Really great. I'm so proud of those two. What's up.",
+  "Hey, welcome! You know what I keep coming back to? Baby A. Brand new person. A and D made that happen. Unbelievable. What's going on.",
+  "Oh good, someone to talk to. Baby A is here and I've been smiling about it all week, I'm not gonna lie. D and A crushed it. What do you need.",
+  "Hey! I wasn't sleeping. I was thinking about Baby A. Because A's a dad now — my buddy A is a dad! D's a hero. The whole thing. What's up.",
+  "Oh hey, come in! You hear about Baby A? Of course you did, you're here. A and D — man. So happy for them. What's going on.",
+  "Hey! Traffic was rough but honestly I don't even care, Baby A is here. A and D did so good. That kid is lucky. What do you need.",
+  "Oh you found this, good! I set this up because A's a dad now and I just — I wanted to celebrate that a little. D and A did great. What's going on.",
+  "Hey! Sit down, sit down. Baby A. New baby. A and D both showed up big. I'm just really happy for them. Okay. What do you got.",
 ];
 setTimeout(() => pushGaryResult(OPENING_LINES[Math.floor(Math.random() * OPENING_LINES.length)]), 1500);
 
@@ -820,9 +820,9 @@ function getMockReply(msg) {
   if (m.includes('gladiator'))
     return "Thirty-four times. I don't need to explain that to you.";
   if (m.includes('baby a') || m.includes('baby'))
-    return "Yeah. I think about that kid. D's doing amazing — I mean really amazing. A too. Don't tell him I said all that.";
+    return "Baby A! Yeah. I think about that kid all the time. D is incredible, A is doing great — I'm just really happy for both of them. Really.";
   if (m.includes('new dad') || m.includes('father') || (m.includes('kid') && m.includes('advice')) || m.includes('parent'))
-    return "Look. D's got it. A's gonna figure it out. The worrying means he's paying attention, that's most of it.";
+    return "Okay so here's the thing — A is going to be a great dad. I know this. D is already crushing it. The fact that he's asking means he cares, and caring is most of the job.";
   if (m.includes('jersey') || (m.includes('jc') && m.length < 8))
     return "Good town. It's good. Parking's impossible now but the PATH runs, so. You know.";
   if (m.includes('advice'))
