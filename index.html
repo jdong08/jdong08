@@ -87,6 +87,25 @@ header {
   letter-spacing: -0.01em;
 }
 
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+
+.nav-link {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-link:hover { color: #9a3a5a; }
+
 .header-right {
   display: flex;
   align-items: center;
@@ -1225,6 +1244,10 @@ button, .conn-tag, .about-btn, .panel-btn, .projects-toggle, .project-link, .leg
   <div class="header-left">
     <span class="brand">Tessa OS</span>
   </div>
+  <nav class="header-nav">
+    <a class="nav-link" href="https://www.linkedin.com/in/justina-dong/" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="nav-link" href="/resilience.html">Resilience</a>
+  </nav>
   <div class="header-right">
     <input class="search-input" id="search" placeholder="Search…" autocomplete="off" oninput="applySearch(this.value)" onsearch="applySearch(this.value)" aria-label="Search nodes"/>
     <button class="search-mobile-btn" onclick="openSearchOverlay()" aria-label="Search">⌕</button>

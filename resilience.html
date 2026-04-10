@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>jdong08 — Resilience</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #fcf9f0;
+  font-family: 'Work Sans', -apple-system, sans-serif;
+  color: #3a3020;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(252, 249, 240, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(218, 192, 197, 0.25);
+}
+
+.header-left { display: flex; align-items: baseline; gap: 0; flex-shrink: 0; }
+
+.brand {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #9a3a5a;
+  text-decoration: none;
+}
+
+.brand-sub {
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877276;
+  margin-left: 10px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #877276;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-link:hover { color: #9a3a5a; }
+.nav-link.active { color: #9a3a5a; }
+
+/* ── Password overlay ── */
+.pw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #fcf9f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  transition: opacity 0.4s ease;
+}
+
+.pw-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pw-brand {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: #9a3a5a;
+}
+
+.pw-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b08090;
+  margin-bottom: 8px;
+}
+
+.pw-input {
+  background: rgba(218, 192, 197, 0.15);
+  border: 1px solid rgba(218, 192, 197, 0.5);
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  font-family: 'Work Sans', sans-serif;
+  color: #3a3020;
+  text-align: center;
+  outline: none;
+  letter-spacing: 0.12em;
+  transition: border-color 0.15s, box-shadow 0.2s;
+  width: 200px;
+}
+
+.pw-input:focus {
+  border-color: rgba(154, 58, 90, 0.4);
+  box-shadow: 0 0 0 3px rgba(154, 58, 90, 0.08);
+}
+
+.pw-input.shake {
+  animation: shake 0.35s ease;
+  border-color: rgba(180, 50, 50, 0.3);
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* ── Content ── */
+.content {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+}
+
+.page-title {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 2.2rem;
+  color: #9a3a5a;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.page-sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b08090;
+  margin-bottom: 56px;
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b08090;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(218, 192, 197, 0.35);
+}
+
+.skill-entry {
+  margin-bottom: 22px;
+}
+
+.skill-entry:last-child { margin-bottom: 0; }
+
+.skill-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #3a3020;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.skill-detail {
+  font-size: 0.8rem;
+  color: #7a6a60;
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 500;
+  position: relative;
+  top: -1px;
+}
+
+.tag-done { background: rgba(83, 100, 58, 0.1); color: #53643a; }
+.tag-cert { background: rgba(154, 58, 90, 0.1); color: #9a3a5a; }
+.tag-active { background: rgba(118, 87, 0, 0.1); color: #765700; }
+.tag-next { background: rgba(61, 107, 122, 0.1); color: #3d6b7a; }
+
+@media (max-width: 480px) {
+  .content { padding: 48px 20px 80px; }
+  .page-title { font-size: 1.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="pw-overlay" id="pw-overlay">
+  <div class="pw-brand">jdong08</div>
+  <div class="pw-label">private</div>
+  <input class="pw-input" id="pw-input" type="password" placeholder="••••••••" autocomplete="off"/>
+</div>
+
+<header>
+  <div class="header-left">
+    <a class="brand" href="/">jdong08</a>
+    <span class="brand-sub">resilience</span>
+  </div>
+  <nav class="header-nav">
+    <a class="nav-link" href="https://www.linkedin.com/in/justina-dong/" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="nav-link active" href="/resilience.html">Resilience</a>
+  </nav>
+</header>
+
+<main class="content">
+  <h1 class="page-title">Physical Skills</h1>
+  <p class="page-sub">Built in the body</p>
+
+  <div class="section">
+    <div class="section-label">Foundation</div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Ballet — New Jersey Ballet</div>
+      <div class="skill-detail">Pre-professional training, ages 3 to 18. Fifteen years at a major arts institution in Morris County. Bodily control, spatial precision, the discipline of repetition. The aesthetics of restraint. Ballet is why she knows what 4/4 feels like in her shoulders.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Piano — Chen Yubin</div>
+      <div class="skill-detail">Classical training, ages 3 to 18. Ran parallel to ballet the entire way — both began at 3, both ended at 18. Musical phrasing, structural hearing, the patience to repeat something until it's right. Piano is why she hears structure in things.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Movement</div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Pilates <span class="tag tag-cert">Instructor Certified</span></div>
+      <div class="skill-detail">Certified to teach. The ballet foundation is why this came easily — already knew how to be in a body before any of this started.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Hands On</div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Woodworking <span class="tag tag-done">Done</span></div>
+      <div class="skill-detail">FIT Continuing Education (SXW650) — 6 weeks, 3 hrs/week. 227 W 27th St, NYC. Joinery, hand tools, table saw, band saw. Built a side table start to finish.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Welding & Metal Sculpting <span class="tag tag-done">Done</span></div>
+      <div class="skill-detail">Michael Daniel Metal Designs, 22-14 40th Ave, LIC — 5 weeks, 3 hrs/week. MIG, ARC, oxy-acetylene. Max 7 students. All materials included. Not a certification course.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Sewing <span class="tag tag-done">Done</span></div>
+      <div class="skill-detail">NY Sewing Center, 246 W 38th St — machine use, patterns, fabric selection. Beginner course.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Building Superintendent: Basic Repairs <span class="tag tag-cert">Certificate</span></div>
+      <div class="skill-detail">CUNY City Tech Continuing Education (SUPT400) — 24 hours, Tue/Thu 6–9pm. 300 Jay St, Brooklyn. Electrical, plumbing, drywall, tile, pest control, locks. Instructor: Timothy Dyer. Certificate of completion.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Ceramics / Wheel Throwing <span class="tag tag-done">Done</span></div>
+      <div class="skill-detail">Doclay NYC, 38 W 32nd St (Koreatown) + Dusty & Co, 40 W 27th St (NoMad) — introductory sessions at both studios.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">In Progress</div>
+
+    <div class="skill-entry">
+      <div class="skill-name">NYC CERT <span class="tag tag-active">Active</span></div>
+      <div class="skill-detail">NYC Emergency Management — applied. Community Emergency Response Team. Fire safety, light search & rescue, disaster medical ops, traffic control. Instructors are FDNY/NYPD/NYCEM personnel. Background check required. Must complete FEMA IS-100.c online prior. 1-year service commitment post-graduation.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Next</div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Wilderness First Responder (WFR) <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">Adirondack Wilderness Medicine (SOLO-authorized) — $800, 80 hours / 9 days. Ndakinna Education Center, Greenfield Center NY (~3.5 hrs from NYC). Includes CPR/AED cert. Next sessions: Apr 11–19 and Aug 22–30, 2026.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">First Aid / CPR / AED <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">Frontline Health NYC — $128, 4.75 hours. ARC certification, valid 2 years. Blended learning option available (2.5 hrs, same price).</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Ham Radio — Technician License <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">Hall of Science Amateur Radio Club (ARRL-affiliated) — $15 exam + $35 FCC fee. ~8 hrs self-study via hamstudy.org + exam. Spring 2026 Zoom course: Mondays 7pm. Emergency communications when infrastructure fails. Highest resilience value per hour of anything on this list.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Food Preservation & Fermentation <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">Contraband Ferments — 3-session series May 7–9, 2026: Kimchi (Brooklyn Brainery), Kombucha, Fermented Vegetables. ~$38/session. Plus Cornell Master Food Preserver Certificate ($495, 3 days, Riverhead NY) — pressure canning, pickling, jelling, drying, fermentation. Max 15 students.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">Building Superintendent: Mechanicals (Level 2) <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">CUNY City Tech Continuing Education (course 2175) — follows SUPT400. HVAC, plumbing, mechanical systems. No Spring 2026 section; targeting Fall 2026.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">AWS Welding Certification <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">The Welding Expert (AWS Accredited Test Facility), 101 Rome St, Farmingdale NY (~1 hr by LIRR) — AWS D1.1, ASME, structural, TIG. Flexible scheduling including evenings and weekends. Makes the welding work legible in professional contexts.</div>
+    </div>
+
+    <div class="skill-entry">
+      <div class="skill-name">OSHA 30 — Construction <span class="tag tag-next">Planned</span></div>
+      <div class="skill-detail">NY Safety and Training — 30 hours. ~$350–400 in-person (Brooklyn, Bronx, Manhattan) or $99–159 online. Makes trades knowledge legible in organized and official settings.</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const PASSWORD = 'conan';
+const overlay = document.getElementById('pw-overlay');
+const input = document.getElementById('pw-input');
+
+if (sessionStorage.getItem('resilience_auth') === '1') {
+  overlay.classList.add('hidden');
+} else {
+  input.focus();
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (input.value === PASSWORD) {
+    sessionStorage.setItem('resilience_auth', '1');
+    overlay.classList.add('hidden');
+  } else {
+    input.classList.add('shake');
+    input.value = '';
+    setTimeout(() => input.classList.remove('shake'), 400);
+  }
+});
+</script>
+</body>
+</html>
