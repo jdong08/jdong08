@@ -68,73 +68,6 @@ header {
 .nav-link:hover { color: #9a3a5a; }
 .nav-link.active { color: #9a3a5a; }
 
-/* ── Password overlay ── */
-.pw-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: #fcf9f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 16px;
-  transition: opacity 0.4s ease;
-}
-
-.pw-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.pw-brand {
-  font-family: 'Newsreader', serif;
-  font-style: italic;
-  font-size: 1.5rem;
-  color: #9a3a5a;
-}
-
-.pw-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #b08090;
-  margin-bottom: 8px;
-}
-
-.pw-input {
-  background: rgba(218, 192, 197, 0.15);
-  border: 1px solid rgba(218, 192, 197, 0.5);
-  border-radius: 999px;
-  padding: 10px 24px;
-  font-size: 0.85rem;
-  font-family: 'Work Sans', sans-serif;
-  color: #3a3020;
-  text-align: center;
-  outline: none;
-  letter-spacing: 0.12em;
-  transition: border-color 0.15s, box-shadow 0.2s;
-  width: 200px;
-}
-
-.pw-input:focus {
-  border-color: rgba(154, 58, 90, 0.4);
-  box-shadow: 0 0 0 3px rgba(154, 58, 90, 0.08);
-}
-
-.pw-input.shake {
-  animation: shake 0.35s ease;
-  border-color: rgba(180, 50, 50, 0.3);
-}
-
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-}
-
 /* ── Content ── */
 .content {
   max-width: 620px;
@@ -220,12 +153,6 @@ header {
 </style>
 </head>
 <body>
-
-<div class="pw-overlay" id="pw-overlay">
-  <div class="pw-brand">jdong08</div>
-  <div class="pw-label">private</div>
-  <input class="pw-input" id="pw-input" type="password" placeholder="••••••••" autocomplete="off"/>
-</div>
 
 <header>
   <div class="header-left">
@@ -347,28 +274,5 @@ header {
   </div>
 </main>
 
-<script>
-const PASSWORD = 'conan';
-const overlay = document.getElementById('pw-overlay');
-const input = document.getElementById('pw-input');
-
-if (sessionStorage.getItem('resilience_auth') === '1') {
-  overlay.classList.add('hidden');
-} else {
-  input.focus();
-}
-
-input.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (input.value === PASSWORD) {
-    sessionStorage.setItem('resilience_auth', '1');
-    overlay.classList.add('hidden');
-  } else {
-    input.classList.add('shake');
-    input.value = '';
-    setTimeout(() => input.classList.remove('shake'), 400);
-  }
-});
-</script>
 </body>
 </html>
